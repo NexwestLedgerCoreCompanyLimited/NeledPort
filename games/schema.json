@@ -44,6 +44,27 @@
         }
       }
     },
+    "settings": {
+      "description": "Values the user fills in when creating a server; referenced from args/env as {setting:<key>}.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "label", "type"],
+        "properties": {
+          "key": { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$" },
+          "label": { "type": "string", "minLength": 1 },
+          "type": { "enum": ["text", "password", "number"] },
+          "default": { "type": ["string", "number"] },
+          "minLength": { "type": "integer", "minimum": 0 },
+          "secret": { "description": "Stored encrypted on this computer.", "type": "boolean" }
+        }
+      }
+    },
+    "configAdapter": {
+      "description": "Built-in code that writes the game's own config file from the settings.",
+      "enum": ["palworld"]
+    },
     "saveDir": { "description": "World/save folder, backed up before updates.", "type": "string", "minLength": 1 },
     "control": {
       "description": "How NeledPort asks the server to save and shut down.",
@@ -53,7 +74,17 @@
       "properties": {
         "type": { "enum": ["rcon", "webrcon", "rest", "stdin", "signal"] },
         "save": { "type": "string" },
-        "shutdown": { "type": "string" }
+        "shutdown": { "type": "string" },
+        "rest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["port", "basePath", "username"],
+          "properties": {
+            "port": { "description": "Name of a port in ports.", "type": "string" },
+            "basePath": { "type": "string", "pattern": "^/" },
+            "username": { "type": "string" }
+          }
+        }
       }
     },
     "players": {
@@ -72,7 +103,11 @@
       "description": "Regular expressions with a named group (?<name>...) for player join/leave lines.",
       "type": "object",
       "additionalProperties": false,
-      "properties": { "join": { "type": "string" }, "leave": { "type": "string" } }
+      "properties": {
+        "ready": { "description": "A log line that means the server is up.", "type": "string" },
+        "join": { "type": "string" },
+        "leave": { "type": "string" }
+      }
     },
     "workshop": { "type": ["object", "null"] },
     "modLoaders": { "type": "array" }
@@ -85,6 +120,7 @@
       "properties": {
         "executable": { "description": "Relative path of the server executable.", "type": "string", "minLength": 1 },
         "args": { "type": "array", "items": { "type": "string" } },
+        "env": { "type": "object", "additionalProperties": { "type": "string" } },
         "configFiles": {
           "type": "array",
           "items": {

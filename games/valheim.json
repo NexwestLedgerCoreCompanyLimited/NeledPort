@@ -1,0 +1,35 @@
+{
+  "$schema": "./schema.json",
+  "id": "valheim",
+  "name": "Valheim",
+  "serverAppId": 896660,
+  "gameAppId": 892970,
+  "anonymous": true,
+  "tier": "full",
+  "settings": [
+    { "key": "serverName", "label": "Server name", "type": "text", "default": "NeledPort Valheim" },
+    { "key": "world", "label": "World name", "type": "text", "default": "Dedicated" },
+    { "key": "password", "label": "Server password (5+ characters)", "type": "password", "minLength": 5, "secret": true }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "valheim_server.x86_64",
+      "args": ["-nographics", "-batchmode", "-name", "{setting:serverName}", "-port", "{port:game}", "-world", "{setting:world}", "-password", "{setting:password}", "-public", "1", "-savedir", "{installDir}/saves"],
+      "env": { "LD_LIBRARY_PATH": "{installDir}/linux64", "SteamAppId": "892970" }
+    },
+    "windows": {
+      "executable": "valheim_server.exe",
+      "args": ["-nographics", "-batchmode", "-name", "{setting:serverName}", "-port", "{port:game}", "-world", "{setting:world}", "-password", "{setting:password}", "-public", "1", "-savedir", "{installDir}/saves"],
+      "env": { "SteamAppId": "892970" }
+    }
+  },
+  "ports": [
+    { "name": "game", "default": 2456, "protocol": "udp" },
+    { "name": "query", "default": 2457, "protocol": "udp" }
+  ],
+  "saveDir": "saves",
+  "control": { "type": "signal" },
+  "players": { "source": "log" },
+  "bans": { "method": "file" },
+  "logPatterns": { "ready": "Game server connected" }
+}

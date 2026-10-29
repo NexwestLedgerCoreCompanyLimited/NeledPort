@@ -89,6 +89,32 @@ describe('loadCatalog', () => {
     expect(games.map((g) => g.id)).toEqual(['alpha', 'zeta'])
   })
 
+  it('accepts settings, env and REST control', () => {
+    const def = {
+      ...valid,
+      settings: [{ key: 'name', label: 'Server name', type: 'text', default: 'Hi' }],
+      platforms: {
+        linux: { executable: 'server.sh', args: ['-name', '{setting:name}', '-dir', '{installDir}'], env: { A: '{port:game}' } }
+      },
+      control: { type: 'rest', rest: { port: 'game', basePath: '/v1/api', username: 'admin' } }
+    }
+    const { errors } = loadCatalog(dirWith({ 'example.json': def }))
+    expect(errors).toEqual([])
+  })
+
+  it.each(['{port:nope}', '{setting:nope}', '{mystery}'])('rejects undeclared placeholder %s', (arg) => {
+    const def = { ...valid, platforms: { linux: { executable: 'server.sh', args: [arg] } } }
+    const { games, errors } = loadCatalog(dirWith({ 'example.json': def }))
+    expect(games).toEqual([])
+    expect(errors[0].message).toContain(arg.slice(1, -1))
+  })
+
+  it('rejects a REST control that points at an undeclared port', () => {
+    const def = { ...valid, control: { type: 'rest', rest: { port: 'api', basePath: '/v1/api', username: 'admin' } } }
+    const { errors } = loadCatalog(dirWith({ 'example.json': def }))
+    expect(errors[0].message).toContain('api')
+  })
+
   it('every definition in games/ is valid', () => {
     const { games, errors } = loadCatalog(join(__dirname, '../../games'))
     expect(errors).toEqual([])

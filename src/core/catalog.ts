@@ -2,6 +2,7 @@ import Ajv2020 from 'ajv/dist/2020'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, posix, win32 } from 'node:path'
 import schema from '../../games/schema.json'
+import { placeholders } from './template'
 import type { CatalogError, CatalogResult, GameDefinition } from './types'
 
 const validate = new Ajv2020({ allErrors: true }).compile<GameDefinition>(schema)
@@ -25,6 +26,19 @@ function definitionPaths(def: GameDefinition): string[] {
   return paths
 }
 
+function undeclaredReferences(def: GameDefinition): string[] {
+  const known = new Set([
+    'installDir',
+    ...def.ports.map((p) => `port:${p.name}`),
+    ...(def.settings ?? []).map((s) => `setting:${s.key}`)
+  ])
+  const used = Object.values(def.platforms).flatMap((p) =>
+    p ? [...p.args, ...Object.values(p.env ?? {})].flatMap(placeholders) : []
+  )
+  if (def.control?.rest) used.push(`port:${def.control.rest.port}`)
+  return [...new Set(used)].filter((name) => !known.has(name))
+}
+
 function checkDefinition(file: string, data: unknown): GameDefinition | string {
   if (!validate(data)) {
     return (validate.errors ?? [])
@@ -34,6 +48,8 @@ function checkDefinition(file: string, data: unknown): GameDefinition | string {
   if (`${data.id}.json` !== file) return `id '${data.id}' must match the filename`
   const unsafe = definitionPaths(data).filter(isUnsafePath)
   if (unsafe.length) return `unsafe path(s): ${unsafe.join(', ')}`
+  const undeclared = undeclaredReferences(data)
+  if (undeclared.length) return `undeclared port or setting: ${undeclared.join(', ')}`
   return data
 }
 
