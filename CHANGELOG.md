@@ -6,6 +6,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-30
+
+### Added
+
+- **Mods tab** with one-click server mod loaders:
+  - **BepInEx for Valheim**: installed from Thunderstore; on Linux NeledPort sets the loader's environment for you.
+    Verified on a real Linux server by the weekly end-to-end test.
+  - **Oxide (uMod) for Rust**: latest build from GitHub, and reinstalled automatically after every server update
+    (updates overwrite it).
+- **Plugin manager**: add plugin files, turn them on and off, delete them.
+- **Steam Workshop maps for Counter-Strike 2**: paste a Workshop link and the server loads it.
+- Removing a loader deletes its files and, if it replaced game files, restores the originals with SteamCMD.
+
+### Security
+
+- Mod loaders download only over HTTPS from GitHub or Thunderstore (including after redirects), and archives
+  that try to write outside the server folder are refused before anything is written.
+
 ## [0.4.0] - 2026-10-30
 
 ### Added
@@ -69,7 +87,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - CI on Linux and Windows (typecheck, tests, build) and a tag-driven release workflow.
 - Community files: MIT license, contributing guide, code of conduct, security policy.
 
-[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.1.0...v0.2.0

@@ -32,7 +32,7 @@ NeledPort wraps all of that in a desktop app for Windows and Linux.
 - **Live console** with search and a command box (RCON / stdin).
 - **Status:** uptime, CPU, RAM and players online.
 - **Players and bans:** kick, ban and unban through each game's own mechanism.
-- **Mods:** one-click server-side mod loaders (BepInEx, Oxide/Carbon, Metamod + CounterStrikeSharp) and Steam Workshop downloads.
+- **Mods:** one-click server-side mod loaders (BepInEx for Valheim, Oxide for Rust), a plugin manager, and Steam Workshop maps for CS2.
 - **Automatic backups** before every update.
 - **English and Thai UI**, dark-first and keyboard-friendly.
 
@@ -49,9 +49,9 @@ Get the latest installer for Windows (`.exe`) or Linux (`.AppImage`, `.deb`) fro
 | Game | Support | Status |
 |---|---|---|
 | Palworld | full | install, run, update, players, kick/ban, console |
-| Valheim | full | install, run, update, players, bans; tested on real Linux servers weekly |
-| Rust | full | install, run, update, players, kick/ban, WebRCON console |
-| Counter-Strike 2 | basic | install, run, RCON console, players, kick |
+| Valheim | full | install, run, update, players, bans, BepInEx mods; tested on real Linux servers weekly |
+| Rust | full | install, run, update, players, kick/ban, WebRCON console, Oxide plugins |
+| Counter-Strike 2 | basic | install, run, RCON console, players, kick, Workshop maps |
 | SCUM | basic | install, run, players (Windows only) |
 | ARK, Team Fortress 2, Satisfactory, Conan Exiles, Squad and 70+ more | basic | install, run, console ([full list](docs/GAMES.md)) |
 | **Any Steam App ID** | custom | search 380+ more servers by name, install, pick the program once, share it |
