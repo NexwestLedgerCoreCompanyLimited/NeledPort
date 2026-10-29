@@ -1,0 +1,30 @@
+{
+  "$schema": "./schema.json",
+  "id": "palworld",
+  "name": "Palworld",
+  "serverAppId": 2394010,
+  "gameAppId": 1623730,
+  "anonymous": true,
+  "tier": "full",
+  "platforms": {
+    "linux": {
+      "executable": "PalServer.sh",
+      "args": ["-port={port:game}", "-queryport={port:query}", "-useperfthreads", "-NoAsyncLoadingThread", "-UseMultithreadForDS"],
+      "configFiles": [{ "path": "Pal/Saved/Config/LinuxServer/PalWorldSettings.ini", "format": "ini" }]
+    },
+    "windows": {
+      "executable": "PalServer.exe",
+      "args": ["-port={port:game}", "-queryport={port:query}", "-useperfthreads", "-NoAsyncLoadingThread", "-UseMultithreadForDS"],
+      "configFiles": [{ "path": "Pal/Saved/Config/WindowsServer/PalWorldSettings.ini", "format": "ini" }]
+    }
+  },
+  "ports": [
+    { "name": "game", "default": 8211, "protocol": "udp" },
+    { "name": "query", "default": 27015, "protocol": "udp" },
+    { "name": "rest", "default": 8212, "protocol": "tcp" }
+  ],
+  "saveDir": "Pal/Saved/SaveGames",
+  "control": { "type": "rest", "save": "save", "shutdown": "shutdown" },
+  "players": { "source": "rest" },
+  "bans": { "method": "rest" }
+}
