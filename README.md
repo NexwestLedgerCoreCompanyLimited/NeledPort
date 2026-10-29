@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/images/logo.png" alt="NeledPort logo" width="200" />
+
 # NeledPort
 
 **Host Steam dedicated game servers from one modern desktop app.**

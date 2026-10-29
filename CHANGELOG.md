@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- NeledPort logo in the sidebar and README, and as the Windows and Linux app icon.
+
 ## [0.1.0] - 2026-10-29
 
 ### Added

@@ -1,29 +1,15 @@
 import { useEffect, useState } from 'react'
 import type { CatalogResult, GameDefinition } from '../../core/types'
 import { version } from '../../../package.json'
+import logo from './assets/logo.png'
 
 const REPO_URL = 'https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort'
-
-function Logo() {
-  return (
-    <svg viewBox="0 0 32 32" className="h-9 w-9" aria-hidden="true">
-      <defs>
-        <linearGradient id="np-logo" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#22d3ee" />
-          <stop offset="1" stopColor="#a78bfa" />
-        </linearGradient>
-      </defs>
-      <path d="M16 2 28 9v14l-12 7-12-7V9z" fill="none" stroke="url(#np-logo)" strokeWidth="2" />
-      <path d="M11 21V11l10 10V11" fill="none" stroke="url(#np-logo)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
 
 function Sidebar() {
   return (
     <aside className="flex w-64 shrink-0 flex-col border-r border-white/5 bg-ink-900/80 backdrop-blur">
       <div className="flex items-center gap-3 px-5 py-5">
-        <Logo />
+        <img src={logo} alt="" className="h-9 w-auto" />
         <div>
           <div className="font-semibold tracking-wide text-white">NeledPort</div>
           <div className="font-mono text-[11px] text-slate-500">v{version} · preview</div>
