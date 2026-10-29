@@ -198,9 +198,10 @@ Dark-first, high-contrast "control room" look, light theme available. Layout:
 
 ## 8. Repository setup (designed for stars, forks and contributors)
 
-- Repo: **`NEXWEST-LEDGER-CORE/NeledPort`**, public. To appear on the personal profile too, **pin it** on
-  `NexwestLedgerCoreCompanyLimited`'s profile and commit from that account. Do **not** mirror or fork it
-  to the personal account — that splits stars between two repos.
+- Repo: **`NexwestLedgerCoreCompanyLimited/NeledPort`**, public, **pinned** on that profile. Planned home was
+  `NEXWEST-LEDGER-CORE/NeledPort`, but on 2026-10-29 that org was hidden from the public and Actions did not run
+  (GitHub Support contacted). Move it to the org with GitHub's transfer feature once the org is restored, so stars
+  and links follow. Never keep two live copies: that splits stars.
 - Attribution: commits authored with the personal account's *verified* GitHub email (otherwise they will
   not link to the profile), each ending with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - Files: `LICENSE` (MIT), `README.md` + `README.th.md` (hero GIF, download buttons, auto-generated

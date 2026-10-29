@@ -5,10 +5,10 @@
   "description": "Host Steam dedicated game servers from one modern desktop app.",
   "license": "MIT",
   "author": "NEXWEST-LEDGER-CORE contributors",
-  "homepage": "https://github.com/NEXWEST-LEDGER-CORE/NeledPort",
+  "homepage": "https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NEXWEST-LEDGER-CORE/NeledPort.git"
+    "url": "git+https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort.git"
   },
   "private": true,
   "main": "./out/main/index.js",

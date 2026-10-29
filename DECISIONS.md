@@ -2,6 +2,13 @@
 
 Significant choices, why we made them, and what we turned down. Newest first.
 
+## 2026-10-29 · Repository lives on the personal account for now
+
+- **Decision:** Publish at `NexwestLedgerCoreCompanyLimited/NeledPort`.
+- **Why:** The `NEXWEST-LEDGER-CORE` org is hidden from the public (its pages return 404 when signed out),
+  Actions never started there, and GitHub refused a repository transfer from it. Support has been contacted.
+- **Later:** Transfer the repo to the org once it is restored; GitHub keeps stars and redirects links.
+
 ## 2026-10-29 · Versioning and releases
 
 - **Decision:** SemVer driven by `npm version`; pushing a `vX.Y.Z` tag runs a workflow that builds installers

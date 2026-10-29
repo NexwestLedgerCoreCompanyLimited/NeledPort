@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/NEXWEST-LEDGER-CORE/NeledPort/blob/main/games/schema.json",
+  "$id": "https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/blob/main/games/schema.json",
   "title": "NeledPort game definition",
   "description": "One dedicated server that NeledPort can install and run. Data only: no scripts, no shell strings. All paths are relative to the server's install folder.",
   "type": "object",

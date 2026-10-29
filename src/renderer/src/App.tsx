@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { CatalogResult, GameDefinition } from '../../core/types'
 import { version } from '../../../package.json'
 
-const REPO_URL = 'https://github.com/NEXWEST-LEDGER-CORE/NeledPort'
+const REPO_URL = 'https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort'
 
 function Logo() {
   return (
