@@ -25,6 +25,19 @@ Only know the Linux or the Windows command line? Submit just that platform; some
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`, `ci:`).
 
+## Releasing (maintainers)
+
+Versions follow [Semantic Versioning](https://semver.org/); `0.x` releases are published as pre-releases.
+
+1. Move the `Unreleased` notes in [CHANGELOG.md](CHANGELOG.md) under the new version and commit.
+2. `npm version patch` (bug fixes), `npm version minor` (new features) or `npm version major`.
+   This bumps `package.json`, commits, and creates the tag `vX.Y.Z`.
+3. `git push --follow-tags`.
+
+The [Release workflow](.github/workflows/release.yml) then builds the Windows and Linux installers and
+publishes them as a GitHub Release with generated notes. It refuses to run if the tag and
+`package.json` version differ.
+
 ## Ground rules
 
 - Game definitions are **data only**. They never contain scripts or shell strings.

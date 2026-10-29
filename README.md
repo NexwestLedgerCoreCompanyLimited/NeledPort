@@ -6,6 +6,7 @@
 Install, run, watch, moderate and mod your server: no terminal required.
 
 [![CI](https://github.com/NEXWEST-LEDGER-CORE/NeledPort/actions/workflows/ci.yml/badge.svg)](https://github.com/NEXWEST-LEDGER-CORE/NeledPort/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/NEXWEST-LEDGER-CORE/NeledPort?include_prereleases&sort=semver)](https://github.com/NEXWEST-LEDGER-CORE/NeledPort/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/status-early%20development-orange)
 
@@ -32,6 +33,14 @@ NeledPort wraps all of that in a desktop app for Windows and Linux.
 - **Mods:** one-click server-side mod loaders (BepInEx, Oxide/Carbon, Metamod + CounterStrikeSharp) and Steam Workshop downloads.
 - **Automatic backups** before every update.
 - **English and Thai UI**, dark-first and keyboard-friendly.
+
+## Download
+
+Get the latest installer for Windows (`.exe`) or Linux (`.AppImage`, `.deb`) from
+[Releases](https://github.com/NEXWEST-LEDGER-CORE/NeledPort/releases). What changed in each version is in the
+[changelog](CHANGELOG.md).
+
+> Builds are not code-signed yet, so Windows SmartScreen may warn on first launch: choose **More info → Run anyway**.
 
 ## Supported games
 

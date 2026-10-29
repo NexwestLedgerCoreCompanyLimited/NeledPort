@@ -18,4 +18,9 @@ linux:
   target: [AppImage, deb]
   category: Game
   maintainer: NEXWEST-LEDGER-CORE <283197608+NexwestLedgerCoreCompanyLimited@users.noreply.github.com>
-publish: null
+artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+# Release files go to GitHub Releases; latest*.yml lets the app auto-update later (electron-updater).
+publish:
+  provider: github
+  owner: NEXWEST-LEDGER-CORE
+  repo: NeledPort

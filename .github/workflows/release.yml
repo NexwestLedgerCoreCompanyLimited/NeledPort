@@ -1,0 +1,59 @@
+name: Release
+
+# Push a tag like v0.2.0 (made by `npm version`) to build installers and publish a GitHub Release.
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Tag must match package.json version
+        shell: bash
+        run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+      - run: npm ci
+      - run: npm test
+      - run: npm run dist -- --publish never
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist-${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.blockmap
+            dist/latest*.yml
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # 0.x versions and tags like v1.2.0-beta.1 are early builds: mark them as pre-releases.
+          pre=""
+          if [[ "$GITHUB_REF_NAME" == v0.* || "$GITHUB_REF_NAME" == *-* ]]; then pre="--prerelease"; fi
+          gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" \
+            --title "NeledPort $GITHUB_REF_NAME" --generate-notes $pre

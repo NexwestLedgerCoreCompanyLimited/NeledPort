@@ -2,6 +2,15 @@
 
 Significant choices, why we made them, and what we turned down. Newest first.
 
+## 2026-10-29 · Versioning and releases
+
+- **Decision:** SemVer driven by `npm version`; pushing a `vX.Y.Z` tag runs a workflow that builds installers
+  and creates the GitHub Release. electron-builder's `publish: github` config writes `latest*.yml`, so the
+  in-app auto-updater (electron-updater, planned for M5) can read the same releases.
+- **Why:** One command to ship, and the tag/version check stops mismatched releases.
+- **Rejected:** electron-builder publishing directly from each OS job (two parallel jobs can race to create
+  the same release); release-please (more moving parts than a small project needs today).
+
 ## 2026-10-29 · M0 tooling: no ESLint or Playwright yet
 
 - **Decision:** CI runs typecheck, unit tests (which also validate `games/*.json`) and a production build.
