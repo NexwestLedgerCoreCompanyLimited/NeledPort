@@ -17,13 +17,19 @@ export function steamCmdExecutable(dir: string, platform: Platform): string {
   return join(dir, platform === 'windows' ? 'steamcmd.exe' : 'steamcmd.sh')
 }
 
-export function appUpdateArgs(o: { installDir: string; appId: number; validate: boolean }): string[] {
+/** Steam account names: letters, digits and underscores. Anything else could be read by SteamCMD as a command. */
+export const isSteamUser = (value: unknown): value is string => typeof value === 'string' && /^[A-Za-z0-9_]{3,64}$/.test(value)
+
+/** True when SteamCMD logged in with its saved session (it prints this only after a successful login). */
+export const parseSignedIn = (output: string): boolean => /Waiting for user info\.\.\.OK/.test(output)
+
+export function appUpdateArgs(o: { installDir: string; appId: number; validate: boolean; login?: string }): string[] {
   // force_install_dir must come before login or SteamCMD ignores it.
   return [
     '+force_install_dir',
     o.installDir,
     '+login',
-    'anonymous',
+    o.login ?? 'anonymous',
     '+app_update',
     String(o.appId),
     ...(o.validate ? ['validate'] : []),
@@ -38,7 +44,7 @@ export function parseSteamCmdLine(line: string): SteamCmdEvent | null {
   const progress = /Update state \(0x[0-9a-f]+\) [\w ]+, progress: (\d+(?:\.\d+)?)/i.exec(text)
   if (progress) return { kind: 'progress', percent: Number(progress[1]) }
   if (/^Success! App '\d+' fully installed/.test(text)) return { kind: 'success' }
-  if (/^ERROR!/.test(text)) return { kind: 'error', message: text }
+  if (/^ERROR!/.test(text) || /^Logging in user .*FAILED/.test(text)) return { kind: 'error', message: text }
   return null
 }
 
@@ -74,6 +80,8 @@ export function runSteamCmd(
       if (event?.kind === 'error') error = event.message
     })
     const child = spawn(exe, args, { cwd: dirname(exe), windowsHide: true })
+    // No one can type here: a login prompt (expired Steam session) must fail, not wait forever.
+    child.stdin.end()
     child.stdout.on('data', reader.push)
     child.stderr.on('data', reader.push)
     child.on('error', (e) => resolve({ ok: false, error: e.message }))
@@ -85,15 +93,17 @@ export function runSteamCmd(
   })
 }
 
-/** Runs SteamCMD and returns everything it printed (for app_info_print). */
-export function captureSteamCmd(exe: string, args: string[]): Promise<string> {
+/** Runs SteamCMD and returns everything it printed (app_info_print, login checks). Gives up after `timeoutMs`. */
+export function captureSteamCmd(exe: string, args: string[], timeoutMs = 120_000): Promise<string> {
   return new Promise((resolve, reject) => {
     let out = ''
     const child = spawn(exe, args, { cwd: dirname(exe), windowsHide: true })
+    child.stdin.end()
+    const timer = setTimeout(() => child.kill(), timeoutMs)
     child.stdout.on('data', (d) => (out += d))
     child.stderr.on('data', (d) => (out += d))
-    child.on('error', reject)
-    child.on('close', () => resolve(stripAnsi(out)))
+    child.on('error', (e) => (clearTimeout(timer), reject(e)))
+    child.on('close', () => (clearTimeout(timer), resolve(stripAnsi(out))))
   })
 }
 

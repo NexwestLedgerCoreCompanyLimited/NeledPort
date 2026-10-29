@@ -5,6 +5,8 @@ import { join } from 'node:path'
 import { loadCatalog } from '../core/catalog'
 import { isLanguage, pickLanguage, translate, type MessageKey } from '../core/i18n'
 import { ServerManager } from '../core/manager'
+import { isSteamUser } from '../core/steamcmd'
+import { openSteamLogin } from './steamLogin'
 import { installUpdate, startUpdates, updateState } from './updater'
 import type { AppInfo, CreateServerInput, Platform, PlayerInfo, ServerAction } from '../core/types'
 
@@ -93,6 +95,15 @@ function registerIpc(): void {
     if (isLanguage(lang)) language = lang
   })
   ipcMain.handle('app:updateState', updateState)
+  ipcMain.handle('steam:account', () => manager.steamAccount())
+  ipcMain.handle('steam:signIn', async (_event, user: unknown) => {
+    if (!canHostServers) throw new Error('Game servers run on Windows and Linux only')
+    if (!isSteamUser(user)) throw new Error('Invalid Steam account name')
+    manager.setSteamAccount(user)
+    openSteamLogin(await manager.steamCmd(), user)
+  })
+  ipcMain.handle('steam:signOut', () => manager.setSteamAccount(null))
+  ipcMain.handle('steam:check', () => (canHostServers ? manager.steamSignedIn() : false))
   ipcMain.handle('app:installUpdate', async () => {
     if (updateState().status !== 'ready') return
     quitting = true

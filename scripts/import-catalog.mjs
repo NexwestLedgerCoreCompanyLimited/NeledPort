@@ -188,7 +188,7 @@ function writeGamesDoc(gamesDir, searchable) {
     .sort((a, b) => Number(b.tier === 'full') - Number(a.tier === 'full') || a.name.localeCompare(b.name))
   const rows = defs.map((d) => {
     const os = ['windows', 'linux'].filter((p) => d.platforms[p]).map((p) => p[0].toUpperCase() + p.slice(1)).join(', ')
-    const notes = [!d.anonymous && 'needs Steam sign-in (coming soon)', d.players && 'player list', d.bans && 'bans', d.control?.type === 'webrcon' || d.control?.type === 'rcon' || d.control?.type === 'rest' ? 'console' : null]
+    const notes = [!d.anonymous && 'needs a Steam account that owns it', d.players && 'player list', d.bans && 'bans', d.control?.type === 'webrcon' || d.control?.type === 'rcon' || d.control?.type === 'rest' ? 'console' : null]
       .filter(Boolean)
       .join(', ')
     return `| ${d.name} | ${d.tier} | ${d.serverAppId} | ${os || '—'} | ${notes} |`

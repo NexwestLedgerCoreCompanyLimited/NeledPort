@@ -74,4 +74,19 @@ describe.skipIf(!enabled)('Valheim on Linux, end to end', () => {
     await manager.uninstallLoader(id, 'bepinex')
     expect(existsSync(join(installDir, 'BepInEx', 'core', 'BepInEx.Preloader.dll'))).toBe(false)
   })
+
+  it('reports an account that never signed in as signed out, without hanging on the password prompt', { timeout: 5 * 60_000 }, async () => {
+    const root = mkdtempSync(join(tmpdir(), 'neledport-e2e-'))
+    const manager = new ServerManager({
+      dataDir: join(root, 'data'),
+      serversDir: join(root, 'servers'),
+      platform: 'linux',
+      games: () => [],
+      secrets: { encrypt: (s) => s, decrypt: (s) => s }
+    })
+    manager.setSteamAccount('neledport_e2e_nobody')
+    const started = Date.now()
+    expect(await manager.steamSignedIn()).toBe(false)
+    console.log(`login check answered in ${Math.round((Date.now() - started) / 1000)} s`)
+  })
 })

@@ -57,6 +57,7 @@ With the `.deb`, install the new `.deb` from Releases.
 | Counter-Strike 2 | basic | install, run, RCON console, players, kick, Workshop maps |
 | SCUM | basic | install, run, players (Windows only) |
 | ARK, Team Fortress 2, Satisfactory, Conan Exiles, Squad and 70+ more | basic | install, run, console ([full list](docs/GAMES.md)) |
+| ARMA 3, DayZ and 6 more that need a Steam account | basic | sign in once in SteamCMD's own window; NeledPort never sees your password |
 | **Any Steam App ID** | custom | search 380+ more servers by name, install, pick the program once, share it |
 
 Every game is a single JSON file in [`games/`](games). Missing yours? Install it with **Any Steam App ID**, press

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import type { AppInfo, GameDefinition, ServerView } from '../../../core/types'
 import { useT } from '../i18n'
 import { cleanError } from '../status'
+import { SteamAccount } from './SteamAccount'
 
 interface Props {
   game: GameDefinition
@@ -24,6 +25,8 @@ export function AddServerDialog({ game, info, onClose, onCreated }: Props) {
   const [installDir, setInstallDir] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [steamUser, setSteamUser] = useState<string | null>(null)
+  const needsAccount = !game.anonymous && !!info?.canHostServers
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -110,6 +113,8 @@ export function AddServerDialog({ game, info, onClose, onCreated }: Props) {
           />
         </label>
 
+        {needsAccount && <SteamAccount game={game.name} onAccount={setSteamUser} />}
+
         {error && (
           <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
             {error}
@@ -120,7 +125,7 @@ export function AddServerDialog({ game, info, onClose, onCreated }: Props) {
           <button type="button" onClick={onClose} className="min-h-11 rounded-[10px] border border-white/10 px-5 text-sm text-slate-200 hover:bg-ink-800">
             {t('common.cancel')}
           </button>
-          <button type="submit" disabled={busy} className="min-h-11 rounded-[10px] bg-accent px-6 text-sm font-semibold text-ink-950 hover:bg-cyan-300 disabled:opacity-60">
+          <button type="submit" disabled={busy || (needsAccount && !steamUser)} className="min-h-11 rounded-[10px] bg-accent px-6 text-sm font-semibold text-ink-950 hover:bg-cyan-300 disabled:opacity-60">
             {info?.canHostServers ? t('add.createInstall') : t('add.create')}
           </button>
         </div>

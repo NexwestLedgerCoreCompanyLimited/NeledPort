@@ -2,6 +2,17 @@
 
 Significant choices, why we made them, and what we turned down. Newest first.
 
+## 2026-10-30 · Steam sign-in in SteamCMD's own window
+
+- **Decision:** for the few servers that need an account, NeledPort stores only the account name and opens SteamCMD
+  (`+login <name>`) in a terminal window, where the user types the password and Steam Guard code. SteamCMD keeps the
+  session; installs then run `+login <name>`. "Check" runs a login with no input and reads "Waiting for user info...OK".
+  SteamCMD always runs with its input closed, so an expired session fails the install instead of hanging it.
+- **Why:** NeledPort never sees or stores the password, and SteamCMD handles every Steam Guard variant itself.
+- **Rejected:** an embedded terminal as the design first said (needs node-pty, a native module rebuilt for every Electron
+  version); a password field that feeds SteamCMD (NeledPort would hold the password and parse prompts that differ
+  between Windows and Linux).
+
 ## 2026-10-30 · App updates with electron-updater, pre-releases while on 0.x
 
 - **Decision:** electron-updater downloads new GitHub Releases in the background on Windows (NSIS) and AppImage, then

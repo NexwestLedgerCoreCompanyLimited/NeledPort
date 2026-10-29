@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { appUpdateArgs, parseSteamCmdLine, runSteamCmd, steamCmdDownload, steamCmdExecutable } from './steamcmd'
+import { appUpdateArgs, captureSteamCmd, isSteamUser, parseSignedIn, parseSteamCmdLine, runSteamCmd, steamCmdDownload, steamCmdExecutable } from './steamcmd'
 
 describe('steamCmdDownload', () => {
   it('uses the official Valve archives', () => {
@@ -28,6 +28,35 @@ describe('appUpdateArgs', () => {
     const args = appUpdateArgs({ installDir: '/srv/pal', appId: 2394010, validate: true })
     expect(args.slice(-3)).toEqual(['2394010', 'validate', '+quit'])
   })
+
+  it('logs in with the Steam account when the game needs one', () => {
+    const args = appUpdateArgs({ installDir: '/srv/arma', appId: 233780, validate: false, login: 'gamer_1' })
+    expect(args).toEqual(['+force_install_dir', '/srv/arma', '+login', 'gamer_1', '+app_update', '233780', '+quit'])
+  })
+})
+
+describe('isSteamUser', () => {
+  it('accepts Steam account names', () => {
+    expect(isSteamUser('gamer_1')).toBe(true)
+    expect(isSteamUser('ABC')).toBe(true)
+  })
+
+  it('rejects anything SteamCMD could read as a command or an extra argument', () => {
+    for (const bad of ['', 'ab', '+quit', 'a b', 'a;b', '../x', 'x'.repeat(65), 7, null]) expect(isSteamUser(bad), String(bad)).toBe(false)
+  })
+})
+
+describe('parseSignedIn', () => {
+  it('is true once SteamCMD gets past the login to the user info', () => {
+    const out = "Logging in user 'gamer_1' [U:1:123] to Steam Public...OK\nWaiting for client config...OK\nWaiting for user info...OK\n"
+    expect(parseSignedIn(out)).toBe(true)
+  })
+
+  it('is false when the login failed or SteamCMD wants a password', () => {
+    expect(parseSignedIn("Logging in user 'gamer_1' to Steam Public...FAILED (Invalid Password)")).toBe(false)
+    expect(parseSignedIn("Logging in user 'gamer_1' to Steam Public...\npassword: ")).toBe(false)
+    expect(parseSignedIn('')).toBe(false)
+  })
 })
 
 describe('runSteamCmd', () => {
@@ -48,6 +77,11 @@ describe('runSteamCmd', () => {
     })
   })
 
+  it('never waits for typed input, so an expired Steam login cannot hang an install', async () => {
+    const [exe, args] = fake(`process.stdin.on('end', () => { console.log('ERROR! no input'); process.exit(5) }).resume()`)
+    expect(await runSteamCmd(exe, [...args], () => {})).toEqual({ ok: false, error: 'ERROR! no input' })
+  }, 10_000)
+
   it('fails when SteamCMD exits without a success line', async () => {
     const [exe, args] = fake('process.exit(0)')
     const result = await runSteamCmd(exe, [...args], () => {})
@@ -57,6 +91,11 @@ describe('runSteamCmd', () => {
 })
 
 describe('parseSteamCmdLine', () => {
+  it('reports a failed Steam login as an error', () => {
+    const line = "Logging in user 'gamer_1' to Steam Public...FAILED (Invalid Password)"
+    expect(parseSteamCmdLine(line)).toEqual({ kind: 'error', message: line })
+  })
+
   it('reads download progress', () => {
     expect(parseSteamCmdLine(' Update state (0x61) downloading, progress: 63.92 (2147483648 / 3359666176)')).toEqual({
       kind: 'progress',
@@ -88,4 +127,20 @@ describe('parseSteamCmdLine', () => {
     expect(parseSteamCmdLine('Loading Steam API...OK')).toBeNull()
     expect(parseSteamCmdLine('')).toBeNull()
   })
+})
+
+describe('captureSteamCmd', () => {
+  const fake = (script: string) => [process.execPath, ['-e', script]] as const
+
+  it('returns what SteamCMD printed, with no input to wait for', async () => {
+    const [exe, args] = fake(`process.stdin.on('end', () => console.log('no input')).resume()`)
+    expect(await captureSteamCmd(exe, [...args])).toContain('no input')
+  }, 10_000)
+
+  it('stops a SteamCMD that keeps waiting', async () => {
+    const [exe, args] = fake(`console.log('waiting'); setInterval(() => {}, 1000)`)
+    const started = Date.now()
+    expect(await captureSteamCmd(exe, [...args], 500)).toContain('waiting')
+    expect(Date.now() - started).toBeLessThan(5000)
+  }, 10_000)
 })

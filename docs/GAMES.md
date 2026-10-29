@@ -14,13 +14,13 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | Rust | full | 258550 | Windows, Linux | player list, bans, console |
 | Valheim | full | 896660 | Windows, Linux | player list, bans |
 | Action Half-Life | basic | 90 | Linux | player list |
-| Action: Source | basic | 985050 | Linux | needs Steam sign-in (coming soon), player list |
+| Action: Source | basic | 985050 | Linux | needs a Steam account that owns it, player list |
 | ARK: Survival Evolved | basic | 376030 | Linux | player list |
-| ARMA 3 | basic | 233780 | Linux | needs Steam sign-in (coming soon) |
+| ARMA 3 | basic | 233780 | Linux | needs a Steam account that owns it |
 | Base Defense | basic | 817300 | Linux | player list |
 | BATTALION: Legacy | basic | 805140 | Linux | player list |
 | Black Mesa: Deathmatch | basic | 346680 | Linux | player list |
-| Blade Symphony | basic | 228780 | Linux | needs Steam sign-in (coming soon), player list |
+| Blade Symphony | basic | 228780 | Linux | needs a Steam account that owns it, player list |
 | BrainBread | basic | 90 | Linux | player list |
 | BrainBread 2 | basic | 475370 | Linux | player list |
 | Chivalry: Medieval Warfare | basic | 220070 | Linux | player list |
@@ -36,7 +36,7 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | Day of Defeat: Source | basic | 232290 | Linux | player list |
 | Day of Dragons | basic | 1088320 | Linux | player list |
 | Day of Infamy | basic | 462310 | Linux | player list |
-| DayZ | basic | 223350 | Linux | needs Steam sign-in (coming soon) |
+| DayZ | basic | 223350 | Linux | needs a Steam account that owns it |
 | Deathmatch Classic | basic | 90 | Linux | player list |
 | Double Action: Boogaloo | basic | 317800 | Linux |  |
 | Dystopia | basic | 17585 | Linux | player list |
@@ -53,8 +53,8 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | Insurgency: Sandstorm | basic | 581330 | Linux | player list |
 | IOSoccer | basic | 673990 | Linux | player list |
 | Jabroni Brawl: Episode 3 | basic | 869800 | Linux | player list |
-| Jedi Knight II: Jedi Outcast | basic | 6030 | Linux | needs Steam sign-in (coming soon) |
-| Jedi Knight: Jedi Academy | basic | 6020 | Linux | needs Steam sign-in (coming soon) |
+| Jedi Knight II: Jedi Outcast | basic | 6030 | Linux | needs a Steam account that owns it |
+| Jedi Knight: Jedi Academy | basic | 6020 | Linux | needs a Steam account that owns it |
 | Killing Floor 2 | basic | 232130 | Linux | player list |
 | Left 4 Dead | basic | 222840 | Linux | player list |
 | Left 4 Dead 2 | basic | 222860 | Linux | player list |
@@ -64,12 +64,12 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | Natural Selection 2 | basic | 4940 | Linux |  |
 | No More Room in Hell | basic | 317670 | Linux | player list |
 | NS2: Combat | basic | 313900 | Linux |  |
-| Nuclear Dawn | basic | 111710 | Linux | needs Steam sign-in (coming soon), player list |
+| Nuclear Dawn | basic | 111710 | Linux | needs a Steam account that owns it, player list |
 | Operation: Harsh Doorstop | basic | 950900 | Linux | player list |
 | Opposing Force | basic | 90 | Linux | player list |
 | Pavlov VR | basic | 622970 | Linux |  |
 | Pirates Vikings & Knights II | basic | 17575 | Linux | player list |
-| Quake 4 | basic | 2210 | Linux | needs Steam sign-in (coming soon) |
+| Quake 4 | basic | 2210 | Linux | needs a Steam account that owns it |
 | Ricochet | basic | 90 | Linux | player list |
 | RuneScape: Dragonwilds | basic | 4019830 | Linux |  |
 | Satisfactory | basic | 1690800 | Linux |  |

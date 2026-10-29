@@ -15,8 +15,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **Automatic updates** on Windows and with the AppImage: new versions download in the background, then
   **Restart to update** saves and stops your servers first. The `.deb` still updates by installing the new package.
 
+- **Steam sign-in** for the 8 servers that need an account that owns the game (ARMA 3, DayZ and others). You sign in
+  once in SteamCMD's own window; NeledPort stores only the account name, never the password.
+
 ### Fixed
 
+- An install whose Steam login had expired could wait forever for a password; it now fails with SteamCMD's message.
 - A server that is installing but has not reported progress yet no longer says "Stopped".
 
 ## [0.5.0] - 2026-10-30

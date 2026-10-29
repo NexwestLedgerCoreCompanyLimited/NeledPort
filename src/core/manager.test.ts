@@ -55,6 +55,7 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
   const log: string[] = []
   const processes: FakeProcess[] = []
   const restCalls: string[] = []
+  const steamArgs: string[][] = []
   const deps: ManagerDeps = {
     dataDir,
     serversDir: join(dataDir, 'servers'),
@@ -65,6 +66,7 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
       ensure: async () => 'steamcmd',
       capture: async () => opts.appInfo ?? '',
       run: async (_exe, args, onLine) => {
+        steamArgs.push(args)
         log.push(`steamcmd ${args.includes('validate') ? 'validate' : 'install'}`)
         onLine(' Update state (0x61) downloading, progress: 42.00 (1 / 2)')
         if (opts.installFails) return { ok: false, error: 'ERROR! Failed to install app (Disk write failure)' }
@@ -100,7 +102,7 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
       shutdown: async () => void restCalls.push('shutdown')
     })
   }
-  return { manager: new ServerManager(deps), dataDir, log, processes, restCalls }
+  return { manager: new ServerManager(deps), deps, dataDir, log, processes, restCalls, steamArgs }
 }
 
 const valheim = { gameId: 'valheim', name: 'Viking Night', settings: { serverName: 'Viking Night', world: 'Midgard', password: 'secret1' } }
@@ -408,5 +410,53 @@ describe('ServerManager', () => {
     await manager.workshop(id, '3070284539')
     expect(restCalls).toEqual(['rcon:host_workshop_map 3070284539'])
     await expect(manager.workshop(id, '1; quit')).rejects.toThrow(/Workshop item id/)
+  })
+})
+
+describe('Steam account', () => {
+  const arma = { gameId: 'arma-3', name: 'Ops', settings: {} }
+
+  it('refuses to install a game that needs an account before sign-in', async () => {
+    const { manager } = setup()
+    const { id } = manager.create(arma)
+    await expect(manager.install(id)).rejects.toThrow(/Sign in to Steam/)
+  })
+
+  it('installs it with the signed-in account', async () => {
+    const { manager, steamArgs } = setup()
+    manager.setSteamAccount('gamer_1')
+    const { id } = manager.create(arma)
+    await manager.install(id)
+    expect(steamArgs[0]).toContain('gamer_1')
+    expect(steamArgs[0]).not.toContain('anonymous')
+  })
+
+  it('keeps anonymous login for games that do not need an account', async () => {
+    const { manager, steamArgs } = setup()
+    manager.setSteamAccount('gamer_1')
+    const { id } = manager.create(valheim)
+    await manager.install(id)
+    expect(steamArgs[0]).toContain('anonymous')
+  })
+
+  it('remembers only the account name, across restarts', () => {
+    const { manager, deps, dataDir } = setup()
+    manager.setSteamAccount('gamer_1')
+    expect(new ServerManager(deps).steamAccount()).toBe('gamer_1')
+    expect(JSON.parse(readFileSync(join(dataDir, 'steam.json'), 'utf8'))).toEqual({ user: 'gamer_1' })
+    manager.setSteamAccount(null)
+    expect(new ServerManager(deps).steamAccount()).toBeNull()
+  })
+
+  it('rejects names SteamCMD could misread', () => {
+    const { manager } = setup()
+    expect(() => manager.setSteamAccount('+quit')).toThrow(/Steam account name/)
+  })
+
+  it('asks SteamCMD whether the saved login still works', async () => {
+    const { manager } = setup('linux', { appInfo: "Logging in user 'gamer_1' to Steam Public...OK\nWaiting for user info...OK" })
+    expect(await manager.steamSignedIn()).toBe(false)
+    manager.setSteamAccount('gamer_1')
+    expect(await manager.steamSignedIn()).toBe(true)
   })
 })

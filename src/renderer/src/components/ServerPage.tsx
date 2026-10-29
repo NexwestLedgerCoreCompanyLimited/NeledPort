@@ -4,6 +4,7 @@ import { useLanguage, useT } from '../i18n'
 import { cleanError, coverUrl, statusDot } from '../status'
 import { Mods } from './Mods'
 import { Players } from './Players'
+import { SteamAccount } from './SteamAccount'
 
 const MAX_LINES = 2000
 
@@ -156,6 +157,7 @@ function Overview({ server, game }: { server: ServerView; game?: GameDefinition 
             {t('overview.noGracefulStop', { game: server.gameName })}
           </p>
         )}
+        {game && !game.anonymous && <SteamAccount game={game.name} />}
         <LaunchSetup server={server} />
         <BuildLine server={server} />
         <div>

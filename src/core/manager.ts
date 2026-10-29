@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 import { EventEmitter } from 'node:events'
-import { copyFileSync, existsSync, mkdirSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { splitArgs } from './args'
 import { adminFor, capabilities, LogPlayerTracker, type Admin, type AdminNet } from './admin'
@@ -10,7 +10,7 @@ import { appInfoArgs, installedBuild, parseLatestBuild } from './build'
 import { palworldRest, prepareConfig } from './palworld'
 import { isPortFree } from './ports'
 import { ServerProcess, type LaunchSpec } from './process'
-import { appUpdateArgs, captureSteamCmd, ensureSteamCmd, parseSteamCmdLine, runSteamCmd } from './steamcmd'
+import { appUpdateArgs, captureSteamCmd, ensureSteamCmd, isSteamUser, parseSignedIn, parseSteamCmdLine, runSteamCmd } from './steamcmd'
 import { loadServers, saveServers, type ServerConfig } from './store'
 import { expand } from './template'
 import type {
@@ -48,7 +48,7 @@ export interface ManagerDeps {
   steamcmd?: {
     ensure(dir: string, platform: Platform): Promise<string>
     run(exe: string, args: string[], onLine: (line: string) => void): Promise<{ ok: boolean; error?: string }>
-    capture?(exe: string, args: string[]): Promise<string>
+    capture?(exe: string, args: string[], timeoutMs?: number): Promise<string>
   }
   createProcess?: (o: { logFile: string; readyPattern?: RegExp }) => ProcessLike
   portFree?: (port: number, protocol: 'udp' | 'tcp') => Promise<boolean>
@@ -96,6 +96,40 @@ export class ServerManager extends EventEmitter {
 
   private get storeFile(): string {
     return join(this.deps.dataDir, 'servers.json')
+  }
+
+  private get steamFile(): string {
+    return join(this.deps.dataDir, 'steam.json')
+  }
+
+  /** The Steam account for games that need one. Only the name: SteamCMD keeps its own login session. */
+  steamAccount(): string | null {
+    try {
+      const { user } = JSON.parse(readFileSync(this.steamFile, 'utf8'))
+      return isSteamUser(user) ? user : null
+    } catch {
+      return null
+    }
+  }
+
+  setSteamAccount(user: string | null): void {
+    if (user === null) return void rmSync(this.steamFile, { force: true })
+    if (!isSteamUser(user)) throw new Error('Invalid Steam account name')
+    mkdirSync(this.deps.dataDir, { recursive: true })
+    writeFileSync(this.steamFile, JSON.stringify({ user }))
+  }
+
+  /** Path to SteamCMD, downloading it first if needed (the sign-in window runs it directly). */
+  steamCmd(): Promise<string> {
+    return (this.deps.steamcmd?.ensure ?? ensureSteamCmd)(join(this.deps.dataDir, 'steamcmd'), this.deps.platform)
+  }
+
+  /** Whether SteamCMD's saved login for the account still works; Steam expires it after a while. */
+  async steamSignedIn(): Promise<boolean> {
+    const user = this.steamAccount()
+    if (!user) return false
+    const capture = this.deps.steamcmd?.capture ?? captureSteamCmd
+    return parseSignedIn(await capture(await this.steamCmd(), ['+login', user, '+quit'], 90_000))
   }
 
   list(): ServerView[] {
@@ -187,10 +221,13 @@ export class ServerManager extends EventEmitter {
     rt.message = undefined
     this.changed(id)
     try {
+      const login = game.anonymous ? undefined : this.steamAccount()
+      if (login === null) throw new Error(`Sign in to Steam first: ${game.name} needs an account that owns it`)
       const steam = this.deps.steamcmd ?? { ensure: ensureSteamCmd, run: runSteamCmd }
       this.addLine(id, '[NeledPort] Preparing SteamCMD…')
       const exe = await steam.ensure(join(this.deps.dataDir, 'steamcmd'), this.deps.platform)
-      const result = await steam.run(exe, appUpdateArgs({ installDir: server.installDir, appId: game.serverAppId, validate }), (line) => {
+      const args = appUpdateArgs({ installDir: server.installDir, appId: game.serverAppId, validate, login })
+      const result = await steam.run(exe, args, (line) => {
         this.addLine(id, line)
         const event = parseSteamCmdLine(line)
         if (event?.kind === 'progress') {

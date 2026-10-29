@@ -171,6 +171,13 @@ export interface NeledPortApi {
   /** Stops running servers (they save first), then restarts NeledPort into the downloaded update. */
   installUpdate(): Promise<void>
   onUpdateChanged(cb: (state: UpdateState) => void): () => void
+  /** The Steam account name used for servers that need one (never a password). */
+  steamAccount(): Promise<string | null>
+  /** Saves the name and opens SteamCMD's own login window, where the user types password and Steam Guard code. */
+  steamSignIn(user: string): Promise<void>
+  steamSignOut(): Promise<void>
+  /** Whether SteamCMD's saved login still works. Takes a few seconds. */
+  steamCheck(): Promise<boolean>
   listGames(): Promise<CatalogResult>
   listServers(): Promise<ServerView[]>
   createServer(input: CreateServerInput): Promise<ServerView>

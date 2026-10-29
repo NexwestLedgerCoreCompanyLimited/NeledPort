@@ -21,7 +21,6 @@ function GameCard({ game, info, installed, onPick }: { game: GameDefinition; inf
     <button
       type="button"
       onClick={onPick}
-      disabled={needsLogin}
       title={needsLogin ? t('catalog.needsLoginTitle') : t('catalog.create', { game: game.name })}
       className="group flex flex-col overflow-hidden rounded-[14px] border border-white/5 bg-ink-900 text-left transition hover:-translate-y-0.5 hover:border-accent/40 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
     >
