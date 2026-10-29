@@ -7,6 +7,8 @@
 
 [English](README.md) · ภาษาไทย
 
+<img src="docs/images/screenshot.png" alt="หน้ารายการเกมของ NeledPort" width="800" />
+
 </div>
 
 > NeledPort อยู่ระหว่างพัฒนาช่วงแรก กด ⭐ เพื่อติดตามความคืบหน้า หรือ[เพิ่มเกมที่คุณชอบ](CONTRIBUTING.md#add-a-game) เข้ามาในรายการได้เลย

@@ -11,6 +11,8 @@ Install, run, watch, moderate and mod your server: no terminal required.
 
 English · [ภาษาไทย](README.th.md)
 
+<img src="docs/images/screenshot.png" alt="NeledPort game catalog" width="800" />
+
 </div>
 
 > NeledPort is in early development. Star the repo to follow along, or [add your favourite game](CONTRIBUTING.md#add-a-game) to the catalog.

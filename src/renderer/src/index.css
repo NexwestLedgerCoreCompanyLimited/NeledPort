@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ink-950: #07090f;
+  --color-ink-900: #0b0f18;
+  --color-ink-800: #121828;
+  --color-ink-700: #1b2336;
+  --color-accent: #22d3ee;
+  --color-accent-2: #a78bfa;
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-ink-950 font-sans text-slate-200 antialiased select-none;
+}
+
+/* Faint blueprint grid behind the main area for the "control room" look. */
+.grid-bg {
+  background-image:
+    radial-gradient(ellipse at top, rgb(34 211 238 / 0.08), transparent 60%),
+    linear-gradient(rgb(148 163 184 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 0.05) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    32px 32px,
+    32px 32px;
+}

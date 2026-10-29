@@ -1,0 +1,21 @@
+appId: com.nexwest.neledport
+productName: NeledPort
+directories:
+  output: dist
+files:
+  - out/**
+  - package.json
+extraResources:
+  - from: games
+    to: games
+    filter: ['**/*.json']
+win:
+  target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+linux:
+  target: [AppImage, deb]
+  category: Game
+  maintainer: NEXWEST-LEDGER-CORE <283197608+NexwestLedgerCoreCompanyLimited@users.noreply.github.com>
+publish: null
