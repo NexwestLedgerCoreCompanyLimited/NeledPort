@@ -6,15 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-30
+
 ### Added
 
 - **Languages:** the whole app, including the quit prompt and file pickers, now speaks English and Thai. It follows your
   system language and can be switched in the sidebar. English stays the main language: anything not yet translated shows
   in English. Adding a language is one JSON file (see CONTRIBUTING).
-
 - **Automatic updates** on Windows and with the AppImage: new versions download in the background, then
   **Restart to update** saves and stops your servers first. The `.deb` still updates by installing the new package.
-
 - **Steam sign-in** for the 8 servers that need an account that owns the game (ARMA 3, DayZ and others). You sign in
   once in SteamCMD's own window; NeledPort stores only the account name, never the password.
 
@@ -22,6 +22,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - An install whose Steam login had expired could wait forever for a password; it now fails with SteamCMD's message.
 - A server that is installing but has not reported progress yet no longer says "Stopped".
+- A fresh SteamCMD that fails its first install with "Missing configuration" is now retried once.
+
+### Notes
+
+- Updating from 0.5.0 or older: download 0.6.0 from Releases once. From then on NeledPort updates itself.
+- Messages that come from SteamCMD and the game servers stay in English.
 
 ## [0.5.0] - 2026-10-30
 
@@ -104,7 +110,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - CI on Linux and Windows (typecheck, tests, build) and a tag-driven release workflow.
 - Community files: MIT license, contributing guide, code of conduct, security policy.
 
-[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.2.0...v0.3.0
