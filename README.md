@@ -48,10 +48,11 @@ Get the latest installer for Windows (`.exe`) or Linux (`.AppImage`, `.deb`) fro
 
 | Game | Support | Status |
 |---|---|---|
-| Palworld | full | install, run, stop, update (players and bans next) |
-| Valheim | full | install, run, stop, update; tested on real Linux servers weekly |
-| Rust | full | planned |
-| Counter-Strike 2 | full | planned |
+| Palworld | full | install, run, update, players, kick/ban, console |
+| Valheim | full | install, run, update, players, bans; tested on real Linux servers weekly |
+| Rust | full | install, run, update, players, kick/ban, WebRCON console |
+| Counter-Strike 2 | basic | install, run, RCON console, players, kick |
+| SCUM | basic | install, run, players (Windows only) |
 | 100+ more Steam dedicated servers | basic | planned |
 | Any SteamCMD App ID | custom | planned |
 

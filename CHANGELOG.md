@@ -6,7 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-10-30
+## [0.3.0] - 2026-10-30
+
+### Added
+
+- **Players tab**: who is online, kick, ban and unban, plus ban by Steam ID. Bans always go through the
+  game's own ban system (REST, RCON or ban file), so they hold when NeledPort is closed.
+- **Console commands**: type commands into the console (WebRCON for Rust, RCON for Counter-Strike 2,
+  `say`/`save` for Palworld).
+- **Update check**: shows the installed build and whether Steam has a newer one.
+- **Rust** (full support: WebRCON, players, bans, graceful save and quit), **Counter-Strike 2** (basic),
+  **SCUM** (basic, Windows only).
+- One generated admin password per server for RCON/WebRCON/REST, always bound to this computer.
+
+### Security
+
+- Ban-list paths in game definitions are checked like every other path, so a definition cannot point
+  NeledPort at files outside the server folder.
 
 ### Added
 
@@ -37,6 +53,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - CI on Linux and Windows (typecheck, tests, build) and a tag-driven release workflow.
 - Community files: MIT license, contributing guide, code of conduct, security policy.
 
-[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/tag/v0.1.0
