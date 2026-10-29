@@ -26,6 +26,13 @@ const api: NeledPortApi = {
   pickProgram: (id) => ipcRenderer.invoke('servers:pickProgram', id),
   setLaunch: (id, program, args) => ipcRenderer.invoke('servers:setLaunch', id, program, args),
   shareDefinition: (id) => ipcRenderer.invoke('servers:share', id),
+  installLoader: (id, loaderId) => ipcRenderer.invoke('servers:loader', id, loaderId, 'install'),
+  uninstallLoader: (id, loaderId) => ipcRenderer.invoke('servers:loader', id, loaderId, 'uninstall'),
+  plugins: (id, loaderId) => ipcRenderer.invoke('servers:plugins', id, loaderId),
+  setPluginEnabled: (id, loaderId, name, enabled) => ipcRenderer.invoke('servers:plugin', id, loaderId, name, enabled ? 'enable' : 'disable'),
+  removePlugin: (id, loaderId, name) => ipcRenderer.invoke('servers:plugin', id, loaderId, name, 'remove'),
+  addPlugin: (id, loaderId) => ipcRenderer.invoke('servers:addPlugin', id, loaderId),
+  workshop: (id, itemId) => ipcRenderer.invoke('servers:workshop', id, itemId),
   onServerChanged: (cb) => subscribe<[ServerView]>('servers:changed', cb),
   onServerLine: (cb) => subscribe<[string, string]>('servers:line', cb)
 }

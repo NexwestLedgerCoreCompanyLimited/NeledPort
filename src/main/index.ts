@@ -125,6 +125,49 @@ function registerIpc(): void {
   )
   ipcMain.handle('servers:checkBuild', withId((id) => manager.checkBuild(id)))
   ipcMain.handle('catalog:steamServers', () => steamServers())
+  const isLoaderId = (v: unknown): v is string => typeof v === 'string' && /^[a-z][a-z0-9-]*$/.test(v)
+  ipcMain.handle(
+    'servers:loader',
+    withId((id, loaderId: unknown, action: unknown) => {
+      if (!isLoaderId(loaderId)) throw new Error('Invalid mod loader')
+      if (action === 'install') return manager.installLoader(id, loaderId)
+      if (action === 'uninstall') return manager.uninstallLoader(id, loaderId)
+      throw new Error('Invalid request')
+    })
+  )
+  ipcMain.handle(
+    'servers:plugins',
+    withId((id, loaderId: unknown) => {
+      if (!isLoaderId(loaderId)) throw new Error('Invalid mod loader')
+      return manager.plugins(id, loaderId)
+    })
+  )
+  ipcMain.handle(
+    'servers:plugin',
+    withId((id, loaderId: unknown, name: unknown, action: unknown) => {
+      if (!isLoaderId(loaderId) || !isText(name, 200)) throw new Error('Invalid plugin')
+      if (action === 'remove') return manager.removePlugin(id, loaderId, name)
+      if (action === 'enable' || action === 'disable') return manager.setPluginEnabled(id, loaderId, name, action === 'enable')
+      throw new Error('Invalid request')
+    })
+  )
+  ipcMain.handle(
+    'servers:addPlugin',
+    withId(async (id, loaderId: unknown) => {
+      if (!isLoaderId(loaderId)) throw new Error('Invalid mod loader')
+      const result = await dialog.showOpenDialog(win!, { title: 'Add plugin', properties: ['openFile'] })
+      if (result.canceled || !result.filePaths[0]) return false
+      manager.addPlugin(id, loaderId, result.filePaths[0])
+      return true
+    })
+  )
+  ipcMain.handle(
+    'servers:workshop',
+    withId((id, itemId: unknown) => {
+      if (!isText(itemId, 30)) throw new Error('Invalid Workshop item')
+      return manager.workshop(id, itemId)
+    })
+  )
   ipcMain.handle(
     'servers:pickProgram',
     withId(async (id) => {

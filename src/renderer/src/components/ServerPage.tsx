@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import type { AppInfo, BackupInfo, GameDefinition, ServerAction, ServerView } from '../../../core/types'
 import { cleanError, coverUrl, statusDot, statusLabel } from '../status'
+import { Mods } from './Mods'
 import { Players } from './Players'
 
 const MAX_LINES = 2000
@@ -19,7 +20,7 @@ interface Props {
 }
 
 export function ServerPage({ server, game, info, onRemoved }: Props) {
-  const [tab, setTab] = useState<'overview' | 'console' | 'players'>('overview')
+  const [tab, setTab] = useState<'overview' | 'console' | 'players' | 'mods'>('overview')
   const [error, setError] = useState<string | null>(null)
   const canHost = !!info?.canHostServers
 
@@ -95,7 +96,7 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
       </header>
 
       <nav aria-label="Server sections" className="mt-5 flex gap-1 border-b border-white/5">
-        {(['overview', 'console', 'players'] as const).map((t) => (
+        {(['overview', 'console', 'players', 'mods'] as const).map((t) => (
           <button
             key={t}
             type="button"
@@ -117,6 +118,7 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
       {tab === 'overview' && <Overview server={server} game={game} />}
       {tab === 'console' && <Console server={server} />}
       {tab === 'players' && <Players server={server} />}
+      {tab === 'mods' && <Mods server={server} />}
     </div>
   )
 }
