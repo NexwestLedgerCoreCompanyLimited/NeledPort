@@ -20,7 +20,8 @@
     "dist": "electron-vite build && electron-builder"
   },
   "dependencies": {
-    "ajv": "^8.20.0"
+    "ajv": "^8.20.0",
+    "electron-updater": "6.8.11"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

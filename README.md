@@ -42,6 +42,9 @@ Get the latest installer for Windows (`.exe`) or Linux (`.AppImage`, `.deb`) fro
 [Releases](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases). What changed in each version is in the
 [changelog](CHANGELOG.md).
 
+NeledPort updates itself on Windows and with the AppImage: when a new version is ready, press **Restart to update**.
+With the `.deb`, install the new `.deb` from Releases.
+
 > Builds are not code-signed yet, so Windows SmartScreen may warn on first launch: choose **More info → Run anyway**.
 
 ## Supported games

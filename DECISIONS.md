@@ -2,6 +2,25 @@
 
 Significant choices, why we made them, and what we turned down. Newest first.
 
+## 2026-10-30 · App updates with electron-updater, pre-releases while on 0.x
+
+- **Decision:** electron-updater downloads new GitHub Releases in the background on Windows (NSIS) and AppImage, then
+  offers "Restart to update", which saves and stops running servers first. `allowPrerelease` is on only while the app
+  is 0.x, because every 0.x release is marked pre-release and the stable-only lookup (`/releases/latest`) finds none.
+- **Why:** It reads the `latest*.yml` files the release workflow already publishes and checks each download's sha512.
+  Checked against the real v0.5.0 release: stable-only fails ("ensure a production release exists"); with
+  pre-releases it finds 0.5.0 and the download passes the checksum.
+- **Rejected:** writing our own updater (download verification and installer hand-off are easy to get wrong);
+  updating `.deb` installs (needs root through pkexec; those users update like any other package).
+
+## 2026-10-30 · Translations as JSON in src/core, English as fallback
+
+- **Decision:** one flat JSON file per language in `src/core/locales/`, read by both the window and the main process.
+  English is complete; other languages may be partial and fall back to English per string.
+- **Why:** translators edit one file without touching code, and a half-finished language can still ship.
+- **Rejected:** i18next or react-intl (a dependency for ~200 strings with no plurals); separate files for the main
+  process (the quit prompt would drift from the window's language).
+
 ## 2026-10-29 · Repository lives on the personal account
 
 - **Decision:** `NexwestLedgerCoreCompanyLimited/NeledPort` is the one permanent home of the project.

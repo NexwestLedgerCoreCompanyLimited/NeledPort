@@ -1,4 +1,5 @@
-import type { ServerView } from '../../../core/types'
+import { useEffect, useState } from 'react'
+import type { ServerView, UpdateState } from '../../../core/types'
 import { languages, translate } from '../../../core/i18n'
 import { version } from '../../../../package.json'
 import logo from '../assets/logo.png'
@@ -6,6 +7,35 @@ import { setLanguage, useLanguage, useT } from '../i18n'
 import { statusDot } from '../status'
 
 const REPO_URL = 'https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort'
+
+function UpdateCard({ servers }: { servers: ServerView[] }) {
+  const t = useT()
+  const [update, setUpdate] = useState<UpdateState>({ status: 'none' })
+  useEffect(() => {
+    void window.neledport.updateState().then(setUpdate)
+    return window.neledport.onUpdateChanged(setUpdate)
+  }, [])
+  if (update.status === 'none') return null
+  if (update.status === 'downloading')
+    return <p className="px-2.5 text-xs text-slate-400">{t('update.downloading', { version: update.version, percent: update.percent })}</p>
+
+  function restart() {
+    const active = servers.some((s) => !['stopped', 'crashed', 'not-installed'].includes(s.status))
+    if (active && !window.confirm(t('update.confirmRunning'))) return
+    void window.neledport.installUpdate()
+  }
+  return (
+    <div className="flex flex-col gap-2 rounded-[10px] border border-accent/40 bg-accent/5 p-3">
+      <p className="text-[13px] text-white">{t('update.ready', { version: update.version })}</p>
+      <button type="button" onClick={restart} className="min-h-9 rounded-lg bg-accent text-sm font-semibold text-ink-950 hover:bg-cyan-300">
+        {t('update.restart')}
+      </button>
+      <a href={`${REPO_URL}/releases/tag/v${update.version}`} target="_blank" rel="noreferrer" className="text-xs text-slate-400 hover:text-accent">
+        {t('update.whatsNew')}
+      </a>
+    </div>
+  )
+}
 
 interface Props {
   servers: ServerView[]
@@ -63,6 +93,8 @@ export function Sidebar({ servers, selected, onSelect }: Props) {
           </button>
         ))}
       </nav>
+
+      <UpdateCard servers={servers} />
 
       <footer className="flex flex-col gap-1 border-t border-white/5 pt-3 text-[13px]">
         <button

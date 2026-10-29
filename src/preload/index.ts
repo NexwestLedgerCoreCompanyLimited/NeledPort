@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
-import type { NeledPortApi, ServerView } from '../core/types'
+import type { NeledPortApi, ServerView, UpdateState } from '../core/types'
 
 function subscribe<A extends unknown[]>(channel: string, cb: (...args: A) => void): () => void {
   const listener = (_e: IpcRendererEvent, ...args: unknown[]) => cb(...(args as A))
@@ -10,6 +10,9 @@ function subscribe<A extends unknown[]>(channel: string, cb: (...args: A) => voi
 const api: NeledPortApi = {
   appInfo: () => ipcRenderer.invoke('app:info'),
   setLanguage: (lang) => ipcRenderer.invoke('app:setLanguage', lang),
+  updateState: () => ipcRenderer.invoke('app:updateState'),
+  installUpdate: () => ipcRenderer.invoke('app:installUpdate'),
+  onUpdateChanged: (cb) => subscribe<[UpdateState]>('app:updateChanged', cb),
   listGames: () => ipcRenderer.invoke('catalog:list'),
   listServers: () => ipcRenderer.invoke('servers:list'),
   createServer: (input) => ipcRenderer.invoke('servers:create', input),

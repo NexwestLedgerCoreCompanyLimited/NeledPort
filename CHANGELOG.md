@@ -12,6 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   system language and can be switched in the sidebar. English stays the main language: anything not yet translated shows
   in English. Adding a language is one JSON file (see CONTRIBUTING).
 
+- **Automatic updates** on Windows and with the AppImage: new versions download in the background, then
+  **Restart to update** saves and stops your servers first. The `.deb` still updates by installing the new package.
+
 ### Fixed
 
 - A server that is installing but has not reported progress yet no longer says "Stopped".

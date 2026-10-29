@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { loadCatalog } from '../core/catalog'
 import { isLanguage, pickLanguage, translate, type MessageKey } from '../core/i18n'
 import { ServerManager } from '../core/manager'
+import { installUpdate, startUpdates, updateState } from './updater'
 import type { AppInfo, CreateServerInput, Platform, PlayerInfo, ServerAction } from '../core/types'
 
 const gamesDir = (): string =>
@@ -90,6 +91,13 @@ function registerIpc(): void {
   ipcMain.handle('app:info', (): AppInfo => ({ platform, canHostServers, serversDir, loadError: manager.loadError }))
   ipcMain.handle('app:setLanguage', (_event, lang: unknown) => {
     if (isLanguage(lang)) language = lang
+  })
+  ipcMain.handle('app:updateState', updateState)
+  ipcMain.handle('app:installUpdate', async () => {
+    if (updateState().status !== 'ready') return
+    quitting = true
+    // Same as quitting: servers save and stop before the installer replaces the app.
+    await manager.stopAll().finally(installUpdate)
   })
   ipcMain.handle('catalog:list', () => catalog())
   ipcMain.handle('servers:list', () => manager.list())
@@ -274,6 +282,7 @@ void app.whenReady().then(() => {
   manager.on('line', (id: string, line: string) => win?.webContents.send('servers:line', id, line))
   registerIpc()
   createWindow()
+  startUpdates((state) => win?.webContents.send('app:updateChanged', state))
 })
 
 app.on('window-all-closed', () => app.quit())

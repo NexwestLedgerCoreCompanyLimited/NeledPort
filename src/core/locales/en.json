@@ -175,6 +175,12 @@
   "workshop.startFirst": "Start the server to load Workshop items.",
   "workshop.sent": "Sent: loading Workshop item {id}. Watch the console for progress.",
 
+  "update.downloading": "Downloading update {version}… {percent}%",
+  "update.ready": "NeledPort {version} is ready",
+  "update.restart": "Restart to update",
+  "update.whatsNew": "What's new",
+  "update.confirmRunning": "Running servers will save and stop before NeledPort restarts. Continue?",
+
   "dialog.addPlugin": "Add plugin",
   "dialog.chooseProgram": "Choose the program that starts the server",
   "quit.running": "Servers still running: {count}",

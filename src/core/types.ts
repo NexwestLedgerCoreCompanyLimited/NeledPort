@@ -158,12 +158,19 @@ export interface AppInfo {
   loadError?: string
 }
 
+/** App self-update from GitHub Releases. 'none' also covers dev builds, .deb installs and failed checks. */
+export type UpdateState = { status: 'none' } | { status: 'downloading'; version: string; percent: number } | { status: 'ready'; version: string }
+
 export type ServerAction = 'install' | 'start' | 'stop' | 'restart' | 'update' | 'backup' | 'remove' | 'openFolder'
 
 /** What the preload script exposes to the renderer as `window.neledport`. */
 export interface NeledPortApi {
   appInfo(): Promise<AppInfo>
   setLanguage(lang: string): Promise<void>
+  updateState(): Promise<UpdateState>
+  /** Stops running servers (they save first), then restarts NeledPort into the downloaded update. */
+  installUpdate(): Promise<void>
+  onUpdateChanged(cb: (state: UpdateState) => void): () => void
   listGames(): Promise<CatalogResult>
   listServers(): Promise<ServerView[]>
   createServer(input: CreateServerInput): Promise<ServerView>

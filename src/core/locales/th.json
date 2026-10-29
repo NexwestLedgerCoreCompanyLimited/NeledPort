@@ -175,6 +175,12 @@
   "workshop.startFirst": "เปิดเซิร์ฟเวอร์ก่อนจึงจะโหลดของจาก Workshop ได้",
   "workshop.sent": "ส่งแล้ว: กำลังโหลด Workshop {id} ดูความคืบหน้าในคอนโซล",
 
+  "update.downloading": "กำลังดาวน์โหลดอัปเดต {version}… {percent}%",
+  "update.ready": "NeledPort {version} พร้อมติดตั้งแล้ว",
+  "update.restart": "รีสตาร์ตเพื่ออัปเดต",
+  "update.whatsNew": "มีอะไรใหม่",
+  "update.confirmRunning": "เซิร์ฟเวอร์ที่รันอยู่จะถูกเซฟและปิดก่อน NeledPort รีสตาร์ต ดำเนินการต่อ?",
+
   "dialog.addPlugin": "เพิ่มปลั๊กอิน",
   "dialog.chooseProgram": "เลือกโปรแกรมที่ใช้เปิดเซิร์ฟเวอร์",
   "quit.running": "ยังมีเซิร์ฟเวอร์รันอยู่: {count}",

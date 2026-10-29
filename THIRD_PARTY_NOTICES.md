@@ -2,6 +2,11 @@
 
 NeledPort includes data derived from the following projects. Both are licensed under the MIT License, reproduced below.
 
+## electron-updater
+
+The in-app updater is [electron-updater](https://github.com/electron-userland/electron-builder) by the electron-builder
+contributors, MIT License (text below).
+
 ## LinuxGSM
 
 The "basic" game definitions in `games/` (launch programs, arguments and ports) are generated from
@@ -16,7 +21,7 @@ The searchable list of Steam dedicated servers in `games/index/steam-servers.jso
 
 Copyright (c) 2022-2023 Daniel Gibbs
 
-## MIT License (applies to both)
+## MIT License (applies to all three)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
