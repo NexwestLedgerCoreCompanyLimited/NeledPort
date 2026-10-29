@@ -9,7 +9,7 @@ server on their own Windows or Linux machine without touching a terminal: pick a
 press Start, then watch the console, manage players and bans, and add mods — all in one modern UI.
 
 Why it exists (owner's goals, in priority order):
-1. A public portfolio project under the NEXWEST-LEDGER-CORE org that attracts many stars and forks.
+1. A public portfolio project on the owner's GitHub account that attracts many stars and forks.
 2. Qualify for Anthropic's *Claude for Open Source* program (6 months of Claude Max 20x).
 3. Show joint authorship: every commit is authored by the owner's GitHub account and co-authored by Claude.
 
@@ -198,10 +198,8 @@ Dark-first, high-contrast "control room" look, light theme available. Layout:
 
 ## 8. Repository setup (designed for stars, forks and contributors)
 
-- Repo: **`NexwestLedgerCoreCompanyLimited/NeledPort`**, public, **pinned** on that profile. Planned home was
-  `NEXWEST-LEDGER-CORE/NeledPort`, but on 2026-10-29 that org was hidden from the public and Actions did not run
-  (GitHub Support contacted). Move it to the org with GitHub's transfer feature once the org is restored, so stars
-  and links follow. Never keep two live copies: that splits stars.
+- Repo: **`NexwestLedgerCoreCompanyLimited/NeledPort`**, public, **pinned** on that profile. This is its
+  permanent home (see DECISIONS.md). Never keep two live copies: that splits stars.
 - Attribution: commits authored with the personal account's *verified* GitHub email (otherwise they will
   not link to the profile), each ending with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - Files: `LICENSE` (MIT), `README.md` + `README.th.md` (hero GIF, download buttons, auto-generated

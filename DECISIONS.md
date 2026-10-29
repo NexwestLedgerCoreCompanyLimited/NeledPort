@@ -2,12 +2,12 @@
 
 Significant choices, why we made them, and what we turned down. Newest first.
 
-## 2026-10-29 · Repository lives on the personal account for now
+## 2026-10-29 · Repository lives on the personal account
 
-- **Decision:** Publish at `NexwestLedgerCoreCompanyLimited/NeledPort`.
-- **Why:** The `NEXWEST-LEDGER-CORE` org is hidden from the public (its pages return 404 when signed out),
-  Actions never started there, and GitHub refused a repository transfer from it. Support has been contacted.
-- **Later:** Transfer the repo to the org once it is restored; GitHub keeps stars and redirects links.
+- **Decision:** `NexwestLedgerCoreCompanyLimited/NeledPort` is the one permanent home of the project.
+- **Why:** The `NEXWEST-LEDGER-CORE` org was hidden from the public (its pages return 404 when signed out),
+  Actions never started there, and GitHub refused a repository transfer from it. The org is being retired.
+- **Rejected:** keeping copies in two places (stars and updates would split).
 
 ## 2026-10-29 · Versioning and releases
 
