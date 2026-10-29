@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import type { AppInfo, BackupInfo, GameDefinition, ServerAction, ServerView } from '../../../core/types'
-import { cleanError, coverUrl, statusDot, statusLabel } from '../status'
+import { useLanguage, useT } from '../i18n'
+import { cleanError, coverUrl, statusDot } from '../status'
 import { Mods } from './Mods'
 import { Players } from './Players'
 
@@ -20,12 +21,13 @@ interface Props {
 }
 
 export function ServerPage({ server, game, info, onRemoved }: Props) {
+  const t = useT()
   const [tab, setTab] = useState<'overview' | 'console' | 'players' | 'mods'>('overview')
   const [error, setError] = useState<string | null>(null)
   const canHost = !!info?.canHostServers
 
   async function act(action: ServerAction) {
-    if (action === 'remove' && !window.confirm(`Remove "${server.name}" from NeledPort? Its files stay on disk.`)) return
+    if (action === 'remove' && !window.confirm(t('server.removeConfirm', { name: server.name }))) return
     setError(null)
     try {
       await window.neledport.serverAction(action, server.id)
@@ -40,24 +42,24 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
   const actions: { action: ServerAction; label: string; kind: keyof typeof button; hostOnly?: boolean }[] =
     s === 'not-installed'
       ? [
-          { action: 'install', label: 'Install', kind: 'primary', hostOnly: true },
-          { action: 'remove', label: 'Remove', kind: 'plain' }
+          { action: 'install', label: t('action.install'), kind: 'primary', hostOnly: true },
+          { action: 'remove', label: t('action.remove'), kind: 'plain' }
         ]
       : s === 'running'
         ? [
-            { action: 'stop', label: 'Stop', kind: 'danger' },
-            { action: 'restart', label: 'Restart', kind: 'plain' },
-            { action: 'update', label: 'Update', kind: 'plain', hostOnly: true },
-            { action: 'backup', label: 'Back up now', kind: 'plain' }
+            { action: 'stop', label: t('action.stop'), kind: 'danger' },
+            { action: 'restart', label: t('action.restart'), kind: 'plain' },
+            { action: 'update', label: t('action.update'), kind: 'plain', hostOnly: true },
+            { action: 'backup', label: t('action.backup'), kind: 'plain' }
           ]
         : busy
           ? []
           : [
-              { action: 'start', label: 'Start', kind: 'primary', hostOnly: true },
-              { action: 'update', label: 'Update', kind: 'plain', hostOnly: true },
-              { action: 'backup', label: 'Back up now', kind: 'plain' },
-              { action: 'openFolder', label: 'Open folder', kind: 'plain' },
-              { action: 'remove', label: 'Remove', kind: 'plain' }
+              { action: 'start', label: t('action.start'), kind: 'primary', hostOnly: true },
+              { action: 'update', label: t('action.update'), kind: 'plain', hostOnly: true },
+              { action: 'backup', label: t('action.backup'), kind: 'plain' },
+              { action: 'openFolder', label: t('action.openFolder'), kind: 'plain' },
+              { action: 'remove', label: t('action.remove'), kind: 'plain' }
             ]
 
   return (
@@ -70,7 +72,7 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
               <h1 className="truncate text-2xl font-semibold text-white">{server.name}</h1>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-0.5 text-xs font-medium text-slate-200">
                 <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${statusDot[s]}`} />
-                {statusLabel[s]}
+                {t(`status.${s}`)}
                 {server.progress !== undefined && ` · ${Math.floor(server.progress)}%`}
               </span>
             </div>
@@ -86,7 +88,7 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
               type="button"
               onClick={() => void act(a.action)}
               disabled={a.hostOnly && !canHost}
-              title={a.hostOnly && !canHost ? 'Game servers run on Windows and Linux only' : undefined}
+              title={a.hostOnly && !canHost ? t('server.hostOnly') : undefined}
               className={`min-h-10 rounded-[10px] px-4 text-[13px] disabled:cursor-not-allowed disabled:opacity-50 ${button[a.kind]}`}
             >
               {a.label}
@@ -95,16 +97,16 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
         </div>
       </header>
 
-      <nav aria-label="Server sections" className="mt-5 flex gap-1 border-b border-white/5">
-        {(['overview', 'console', 'players', 'mods'] as const).map((t) => (
+      <nav aria-label={t('server.sections')} className="mt-5 flex gap-1 border-b border-white/5">
+        {(['overview', 'console', 'players', 'mods'] as const).map((name) => (
           <button
-            key={t}
+            key={name}
             type="button"
-            onClick={() => setTab(t)}
-            aria-current={tab === t ? 'page' : undefined}
-            className={`min-h-11 border-b-2 px-3.5 text-sm capitalize ${tab === t ? 'border-accent font-medium text-white' : 'border-transparent text-slate-300 hover:text-white'}`}
+            onClick={() => setTab(name)}
+            aria-current={tab === name ? 'page' : undefined}
+            className={`min-h-11 border-b-2 px-3.5 text-sm ${tab === name ? 'border-accent font-medium text-white' : 'border-transparent text-slate-300 hover:text-white'}`}
           >
-            {t}
+            {t(`tab.${name}`)}
           </button>
         ))}
       </nav>
@@ -124,6 +126,8 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
 }
 
 function Overview({ server, game }: { server: ServerView; game?: GameDefinition }) {
+  const t = useT()
+  const lang = useLanguage()
   const [backups, setBackups] = useState<BackupInfo[]>([])
   useEffect(() => {
     void window.neledport.serverBackups(server.id).then(setBackups)
@@ -133,11 +137,11 @@ function Overview({ server, game }: { server: ServerView; game?: GameDefinition 
   return (
     <div className="mt-5 grid gap-4 md:grid-cols-[3fr_2fr]">
       <section className="flex flex-col gap-4 rounded-[14px] border border-white/5 bg-ink-900 p-5">
-        <h2 className="font-semibold text-white">Status</h2>
+        <h2 className="font-semibold text-white">{t('overview.status')}</h2>
         {server.progress !== undefined ? (
           <div>
             <div className="mb-2 flex justify-between text-sm">
-              <span>{server.status === 'updating' ? 'Updating server files' : 'Downloading server files'}</span>
+              <span>{server.status === 'updating' ? t('overview.updating') : t('overview.downloading')}</span>
               <span className="font-mono text-accent">{Math.floor(server.progress)}%</span>
             </div>
             <div role="progressbar" aria-valuenow={Math.floor(server.progress)} aria-valuemin={0} aria-valuemax={100} className="h-2 overflow-hidden rounded-full bg-ink-700">
@@ -145,26 +149,26 @@ function Overview({ server, game }: { server: ServerView; game?: GameDefinition 
             </div>
           </div>
         ) : (
-          <p className="text-sm text-slate-300">{describe(server)}</p>
+          <p className="text-sm text-slate-300">{t(`describe.${server.status}`)}</p>
         )}
         {!server.gracefulStop && (
           <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-200">
-            On Windows, {server.gameName} cannot be asked to save before it stops. NeledPort backs up the world first, but save in-game before stopping to be safe.
+            {t('overview.noGracefulStop', { game: server.gameName })}
           </p>
         )}
         <LaunchSetup server={server} />
         <BuildLine server={server} />
         <div>
-          <h3 className="mb-2 text-xs font-semibold tracking-[0.1em] text-slate-400 uppercase">Recent backups</h3>
+          <h3 className="mb-2 text-xs font-semibold tracking-[0.1em] text-slate-400 uppercase">{t('overview.backups')}</h3>
           {backups.length === 0 ? (
-            <p className="text-sm text-slate-400">No backups yet. One is made before every update.</p>
+            <p className="text-sm text-slate-400">{t('overview.noBackups')}</p>
           ) : (
             <ul className="flex flex-col gap-1 text-sm">
               {backups.slice(0, 5).map((b) => (
                 <li key={b.file} className="flex justify-between gap-3 border-b border-white/5 py-1.5 last:border-0">
-                  <span>{new Date(b.createdAt).toLocaleString()}</span>
+                  <span>{new Date(b.createdAt).toLocaleString(lang)}</span>
                   <span className="text-slate-400">
-                    {b.reason} · {(b.size / 1024 / 1024).toFixed(1)} MB
+                    {t(`backup.${b.reason}`)} · {(b.size / 1024 / 1024).toFixed(1)} MB
                   </span>
                 </li>
               ))}
@@ -174,15 +178,15 @@ function Overview({ server, game }: { server: ServerView; game?: GameDefinition 
       </section>
 
       <section className="flex flex-col gap-3 rounded-[14px] border border-white/5 bg-ink-900 p-5">
-        <h2 className="font-semibold text-white">Ports</h2>
-        <p className="text-sm text-slate-300">Open these on your router so friends can join.</p>
+        <h2 className="font-semibold text-white">{t('overview.ports')}</h2>
+        <p className="text-sm text-slate-300">{t('overview.portsHint')}</p>
         <table className="w-full text-sm">
           <tbody>
             {(game?.ports ?? Object.keys(server.ports).map((name) => ({ name, protocol: 'udp' as const }))).map((p) => (
               <tr key={p.name} className="border-b border-white/5 last:border-0">
                 <td className="py-1.5 font-mono text-white">{server.ports[p.name]}</td>
                 <td className="text-slate-300">{p.protocol.toUpperCase()}</td>
-                <td className="text-right text-slate-300 capitalize">{localOnly.has(p.name) ? `${p.name} · keep local` : p.name}</td>
+                <td className="text-right text-slate-300 capitalize">{localOnly.has(p.name) ? t('overview.keepLocal', { name: p.name }) : p.name}</td>
               </tr>
             ))}
           </tbody>
@@ -192,24 +196,8 @@ function Overview({ server, game }: { server: ServerView; game?: GameDefinition 
   )
 }
 
-function describe(server: ServerView): string {
-  switch (server.status) {
-    case 'not-installed':
-      return 'Not installed yet. Install downloads the dedicated server from Steam.'
-    case 'running':
-      return 'Running. Players can join now.'
-    case 'starting':
-      return 'Starting up…'
-    case 'stopping':
-      return 'Saving the world and shutting down…'
-    case 'crashed':
-      return 'The server stopped unexpectedly. Check the console, then start it again.'
-    default:
-      return 'Stopped.'
-  }
-}
-
 function Console({ server }: { server: ServerView }) {
+  const t = useT()
   const id = server.id
   const [lines, setLines] = useState<string[]>([])
   const [cmd, setCmd] = useState('')
@@ -251,28 +239,28 @@ function Console({ server }: { server: ServerView }) {
     <div className="mt-5 flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex min-h-10 flex-1 items-center rounded-[10px] border border-white/10 bg-ink-900 px-3">
-          <span className="sr-only">Search log</span>
+          <span className="sr-only">{t('console.search')}</span>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search log"
+            placeholder={t('console.search')}
             className="min-w-0 flex-1 bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
           />
         </label>
         <label className="flex items-center gap-2 text-sm text-slate-300">
           <input type="checkbox" checked={follow} onChange={(e) => setFollow(e.target.checked)} className="h-4 w-4 accent-cyan-400" />
-          Auto-scroll
+          {t('console.follow')}
         </label>
       </div>
       <div
         ref={box}
         role="log"
-        aria-label="Server log"
+        aria-label={t('console.log')}
         className="h-[460px] overflow-auto rounded-[14px] border border-white/5 bg-[#05070c] px-4 py-3 font-mono text-[12.5px] leading-relaxed text-slate-300 select-text"
       >
         {shown.length === 0 ? (
-          <p className="text-slate-500">Nothing here yet. Output appears when the server installs or runs.</p>
+          <p className="text-slate-500">{t('console.empty')}</p>
         ) : (
           shown.map((line, i) => (
             <div key={i} className={`whitespace-pre-wrap ${/error|exception|fail/i.test(line) ? 'text-red-300' : /warn/i.test(line) ? 'text-amber-200' : line.startsWith('[NeledPort]') ? 'text-accent' : ''}`}>
@@ -285,18 +273,18 @@ function Console({ server }: { server: ServerView }) {
         <form onSubmit={send} className="flex gap-2">
           <label className="flex min-h-11 flex-1 items-center gap-2.5 rounded-xl border border-accent/40 bg-ink-900 px-3.5">
             <span aria-hidden="true" className="font-mono text-accent">›</span>
-            <span className="sr-only">Console command</span>
+            <span className="sr-only">{t('console.command')}</span>
             <input
               value={cmd}
               onChange={(e) => setCmd(e.target.value)}
               disabled={server.status !== 'running'}
               maxLength={500}
-              placeholder={server.status === 'running' ? 'Type a console command and press Enter' : 'Start the server to send commands'}
+              placeholder={server.status === 'running' ? t('console.placeholder') : t('console.startFirst')}
               className="min-w-0 flex-1 bg-transparent font-mono text-[13px] text-slate-100 placeholder:text-slate-500 focus:outline-none disabled:opacity-60"
             />
           </label>
           <button type="submit" disabled={server.status !== 'running'} className="min-h-11 rounded-xl bg-accent px-5 text-sm font-semibold text-ink-950 hover:bg-cyan-300 disabled:opacity-50">
-            Send
+            {t('console.send')}
           </button>
         </form>
       )}
@@ -306,11 +294,13 @@ function Console({ server }: { server: ServerView }) {
 }
 
 function LaunchSetup({ server }: { server: ServerView }) {
+  const t = useT()
   const [program, setProgram] = useState<string | null>(null)
   const [args, setArgs] = useState(server.launch?.args.join(' ') ?? '-port {port:game}')
   const [error, setError] = useState<string | null>(null)
   const [shared, setShared] = useState(false)
   const installed = server.status !== 'not-installed' && server.status !== 'installing'
+  const [runsBefore, runsAfter] = t('launch.runs').split('{program}')
   if (!installed || (!server.needsLaunchSetup && !server.launch)) return null
 
   async function save() {
@@ -328,7 +318,7 @@ function LaunchSetup({ server }: { server: ServerView }) {
       {server.needsLaunchSetup ? (
         <>
           <p className="text-sm text-slate-200">
-            <b className="text-white">One more step:</b> choose the program that starts this server. NeledPort remembers it.
+            <b className="text-white">{t('launch.oneMore')}</b> {t('launch.choose')}
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -336,12 +326,12 @@ function LaunchSetup({ server }: { server: ServerView }) {
               onClick={() => void window.neledport.pickProgram(server.id).then((p) => p && setProgram(p))}
               className="min-h-9 rounded-lg border border-white/10 bg-ink-900 px-3 text-sm text-slate-100 hover:bg-ink-800"
             >
-              Choose program…
+              {t('launch.chooseButton')}
             </button>
-            <span className="min-w-0 truncate font-mono text-xs text-slate-300">{program ?? 'Nothing chosen yet'}</span>
+            <span className="min-w-0 truncate font-mono text-xs text-slate-300">{program ?? t('launch.nothing')}</span>
           </div>
           <label className="flex flex-col gap-1.5 text-xs text-slate-300">
-            Arguments (use {'{port:game}'} for the game port)
+            {t('launch.argsLabel')}
             <input
               value={args}
               onChange={(e) => setArgs(e.target.value)}
@@ -349,20 +339,22 @@ function LaunchSetup({ server }: { server: ServerView }) {
             />
           </label>
           <button type="button" disabled={!program} onClick={() => void save()} className="min-h-9 self-start rounded-lg bg-accent px-4 text-sm font-semibold text-ink-950 disabled:opacity-50">
-            Save
+            {t('common.save')}
           </button>
         </>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-slate-200">
-            Runs <span className="font-mono text-xs">{server.launch?.executable}</span>. Works? Share it so everyone gets this game in the catalog.
+            {runsBefore}
+            <span className="font-mono text-xs">{server.launch?.executable}</span>
+            {runsAfter}
           </p>
           <button
             type="button"
             onClick={() => void window.neledport.shareDefinition(server.id).then(() => setShared(true), (e) => setError(cleanError(e)))}
             className="min-h-9 rounded-lg border border-accent-2/50 px-3 text-sm text-accent-2 hover:bg-accent-2/10"
           >
-            {shared ? 'Opened on GitHub ✓' : 'Share with the community'}
+            {shared ? t('launch.shared') : t('launch.share')}
           </button>
         </div>
       )}
@@ -372,20 +364,21 @@ function LaunchSetup({ server }: { server: ServerView }) {
 }
 
 function BuildLine({ server }: { server: ServerView }) {
+  const t = useT()
   const [checking, setChecking] = useState(false)
   const b = server.build
   if (!b.installed) return null
   const status = b.error
     ? b.error
     : !b.latest
-      ? 'Not checked yet'
+      ? t('build.notChecked')
       : b.updateAvailable
-        ? `Update available: build ${b.latest}`
-        : 'Up to date'
+        ? t('build.available', { build: b.latest })
+        : t('build.upToDate')
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/5 bg-ink-950 px-3 py-2.5 text-sm">
       <span>
-        <span className="font-mono text-slate-200">Build {b.installed}</span>
+        <span className="font-mono text-slate-200">{t('build.label', { build: b.installed })}</span>
         <span className={`ml-2 ${b.updateAvailable ? 'text-accent' : b.error ? 'text-amber-200' : 'text-slate-400'}`}>· {status}</span>
       </span>
       <button
@@ -397,7 +390,7 @@ function BuildLine({ server }: { server: ServerView }) {
         }}
         className="min-h-8 rounded-lg border border-white/10 px-3 text-xs text-slate-200 hover:bg-ink-800 disabled:opacity-60"
       >
-        {checking ? 'Checking…' : 'Check for updates'}
+        {checking ? t('build.checking') : t('build.check')}
       </button>
     </div>
   )

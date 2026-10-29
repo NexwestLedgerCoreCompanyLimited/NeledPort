@@ -32,3 +32,8 @@ body {
     32px 32px,
     32px 32px;
 }
+
+/* Letter-spacing splits Thai vowel and tone marks from their consonants; caseless scripts don't need it. */
+:lang(th) [class*='tracking-'] {
+  letter-spacing: normal;
+}

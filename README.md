@@ -34,7 +34,7 @@ NeledPort wraps all of that in a desktop app for Windows and Linux.
 - **Players and bans:** kick, ban and unban through each game's own mechanism.
 - **Mods:** one-click server-side mod loaders (BepInEx for Valheim, Oxide for Rust), a plugin manager, and Steam Workshop maps for CS2.
 - **Automatic backups** before every update.
-- **English and Thai UI**, dark-first and keyboard-friendly.
+- **Speaks your language:** English and Thai today, and [adding yours](CONTRIBUTING.md#translate-neledport) is one file.
 
 ## Download
 

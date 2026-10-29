@@ -5,8 +5,10 @@ import { Catalog } from './components/Catalog'
 import { CustomServerDialog } from './components/CustomServerDialog'
 import { ServerPage } from './components/ServerPage'
 import { Sidebar } from './components/Sidebar'
+import { useT } from './i18n'
 
 export default function App() {
+  const t = useT()
   const [info, setInfo] = useState<AppInfo | null>(null)
   const [catalog, setCatalog] = useState<CatalogResult | null>(null)
   const [servers, setServers] = useState<ServerView[]>([])
@@ -31,9 +33,9 @@ export default function App() {
 
   const server = servers.find((s) => s.id === selected)
   const notices = [
-    loadError && `Could not load NeledPort data: ${loadError}`,
+    loadError && t('app.loadError', { error: loadError }),
     info?.loadError,
-    info && !info.canHostServers && 'Game servers run on Windows and Linux. On this computer you can explore the app, but not install or start servers.'
+    info && !info.canHostServers && t('app.noHosting')
   ].filter(Boolean) as string[]
 
   return (

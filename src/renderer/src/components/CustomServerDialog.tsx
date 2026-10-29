@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import type { AppInfo, ServerView } from '../../../core/types'
+import { useT } from '../i18n'
 import { cleanError } from '../status'
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 const input = 'min-h-11 rounded-[10px] border border-white/10 bg-ink-950 px-3 text-sm text-slate-100 focus:border-accent focus:outline-none'
 
 export function CustomServerDialog({ info, onClose, onCreated }: Props) {
+  const t = useT()
   const [index, setIndex] = useState<{ appId: number; name: string }[]>([])
   const [query, setQuery] = useState('')
   const [appId, setAppId] = useState('')
@@ -42,7 +44,7 @@ export function CustomServerDialog({ info, onClose, onCreated }: Props) {
     try {
       const server = await window.neledport.createServer({
         gameId: 'custom',
-        name: `${gameName} server`,
+        name: t('add.defaultName', { game: gameName }),
         custom: { appId: Number(appId), name: gameName },
         ports: { game: Number(port) },
         settings: {}
@@ -59,17 +61,15 @@ export function CustomServerDialog({ info, onClose, onCreated }: Props) {
     <div role="dialog" aria-modal="true" aria-labelledby="custom-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6" onClick={onClose}>
       <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="flex w-full max-w-xl flex-col gap-5 rounded-2xl border border-white/10 bg-ink-900 p-6 shadow-2xl">
         <div>
-          <p className="font-mono text-xs tracking-[0.3em] text-accent-2 uppercase">Any App ID</p>
-          <h2 id="custom-title" className="mt-1 text-2xl font-semibold text-white">Install any Steam dedicated server</h2>
-          <p className="mt-1 text-sm text-slate-300">
-            NeledPort installs it with SteamCMD. After that you pick the program that starts it, once, and can share the setup with everyone.
-          </p>
+          <p className="font-mono text-xs tracking-[0.3em] text-accent-2 uppercase">{t('custom.eyebrow')}</p>
+          <h2 id="custom-title" className="mt-1 text-2xl font-semibold text-white">{t('custom.title')}</h2>
+          <p className="mt-1 text-sm text-slate-300">{t('custom.intro')}</p>
         </div>
 
         <div className="relative">
           <label className="flex flex-col gap-1.5 text-[13px] text-slate-300">
-            Search {index.length} Steam servers
-            <input className={input} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Type a game name, e.g. Project Zomboid" />
+            {t('custom.search', { count: index.length })}
+            <input className={input} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('custom.searchPlaceholder')} />
           </label>
           {matches.length > 0 && (
             <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-[10px] border border-white/10 bg-ink-800 shadow-xl">
@@ -87,16 +87,16 @@ export function CustomServerDialog({ info, onClose, onCreated }: Props) {
 
         <div className="grid grid-cols-[1fr_2fr] gap-3">
           <label className="flex flex-col gap-1.5 text-[13px] text-slate-300">
-            App ID
+            {t('custom.appId')}
             <input className={`${input} font-mono`} inputMode="numeric" pattern="\d+" value={appId} onChange={(e) => setAppId(e.target.value)} required />
           </label>
           <label className="flex flex-col gap-1.5 text-[13px] text-slate-300">
-            Game name
+            {t('custom.gameName')}
             <input className={input} value={gameName} onChange={(e) => setGameName(e.target.value)} required maxLength={80} />
           </label>
         </div>
         <label className="flex w-40 flex-col gap-1.5 text-[13px] text-slate-300">
-          Game port · UDP
+          {t('custom.port')}
           <input className={`${input} font-mono`} type="number" min={1} max={65535} value={port} onChange={(e) => setPort(e.target.value)} />
         </label>
 
@@ -104,10 +104,10 @@ export function CustomServerDialog({ info, onClose, onCreated }: Props) {
 
         <div className="flex justify-end gap-3">
           <button type="button" onClick={onClose} className="min-h-11 rounded-[10px] border border-white/10 px-5 text-sm text-slate-200 hover:bg-ink-800">
-            Cancel
+            {t('common.cancel')}
           </button>
           <button type="submit" disabled={busy} className="min-h-11 rounded-[10px] bg-accent px-6 text-sm font-semibold text-ink-950 hover:bg-cyan-300 disabled:opacity-60">
-            {info?.canHostServers ? 'Create and install' : 'Create'}
+            {info?.canHostServers ? t('add.createInstall') : t('add.create')}
           </button>
         </div>
       </form>

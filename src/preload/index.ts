@@ -9,6 +9,7 @@ function subscribe<A extends unknown[]>(channel: string, cb: (...args: A) => voi
 
 const api: NeledPortApi = {
   appInfo: () => ipcRenderer.invoke('app:info'),
+  setLanguage: (lang) => ipcRenderer.invoke('app:setLanguage', lang),
   listGames: () => ipcRenderer.invoke('catalog:list'),
   listServers: () => ipcRenderer.invoke('servers:list'),
   createServer: (input) => ipcRenderer.invoke('servers:create', input),

@@ -26,6 +26,18 @@ Windows launcher to a Linux-only game is a great first contribution.
 
 Only know the Linux or the Windows command line? Submit just that platform; someone else can add the other.
 
+## Translate NeledPort
+
+NeledPort speaks English and Thai. Adding your language takes one file and no coding:
+
+1. Copy [`src/core/locales/en.json`](src/core/locales/en.json) to `src/core/locales/<code>.json`
+   (`de`, `es`, `pt-BR`, `zh-CN`, …) and translate the values. Keep the keys and every `{placeholder}` as they are.
+2. Add it to `dictionaries` in [`src/core/i18n.ts`](src/core/i18n.ts).
+3. Run `npm test`. It checks that keys and placeholders match English.
+
+A partial translation is fine: anything you leave out shows in English. Game names and game settings come from the game
+files and stay in English.
+
 ## Code changes
 
 1. `npm install`, then `npm run dev`.

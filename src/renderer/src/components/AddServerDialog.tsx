@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { AppInfo, GameDefinition, ServerView } from '../../../core/types'
+import { useT } from '../i18n'
 import { cleanError } from '../status'
 
 interface Props {
@@ -13,8 +14,9 @@ const input =
   'min-h-11 rounded-[10px] border border-white/10 bg-ink-950 px-3 text-sm text-slate-100 focus:border-accent focus:outline-none'
 
 export function AddServerDialog({ game, info, onClose, onCreated }: Props) {
+  const t = useT()
   const usesNameSetting = game.settings?.some((s) => s.key === 'serverName')
-  const [name, setName] = useState(`${game.name} server`)
+  const [name, setName] = useState(t('add.defaultName', { game: game.name }))
   const [settings, setSettings] = useState<Record<string, string>>(() =>
     Object.fromEntries((game.settings ?? []).filter((s) => s.key !== 'serverName').map((s) => [s.key, s.default !== undefined ? String(s.default) : '']))
   )
@@ -51,15 +53,15 @@ export function AddServerDialog({ game, info, onClose, onCreated }: Props) {
         className="flex max-h-full w-full max-w-xl flex-col gap-5 overflow-y-auto rounded-2xl border border-white/10 bg-ink-900 p-6 shadow-2xl"
       >
         <div>
-          <p className="font-mono text-xs tracking-[0.3em] text-accent uppercase">New server</p>
+          <p className="font-mono text-xs tracking-[0.3em] text-accent uppercase">{t('add.eyebrow')}</p>
           <h2 id="add-title" className="mt-1 text-2xl font-semibold text-white">
             {game.name}
           </h2>
-          <p className="mt-1 text-sm text-slate-300">Defaults work for most people. You can change them later.</p>
+          <p className="mt-1 text-sm text-slate-300">{t('add.intro')}</p>
         </div>
 
         <label className="flex flex-col gap-1.5 text-[13px] text-slate-300">
-          Server name
+          {t('add.name')}
           <input className={input} value={name} onChange={(e) => setName(e.target.value)} required maxLength={64} autoFocus />
         </label>
 
@@ -80,7 +82,7 @@ export function AddServerDialog({ game, info, onClose, onCreated }: Props) {
           ))}
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-[11px] font-semibold tracking-[0.12em] text-slate-400 uppercase">Ports</legend>
+          <legend className="mb-2 text-[11px] font-semibold tracking-[0.12em] text-slate-400 uppercase">{t('add.ports')}</legend>
           <div className="grid grid-cols-3 gap-3">
             {game.ports.map((p) => (
               <label key={p.name} className="flex flex-col gap-1.5 text-xs text-slate-300 capitalize">
@@ -99,7 +101,7 @@ export function AddServerDialog({ game, info, onClose, onCreated }: Props) {
         </fieldset>
 
         <label className="flex flex-col gap-1.5 text-[13px] text-slate-300">
-          Install folder (optional)
+          {t('add.installDir')}
           <input
             className={`${input} font-mono text-[13px]`}
             value={installDir}
@@ -116,10 +118,10 @@ export function AddServerDialog({ game, info, onClose, onCreated }: Props) {
 
         <div className="flex justify-end gap-3">
           <button type="button" onClick={onClose} className="min-h-11 rounded-[10px] border border-white/10 px-5 text-sm text-slate-200 hover:bg-ink-800">
-            Cancel
+            {t('common.cancel')}
           </button>
           <button type="submit" disabled={busy} className="min-h-11 rounded-[10px] bg-accent px-6 text-sm font-semibold text-ink-950 hover:bg-cyan-300 disabled:opacity-60">
-            {info?.canHostServers ? 'Create and install' : 'Create'}
+            {info?.canHostServers ? t('add.createInstall') : t('add.create')}
           </button>
         </div>
       </form>

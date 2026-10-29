@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- **Languages:** the whole app, including the quit prompt and file pickers, now speaks English and Thai. It follows your
+  system language and can be switched in the sidebar. English stays the main language: anything not yet translated shows
+  in English. Adding a language is one JSON file (see CONTRIBUTING).
+
+### Fixed
+
+- A server that is installing but has not reported progress yet no longer says "Stopped".
+
 ## [0.5.0] - 2026-10-30
 
 ### Added

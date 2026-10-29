@@ -1,16 +1,5 @@
 import type { ServerStatus } from '../../core/types'
 
-export const statusLabel: Record<ServerStatus, string> = {
-  'not-installed': 'Not installed',
-  installing: 'Installing',
-  updating: 'Updating',
-  stopped: 'Stopped',
-  starting: 'Starting',
-  running: 'Running',
-  stopping: 'Stopping',
-  crashed: 'Crashed'
-}
-
 /** Dot classes; status is always shown with text too, never by colour alone. */
 export const statusDot: Record<ServerStatus, string> = {
   'not-installed': 'border-2 border-slate-500',

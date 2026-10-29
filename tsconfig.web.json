@@ -12,5 +12,5 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["src/renderer/src/**/*", "src/core/types.ts"]
+  "include": ["src/renderer/src/**/*", "src/core/types.ts", "src/core/i18n.ts", "src/core/locales/*.json"]
 }

@@ -163,6 +163,7 @@ export type ServerAction = 'install' | 'start' | 'stop' | 'restart' | 'update' |
 /** What the preload script exposes to the renderer as `window.neledport`. */
 export interface NeledPortApi {
   appInfo(): Promise<AppInfo>
+  setLanguage(lang: string): Promise<void>
   listGames(): Promise<CatalogResult>
   listServers(): Promise<ServerView[]>
   createServer(input: CreateServerInput): Promise<ServerView>

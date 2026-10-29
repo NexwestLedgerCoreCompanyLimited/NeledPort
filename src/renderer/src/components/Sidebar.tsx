@@ -1,7 +1,9 @@
 import type { ServerView } from '../../../core/types'
+import { languages, translate } from '../../../core/i18n'
 import { version } from '../../../../package.json'
 import logo from '../assets/logo.png'
-import { statusDot, statusLabel } from '../status'
+import { setLanguage, useLanguage, useT } from '../i18n'
+import { statusDot } from '../status'
 
 const REPO_URL = 'https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort'
 
@@ -12,6 +14,8 @@ interface Props {
 }
 
 export function Sidebar({ servers, selected, onSelect }: Props) {
+  const t = useT()
+  const lang = useLanguage()
   return (
     <aside className="flex w-64 shrink-0 flex-col gap-4 border-r border-white/5 bg-ink-900 px-3.5 py-5">
       <div className="flex items-center gap-3 px-1.5">
@@ -27,16 +31,16 @@ export function Sidebar({ servers, selected, onSelect }: Props) {
         onClick={() => onSelect(null)}
         className="min-h-11 rounded-[10px] bg-accent text-sm font-semibold text-ink-950 hover:bg-cyan-300 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
       >
-        + Add server
+        {t('sidebar.addServer')}
       </button>
 
-      <nav aria-label="Servers" className="flex flex-1 flex-col gap-1 overflow-y-auto">
-        <h2 className="px-2 pt-1 pb-2 text-[11px] font-semibold tracking-[0.18em] text-slate-400 uppercase">Servers</h2>
+      <nav aria-label={t('sidebar.servers')} className="flex flex-1 flex-col gap-1 overflow-y-auto">
+        <h2 className="px-2 pt-1 pb-2 text-[11px] font-semibold tracking-[0.18em] text-slate-400 uppercase">{t('sidebar.servers')}</h2>
         {servers.length === 0 && (
           <p className="rounded-lg border border-dashed border-white/10 px-4 py-6 text-center text-sm text-slate-400">
-            No servers yet.
+            {t('sidebar.empty')}
             <br />
-            Pick a game to get started.
+            {t('sidebar.emptyHint')}
           </p>
         )}
         {servers.map((s) => (
@@ -53,7 +57,7 @@ export function Sidebar({ servers, selected, onSelect }: Props) {
             <span className="flex min-w-0 flex-col">
               <span className="truncate text-[13px] font-medium">{s.name}</span>
               <span className="text-[11px] text-slate-400">
-                {s.gameName} · {statusLabel[s.status]}
+                {s.gameName} · {t(`status.${s.status}`)}
               </span>
             </span>
           </button>
@@ -67,11 +71,25 @@ export function Sidebar({ servers, selected, onSelect }: Props) {
           aria-current={selected === null ? 'page' : undefined}
           className={`min-h-10 rounded-[10px] px-2.5 text-left ${selected === null ? 'bg-ink-800 text-white' : 'text-slate-300 hover:bg-ink-800/60'}`}
         >
-          Game catalog
+          {t('sidebar.catalog')}
         </button>
         <a href={REPO_URL} target="_blank" rel="noreferrer" className="rounded-[10px] px-2.5 py-2 text-slate-400 hover:text-accent">
-          ★ Star on GitHub
+          {t('sidebar.star')}
         </a>
+        <label className="flex items-center justify-between gap-2 px-2.5 py-1 text-slate-400">
+          {t('sidebar.language')}
+          <select
+            value={lang}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="min-h-8 rounded-lg border border-white/10 bg-ink-950 px-2 text-[13px] text-slate-100 focus:border-accent focus:outline-none"
+          >
+            {languages.map((l) => (
+              <option key={l} value={l}>
+                {translate(l, 'language.name')}
+              </option>
+            ))}
+          </select>
+        </label>
       </footer>
     </aside>
   )

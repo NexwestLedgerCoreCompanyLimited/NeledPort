@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { loadCatalog } from '../core/catalog'
+import { isLanguage, pickLanguage, translate, type MessageKey } from '../core/i18n'
 import { ServerManager } from '../core/manager'
 import type { AppInfo, CreateServerInput, Platform, PlayerInfo, ServerAction } from '../core/types'
 
@@ -31,6 +32,10 @@ const secrets = {
 }
 
 const REPO = 'NexwestLedgerCoreCompanyLimited/NeledPort'
+
+// Follows the language picked in the app; the system language until the window reports it.
+let language = 'en'
+const t = (key: MessageKey, vars?: Record<string, string | number>) => translate(language, key, vars)
 
 function steamServers(): { appId: number; name: string }[] {
   const file = join(gamesDir(), 'index', 'steam-servers.json')
@@ -83,6 +88,9 @@ function registerIpc(): void {
   }
 
   ipcMain.handle('app:info', (): AppInfo => ({ platform, canHostServers, serversDir, loadError: manager.loadError }))
+  ipcMain.handle('app:setLanguage', (_event, lang: unknown) => {
+    if (isLanguage(lang)) language = lang
+  })
   ipcMain.handle('catalog:list', () => catalog())
   ipcMain.handle('servers:list', () => manager.list())
   ipcMain.handle('servers:create', (_e, input: unknown) => manager.create(parseCreate(input)))
@@ -155,7 +163,7 @@ function registerIpc(): void {
     'servers:addPlugin',
     withId(async (id, loaderId: unknown) => {
       if (!isLoaderId(loaderId)) throw new Error('Invalid mod loader')
-      const result = await dialog.showOpenDialog(win!, { title: 'Add plugin', properties: ['openFile'] })
+      const result = await dialog.showOpenDialog(win!, { title: t('dialog.addPlugin'), properties: ['openFile'] })
       if (result.canceled || !result.filePaths[0]) return false
       manager.addPlugin(id, loaderId, result.filePaths[0])
       return true
@@ -172,7 +180,7 @@ function registerIpc(): void {
     'servers:pickProgram',
     withId(async (id) => {
       const result = await dialog.showOpenDialog(win!, {
-        title: 'Choose the program that starts the server',
+        title: t('dialog.chooseProgram'),
         defaultPath: manager.get(id).installDir,
         properties: ['openFile']
       })
@@ -241,11 +249,11 @@ app.on('before-quit', (event) => {
   event.preventDefault()
   const choice = dialog.showMessageBoxSync({
     type: 'question',
-    buttons: ['Stop servers and quit', 'Cancel'],
+    buttons: [t('quit.stopAndQuit'), t('common.cancel')],
     defaultId: 0,
     cancelId: 1,
-    message: `${active.length} server${active.length > 1 ? 's are' : ' is'} still running`,
-    detail: 'NeledPort will save and stop them before closing.'
+    message: t('quit.running', { count: active.length }),
+    detail: t('quit.detail')
   })
   if (choice !== 0) return
   quitting = true
@@ -253,6 +261,7 @@ app.on('before-quit', (event) => {
 })
 
 void app.whenReady().then(() => {
+  language = pickLanguage([app.getLocale()])
   manager = new ServerManager({
     dataDir: app.getPath('userData'),
     serversDir,
