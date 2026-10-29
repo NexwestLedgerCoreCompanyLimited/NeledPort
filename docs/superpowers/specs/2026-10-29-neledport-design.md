@@ -107,7 +107,8 @@ Builder's calls, already made (change only with a reason):
   `"; rm -rf ~"` is just a string.
 - **Graceful stop:** send the game's save + shutdown command (RCON/REST/stdin per definition), wait up
   to a configurable timeout (default 60 s), then kill. The UI shows which step it is on.
-- **Update** = backup world → graceful stop → `steamcmd +app_update` → start (if it was running).
+- **Update** = graceful stop (world saved) → backup world → `steamcmd +app_update` → start (if it was running).
+  Stopping first keeps the backup consistent; a copy of a running server's files can be torn.
 - **Crash:** non-zero exit while `running` → `crashed`, with the last 200 log lines highlighted.
 - **Quitting the app** with servers running asks: stop them all (graceful) or keep running in the tray.
 - One port-conflict check before start (UDP/TCP ports from the definition).
