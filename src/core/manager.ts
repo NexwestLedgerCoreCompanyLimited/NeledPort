@@ -52,6 +52,8 @@ interface Runtime {
   progress?: number
   message?: string
   proc?: ProcessLike
+  /** Set while install/start/update/restart runs, so a double click cannot run two at once. */
+  busy?: boolean
   lines: string[]
 }
 
@@ -141,7 +143,22 @@ export class ServerManager extends EventEmitter {
     this.persist()
   }
 
-  async install(id: string, validate = false): Promise<void> {
+  install(id: string, validate = false): Promise<void> {
+    return this.exclusive(id, () => this.installNow(id, validate))
+  }
+
+  start(id: string): Promise<void> {
+    return this.exclusive(id, () => this.startNow(id))
+  }
+
+  restart(id: string): Promise<void> {
+    return this.exclusive(id, async () => {
+      await this.stop(id)
+      await this.startNow(id)
+    })
+  }
+
+  private async installNow(id: string, validate: boolean): Promise<void> {
     const server = this.config(id)
     const game = this.game(server)
     const rt = this.rt(id)
@@ -173,7 +190,7 @@ export class ServerManager extends EventEmitter {
     }
   }
 
-  async start(id: string): Promise<void> {
+  private async startNow(id: string): Promise<void> {
     const server = this.config(id)
     const game = this.game(server)
     const rt = this.rt(id)
@@ -248,26 +265,34 @@ export class ServerManager extends EventEmitter {
     return proc.stop({ graceful, timeoutMs: STOP_TIMEOUT_MS })
   }
 
-  async restart(id: string): Promise<void> {
-    await this.stop(id)
-    await this.start(id)
+  /** Stop (the world is saved and consistent), back up, update with validation, start again if it was running. */
+  update(id: string): Promise<void> {
+    return this.exclusive(id, async () => {
+      const rt = this.rt(id)
+      const wasRunning = !!rt.proc
+      rt.status = 'updating'
+      this.changed(id)
+      try {
+        if (wasRunning) await this.stop(id)
+        await this.backup(id, 'update')
+        await this.installNow(id, true)
+      } finally {
+        rt.status = undefined
+        this.changed(id)
+      }
+      if (wasRunning) await this.startNow(id)
+    })
   }
 
-  /** Stop (the world is saved and consistent), back up, update with validation, start again if it was running. */
-  async update(id: string): Promise<void> {
+  private async exclusive<T>(id: string, fn: () => Promise<T>): Promise<T> {
     const rt = this.rt(id)
-    const wasRunning = !!rt.proc
-    rt.status = 'updating'
-    this.changed(id)
+    if (rt.busy) throw new Error('The server is still busy with another action')
+    rt.busy = true
     try {
-      if (wasRunning) await this.stop(id)
-      await this.backup(id, 'update')
-      await this.install(id, true)
+      return await fn()
     } finally {
-      rt.status = undefined
-      this.changed(id)
+      rt.busy = false
     }
-    if (wasRunning) await this.start(id)
   }
 
   async backup(id: string, reason: BackupReason = 'manual'): Promise<BackupInfo | null> {

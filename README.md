@@ -48,9 +48,9 @@ Get the latest installer for Windows (`.exe`) or Linux (`.AppImage`, `.deb`) fro
 
 | Game | Support | Status |
 |---|---|---|
-| Palworld | full | in progress |
+| Palworld | full | install, run, stop, update (players and bans next) |
+| Valheim | full | install, run, stop, update; tested on real Linux servers weekly |
 | Rust | full | planned |
-| Valheim | full | planned |
 | Counter-Strike 2 | full | planned |
 | 100+ more Steam dedicated servers | basic | planned |
 | Any SteamCMD App ID | custom | planned |

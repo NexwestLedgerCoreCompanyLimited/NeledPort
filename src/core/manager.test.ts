@@ -137,6 +137,25 @@ describe('ServerManager', () => {
     expect(manager.get(id).status).toBe('running')
   })
 
+  it('ignores a second start while the first is still starting', async () => {
+    const { manager, processes } = setup()
+    const { id } = manager.create(valheim)
+    await manager.install(id)
+    const first = manager.start(id)
+    await expect(manager.start(id)).rejects.toThrow(/still busy/)
+    await first
+    expect(processes).toHaveLength(1)
+  })
+
+  it('refuses a second install while one is running', async () => {
+    const { manager, log } = setup()
+    const { id } = manager.create(valheim)
+    const first = manager.install(id)
+    await expect(manager.install(id)).rejects.toThrow(/still busy/)
+    await first
+    expect(log.filter((l) => l.startsWith('steamcmd'))).toHaveLength(1)
+  })
+
   it('refuses to start when a port is busy', async () => {
     const { manager, processes } = setup('linux', { busyPorts: [2456] })
     const { id } = manager.create(valheim)
