@@ -33,10 +33,11 @@ export interface GameDefinition {
     save?: string
     shutdown?: string
     rest?: { port: string; basePath: string; username: string }
+    port?: string
   }
-  players?: { source: 'rest' | 'rcon' | 'a2s' | 'log' }
-  bans?: { method: 'rest' | 'rcon' | 'file' }
-  logPatterns?: { ready?: string; join?: string; leave?: string }
+  players?: { source: 'rest' | 'rcon' | 'a2s' | 'log'; port?: string }
+  bans?: { method: 'rest' | 'rcon' | 'file'; file?: string; format?: 'lines' | 'rust-cfg' }
+  logPatterns?: { ready?: string; join?: string; leave?: string; character?: string }
   workshop?: Record<string, unknown> | null
   modLoaders?: unknown[]
 }
@@ -44,6 +45,38 @@ export interface GameDefinition {
 export type CatalogError = { file: string; message: string }
 
 export type CatalogResult = { games: GameDefinition[]; errors: CatalogError[] }
+
+export interface PlayerInfo {
+  /** Steam/platform id where the game gives one, otherwise the player name. */
+  id: string
+  name: string
+  ping?: number
+  seconds?: number
+}
+
+export interface BanEntry {
+  id: string
+  name?: string
+  reason?: string
+}
+
+/** What a server's remote control supports, so the UI can show only working buttons. */
+export interface AdminCapabilities {
+  players: boolean
+  kick: boolean
+  ban: boolean
+  unban: boolean
+  command: boolean
+  /** Bans apply on the next join only (the game cannot kick). */
+  banOnNextJoin: boolean
+}
+
+export interface BuildInfo {
+  installed?: string
+  latest?: string
+  updateAvailable: boolean
+  error?: string
+}
 
 export type ProcessState = 'stopped' | 'starting' | 'running' | 'stopping' | 'crashed'
 
@@ -62,6 +95,8 @@ export interface ServerView {
   message?: string
   /** False where NeledPort cannot ask the server to save before stopping (signal-only games on Windows). */
   gracefulStop: boolean
+  admin: AdminCapabilities
+  build: BuildInfo
 }
 
 export interface CreateServerInput {
@@ -100,6 +135,13 @@ export interface NeledPortApi {
   serverAction(action: ServerAction, id: string): Promise<void>
   serverLines(id: string): Promise<string[]>
   serverBackups(id: string): Promise<BackupInfo[]>
+  players(id: string): Promise<PlayerInfo[]>
+  kick(id: string, player: PlayerInfo): Promise<void>
+  ban(id: string, player: PlayerInfo, reason?: string): Promise<void>
+  unban(id: string, banId: string): Promise<void>
+  bans(id: string): Promise<BanEntry[]>
+  command(id: string, text: string): Promise<string>
+  checkBuild(id: string): Promise<BuildInfo>
   onServerChanged(cb: (server: ServerView) => void): () => void
   onServerLine(cb: (id: string, line: string) => void): () => void
 }

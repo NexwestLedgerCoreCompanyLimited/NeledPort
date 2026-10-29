@@ -49,7 +49,7 @@ class FakeProcess extends EventEmitter implements ProcessLike {
   }
 }
 
-function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; installFails?: boolean } = {}) {
+function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; installFails?: boolean; appInfo?: string } = {}) {
   const dataDir = mkdtempSync(join(tmpdir(), 'mgr-'))
   const log: string[] = []
   const processes: FakeProcess[] = []
@@ -62,6 +62,7 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
     secrets: { encrypt: (s) => `enc:${s}`, decrypt: (s) => s.replace(/^enc:/, '') },
     steamcmd: {
       ensure: async () => 'steamcmd',
+      capture: async () => opts.appInfo ?? '',
       run: async (_exe, args, onLine) => {
         log.push(`steamcmd ${args.includes('validate') ? 'validate' : 'install'}`)
         onLine(' Update state (0x61) downloading, progress: 42.00 (1 / 2)')
@@ -81,6 +82,9 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
       return p
     },
     portFree: async (port) => !(opts.busyPorts ?? []).includes(port),
+    net: {
+      webrcon: async (o, cmd) => (restCalls.push(`web:${cmd}`), cmd === 'status' ? 'hostname: test\nplayers : 0' : '')
+    },
     rest: (o) => ({
       save: async () => void restCalls.push(`save as ${o.username}:${o.password}`),
       shutdown: async () => void restCalls.push('shutdown')
@@ -219,5 +223,68 @@ describe('ServerManager', () => {
     const again = new ServerManager({ ...(first.manager as unknown as { deps: ManagerDeps }).deps })
     expect(again.list().map((s) => s.id)).toEqual([id])
     expect(existsSync(join(first.dataDir, 'servers.json'))).toBe(true)
+  })
+
+  it('runs console commands over WebRCON and echoes them', async () => {
+    const { manager, restCalls } = setup()
+    const { id } = manager.create({ gameId: 'rust', name: 'Wasteland', settings: { serverName: 'Wasteland' } })
+    await manager.install(id)
+    await manager.start(id)
+    expect(await manager.command(id, 'status')).toBe('hostname: test\nplayers : 0')
+    expect(manager.lines(id).slice(-3)).toEqual(['> status', 'hostname: test', 'players : 0'])
+    expect(restCalls).toEqual(['web:status'])
+  })
+
+  it('stops Rust by saving and quitting over WebRCON', async () => {
+    const { manager, restCalls } = setup()
+    const { id } = manager.create({ gameId: 'rust', name: 'Wasteland', settings: { serverName: 'Wasteland' } })
+    await manager.install(id)
+    await manager.start(id)
+    await manager.stop(id)
+    expect(restCalls).toEqual(['web:server.save', 'web:quit'])
+  })
+
+  it('passes the generated admin password to the server', async () => {
+    const { manager, processes } = setup()
+    const { id } = manager.create({ gameId: 'rust', name: 'Wasteland', settings: { serverName: 'Wasteland' } })
+    await manager.install(id)
+    await manager.start(id)
+    const args = processes[0].spec!.args
+    expect(args[args.indexOf('+rcon.password') + 1]).toMatch(/^[\w-]{24}$/)
+  })
+
+  it('bans through the ban file and lists bans while stopped', async () => {
+    const { manager } = setup()
+    const { id } = manager.create(valheim)
+    await manager.ban(id, { id: '7656001', name: 'Mira' })
+    expect(await manager.bans(id)).toEqual([{ id: '7656001' }])
+    await manager.unban(id, '7656001')
+    expect(await manager.bans(id)).toEqual([])
+    expect(manager.get(id).admin).toMatchObject({ ban: true, kick: false, banOnNextJoin: true })
+  })
+
+  it('needs a running server for the player list and console', async () => {
+    const { manager } = setup()
+    const { id } = manager.create(valheim)
+    await expect(manager.players(id)).rejects.toThrow(/Start the server/)
+    await expect(manager.command(id, 'help')).rejects.toThrow(/Start the server/)
+  })
+
+  it('reports an available update', async () => {
+    const appInfo = '"896660" { "depots" { "branches" { "public" { "buildid" "200" } } } }'
+    const { manager } = setup('linux', { appInfo })
+    const { id, installDir } = manager.create(valheim)
+    await manager.install(id)
+    mkdirSync(join(installDir, 'steamapps'), { recursive: true })
+    writeFileSync(join(installDir, 'steamapps', 'appmanifest_896660.acf'), '"AppState" { "buildid" "100" }')
+    expect(await manager.checkBuild(id)).toEqual({ installed: '100', latest: '200', updateAvailable: true })
+  })
+
+  it('says it could not check instead of "up to date" when Steam gives nothing', async () => {
+    const { manager } = setup('linux', { appInfo: 'No app info' })
+    const { id } = manager.create(valheim)
+    const build = await manager.checkBuild(id)
+    expect(build.updateAvailable).toBe(false)
+    expect(build.error).toMatch(/Could not check/)
   })
 })

@@ -100,8 +100,12 @@ export function palworldRest(o: { port: number; basePath: string; username: stri
 
   return {
     info: () => call('GET', '/info'),
-    players: () => call('GET', '/players'),
+    players: () => call('GET', '/players') as Promise<{ players?: { name: string; userId: string; ping?: number }[] }>,
     save: () => call('POST', '/save'),
-    shutdown: (waittime: number, message: string) => call('POST', '/shutdown', { waittime, message })
+    shutdown: (waittime: number, message: string) => call('POST', '/shutdown', { waittime, message }),
+    announce: (message: string) => call('POST', '/announce', { message }),
+    kick: (userid: string, message: string) => call('POST', '/kick', { userid, message }),
+    ban: (userid: string, message: string) => call('POST', '/ban', { userid, message }),
+    unban: (userid: string) => call('POST', '/unban', { userid })
   }
 }

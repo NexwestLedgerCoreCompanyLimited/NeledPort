@@ -18,7 +18,7 @@ function isUnsafePath(p: string): boolean {
 }
 
 function definitionPaths(def: GameDefinition): string[] {
-  const paths = def.saveDir ? [def.saveDir] : []
+  const paths = [def.saveDir, def.bans?.file].filter((p): p is string => !!p)
   for (const platform of Object.values(def.platforms)) {
     if (!platform) continue
     paths.push(platform.executable, ...(platform.configFiles ?? []).map((c) => c.path))
@@ -29,6 +29,7 @@ function definitionPaths(def: GameDefinition): string[] {
 function undeclaredReferences(def: GameDefinition): string[] {
   const known = new Set([
     'installDir',
+    'adminPassword',
     ...def.ports.map((p) => `port:${p.name}`),
     ...(def.settings ?? []).map((s) => `setting:${s.key}`)
   ])
@@ -36,6 +37,8 @@ function undeclaredReferences(def: GameDefinition): string[] {
     p ? [...p.args, ...Object.values(p.env ?? {})].flatMap(placeholders) : []
   )
   if (def.control?.rest) used.push(`port:${def.control.rest.port}`)
+  if (def.control?.port) used.push(`port:${def.control.port}`)
+  if (def.players?.port) used.push(`port:${def.players.port}`)
   return [...new Set(used)].filter((name) => !known.has(name))
 }
 

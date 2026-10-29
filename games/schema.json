@@ -5,29 +5,62 @@
   "description": "One dedicated server that NeledPort can install and run. Data only: no scripts, no shell strings. All paths are relative to the server's install folder.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "name", "serverAppId", "anonymous", "tier", "platforms", "ports"],
+  "required": [
+    "id",
+    "name",
+    "serverAppId",
+    "anonymous",
+    "tier",
+    "platforms",
+    "ports"
+  ],
   "properties": {
-    "$schema": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
     "id": {
       "description": "Lowercase letters, digits and dashes. Must match the filename without .json.",
       "type": "string",
       "pattern": "^[a-z0-9][a-z0-9-]*$"
     },
-    "name": { "description": "Display name of the game.", "type": "string", "minLength": 1 },
-    "serverAppId": { "description": "SteamCMD App ID of the dedicated server.", "type": "integer", "minimum": 1 },
-    "gameAppId": { "description": "Steam App ID of the game itself, used for cover art.", "type": "integer", "minimum": 1 },
-    "anonymous": { "description": "true if SteamCMD can download the server with +login anonymous.", "type": "boolean" },
+    "name": {
+      "description": "Display name of the game.",
+      "type": "string",
+      "minLength": 1
+    },
+    "serverAppId": {
+      "description": "SteamCMD App ID of the dedicated server.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "gameAppId": {
+      "description": "Steam App ID of the game itself, used for cover art.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "anonymous": {
+      "description": "true if SteamCMD can download the server with +login anonymous.",
+      "type": "boolean"
+    },
     "tier": {
       "description": "full = every feature tested; basic = install, run, console; custom = user-defined.",
-      "enum": ["full", "basic", "custom"]
+      "enum": [
+        "full",
+        "basic",
+        "custom"
+      ]
     },
     "platforms": {
       "type": "object",
       "additionalProperties": false,
       "minProperties": 1,
       "properties": {
-        "windows": { "$ref": "#/$defs/platform" },
-        "linux": { "$ref": "#/$defs/platform" }
+        "windows": {
+          "$ref": "#/$defs/platform"
+        },
+        "linux": {
+          "$ref": "#/$defs/platform"
+        }
       }
     },
     "ports": {
@@ -36,11 +69,28 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "default", "protocol"],
+        "required": [
+          "name",
+          "default",
+          "protocol"
+        ],
         "properties": {
-          "name": { "description": "Referenced from args as {port:<name>}.", "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-          "default": { "type": "integer", "minimum": 1, "maximum": 65535 },
-          "protocol": { "enum": ["udp", "tcp"] }
+          "name": {
+            "description": "Referenced from args as {port:<name>}.",
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "default": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "protocol": {
+            "enum": [
+              "udp",
+              "tcp"
+            ]
+          }
         }
       }
     },
@@ -50,86 +100,233 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["key", "label", "type"],
+        "required": [
+          "key",
+          "label",
+          "type"
+        ],
         "properties": {
-          "key": { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$" },
-          "label": { "type": "string", "minLength": 1 },
-          "type": { "enum": ["text", "password", "number"] },
-          "default": { "type": ["string", "number"] },
-          "minLength": { "type": "integer", "minimum": 0 },
-          "secret": { "description": "Stored encrypted on this computer.", "type": "boolean" }
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z][A-Za-z0-9]*$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "enum": [
+              "text",
+              "password",
+              "number"
+            ]
+          },
+          "default": {
+            "type": [
+              "string",
+              "number"
+            ]
+          },
+          "minLength": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "secret": {
+            "description": "Stored encrypted on this computer.",
+            "type": "boolean"
+          }
         }
       }
     },
     "configAdapter": {
       "description": "Built-in code that writes the game's own config file from the settings.",
-      "enum": ["palworld"]
+      "enum": [
+        "palworld"
+      ]
     },
-    "saveDir": { "description": "World/save folder, backed up before updates.", "type": "string", "minLength": 1 },
+    "saveDir": {
+      "description": "World/save folder, backed up before updates.",
+      "type": "string",
+      "minLength": 1
+    },
     "control": {
       "description": "How NeledPort asks the server to save and shut down.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
-        "type": { "enum": ["rcon", "webrcon", "rest", "stdin", "signal"] },
-        "save": { "type": "string" },
-        "shutdown": { "type": "string" },
+        "type": {
+          "enum": [
+            "rcon",
+            "webrcon",
+            "rest",
+            "stdin",
+            "signal"
+          ]
+        },
+        "save": {
+          "type": "string"
+        },
+        "shutdown": {
+          "type": "string"
+        },
         "rest": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["port", "basePath", "username"],
+          "required": [
+            "port",
+            "basePath",
+            "username"
+          ],
           "properties": {
-            "port": { "description": "Name of a port in ports.", "type": "string" },
-            "basePath": { "type": "string", "pattern": "^/" },
-            "username": { "type": "string" }
+            "port": {
+              "description": "Name of a port in ports.",
+              "type": "string"
+            },
+            "basePath": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "username": {
+              "type": "string"
+            }
           }
+        },
+        "port": {
+          "description": "Name of the port used for RCON / WebRCON.",
+          "type": "string"
         }
       }
     },
     "players": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source"],
-      "properties": { "source": { "enum": ["rest", "rcon", "a2s", "log"] } }
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "source": {
+          "enum": [
+            "rest",
+            "rcon",
+            "a2s",
+            "log"
+          ]
+        },
+        "port": {
+          "description": "Name of the port to query (A2S) for the player list.",
+          "type": "string"
+        }
+      }
     },
     "bans": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["method"],
-      "properties": { "method": { "enum": ["rest", "rcon", "file"] } }
+      "required": [
+        "method"
+      ],
+      "properties": {
+        "method": {
+          "enum": [
+            "rest",
+            "rcon",
+            "file"
+          ]
+        },
+        "file": {
+          "description": "Ban list file, relative to the install folder.",
+          "type": "string",
+          "minLength": 1
+        },
+        "format": {
+          "enum": [
+            "lines",
+            "rust-cfg"
+          ]
+        }
+      }
     },
     "logPatterns": {
       "description": "Regular expressions with a named group (?<name>...) for player join/leave lines.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "ready": { "description": "A log line that means the server is up.", "type": "string" },
-        "join": { "type": "string" },
-        "leave": { "type": "string" }
+        "ready": {
+          "description": "A log line that means the server is up.",
+          "type": "string"
+        },
+        "join": {
+          "type": "string"
+        },
+        "leave": {
+          "type": "string"
+        },
+        "character": {
+          "description": "Regex with (?<name>) for the player's character name.",
+          "type": "string"
+        }
       }
     },
-    "workshop": { "type": ["object", "null"] },
-    "modLoaders": { "type": "array" }
+    "workshop": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "modLoaders": {
+      "type": "array"
+    }
   },
   "$defs": {
     "platform": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["executable", "args"],
+      "required": [
+        "executable",
+        "args"
+      ],
       "properties": {
-        "executable": { "description": "Relative path of the server executable.", "type": "string", "minLength": 1 },
-        "args": { "type": "array", "items": { "type": "string" } },
-        "env": { "type": "object", "additionalProperties": { "type": "string" } },
+        "executable": {
+          "description": "Relative path of the server executable.",
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
         "configFiles": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["path", "format"],
+            "required": [
+              "path",
+              "format"
+            ],
             "properties": {
-              "path": { "type": "string", "minLength": 1 },
-              "format": { "enum": ["ini", "json", "cfg", "txt"] }
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "format": {
+                "enum": [
+                  "ini",
+                  "json",
+                  "cfg",
+                  "txt"
+                ]
+              }
             }
           }
         }

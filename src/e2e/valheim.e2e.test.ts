@@ -43,6 +43,12 @@ describe.skipIf(!enabled)('Valheim on Linux, end to end', () => {
     await manager.install(id)
     expect(manager.get(id).status).toBe('stopped')
 
+    // A fresh install must be the latest public build, read back from Steam's own app info.
+    const build = await manager.checkBuild(id)
+    expect(build.error).toBeUndefined()
+    expect(build.installed).toBeDefined()
+    expect(build.installed).toBe(build.latest)
+
     await manager.start(id)
     await waitForStatus(manager, id, 'running', 10 * 60_000)
     await new Promise((r) => setTimeout(r, 15_000))

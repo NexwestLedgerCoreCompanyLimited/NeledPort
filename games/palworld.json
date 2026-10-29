@@ -7,30 +7,92 @@
   "anonymous": true,
   "tier": "full",
   "settings": [
-    { "key": "serverName", "label": "Server name", "type": "text", "default": "NeledPort Palworld" },
-    { "key": "password", "label": "Server password (optional)", "type": "password", "secret": true },
-    { "key": "maxPlayers", "label": "Max players", "type": "number", "default": 32 }
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Palworld"
+    },
+    {
+      "key": "password",
+      "label": "Server password (optional)",
+      "type": "password",
+      "secret": true
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 32
+    }
   ],
   "configAdapter": "palworld",
   "platforms": {
     "linux": {
       "executable": "PalServer.sh",
-      "args": ["-port={port:game}", "-players={setting:maxPlayers}", "-useperfthreads", "-NoAsyncLoadingThread", "-UseMultithreadForDS"],
-      "configFiles": [{ "path": "Pal/Saved/Config/LinuxServer/PalWorldSettings.ini", "format": "ini" }]
+      "args": [
+        "-port={port:game}",
+        "-players={setting:maxPlayers}",
+        "-useperfthreads",
+        "-NoAsyncLoadingThread",
+        "-UseMultithreadForDS"
+      ],
+      "configFiles": [
+        {
+          "path": "Pal/Saved/Config/LinuxServer/PalWorldSettings.ini",
+          "format": "ini"
+        }
+      ]
     },
     "windows": {
       "executable": "PalServer.exe",
-      "args": ["-port={port:game}", "-players={setting:maxPlayers}", "-useperfthreads", "-NoAsyncLoadingThread", "-UseMultithreadForDS"],
-      "configFiles": [{ "path": "Pal/Saved/Config/WindowsServer/PalWorldSettings.ini", "format": "ini" }]
+      "args": [
+        "-port={port:game}",
+        "-players={setting:maxPlayers}",
+        "-useperfthreads",
+        "-NoAsyncLoadingThread",
+        "-UseMultithreadForDS"
+      ],
+      "configFiles": [
+        {
+          "path": "Pal/Saved/Config/WindowsServer/PalWorldSettings.ini",
+          "format": "ini"
+        }
+      ]
     }
   },
   "ports": [
-    { "name": "game", "default": 8211, "protocol": "udp" },
-    { "name": "query", "default": 27015, "protocol": "udp" },
-    { "name": "rest", "default": 8212, "protocol": "tcp" }
+    {
+      "name": "game",
+      "default": 8211,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "rest",
+      "default": 8212,
+      "protocol": "tcp"
+    }
   ],
   "saveDir": "Pal/Saved/SaveGames",
-  "control": { "type": "rest", "rest": { "port": "rest", "basePath": "/v1/api", "username": "admin" } },
-  "players": { "source": "rest" },
-  "bans": { "method": "rest" }
+  "control": {
+    "type": "rest",
+    "rest": {
+      "port": "rest",
+      "basePath": "/v1/api",
+      "username": "admin"
+    }
+  },
+  "players": {
+    "source": "rest"
+  },
+  "bans": {
+    "method": "rest",
+    "file": "Pal/Saved/SaveGames/banlist.txt",
+    "format": "lines"
+  }
 }

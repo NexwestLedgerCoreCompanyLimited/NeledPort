@@ -1,20 +1,25 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 import { EventEmitter } from 'node:events'
-import { existsSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { adminFor, capabilities, LogPlayerTracker, type Admin, type AdminNet } from './admin'
 import { createBackup, listBackups, pruneBackups } from './backup'
+import { appInfoArgs, installedBuild, parseLatestBuild } from './build'
 import { palworldRest, prepareConfig } from './palworld'
 import { isPortFree } from './ports'
 import { ServerProcess, type LaunchSpec } from './process'
-import { appUpdateArgs, ensureSteamCmd, parseSteamCmdLine, runSteamCmd } from './steamcmd'
+import { appUpdateArgs, captureSteamCmd, ensureSteamCmd, parseSteamCmdLine, runSteamCmd } from './steamcmd'
 import { loadServers, saveServers, type ServerConfig } from './store'
 import { expand } from './template'
 import type {
   BackupInfo,
   BackupReason,
+  BanEntry,
+  BuildInfo,
   CreateServerInput,
   GameDefinition,
   Platform,
+  PlayerInfo,
   ProcessState,
   ServerStatus,
   ServerView
@@ -38,6 +43,7 @@ export interface ManagerDeps {
   steamcmd?: {
     ensure(dir: string, platform: Platform): Promise<string>
     run(exe: string, args: string[], onLine: (line: string) => void): Promise<{ ok: boolean; error?: string }>
+    capture?(exe: string, args: string[]): Promise<string>
   }
   createProcess?: (o: { logFile: string; readyPattern?: RegExp }) => ProcessLike
   portFree?: (port: number, protocol: 'udp' | 'tcp') => Promise<boolean>
@@ -45,6 +51,10 @@ export interface ManagerDeps {
     save(): Promise<unknown>
     shutdown(waitSeconds: number, message: string): Promise<unknown>
   }
+  /** Player/ban/console transports; real network clients when omitted. */
+  net?: AdminNet
+  /** Linux: ~/.steam, where many servers look for steamclient.so. Skipped when omitted. */
+  steamSdkDir?: string
 }
 
 interface Runtime {
@@ -55,6 +65,9 @@ interface Runtime {
   /** Set while install/start/update/restart runs, so a double click cannot run two at once. */
   busy?: boolean
   lines: string[]
+  tracker?: LogPlayerTracker
+  latestBuild?: string
+  buildError?: string
 }
 
 const STOP_TIMEOUT_MS = 60_000
@@ -110,9 +123,8 @@ export class ServerManager extends EventEmitter {
       if (s.secret) secrets[s.key] = this.deps.secrets.encrypt(value)
       else settings[s.key] = value
     }
-    if (game.control?.type === 'rest') {
-      secrets[ADMIN_SECRET] = this.deps.secrets.encrypt(randomBytes(18).toString('base64url'))
-    }
+    // One generated password per server for whatever remote control the game uses (REST, RCON, WebRCON).
+    secrets[ADMIN_SECRET] = this.deps.secrets.encrypt(randomBytes(18).toString('base64url'))
 
     const ports = Object.fromEntries(game.ports.map((p) => [p.name, input.ports?.[p.name] ?? p.default]))
     for (const [portName, port] of Object.entries(ports)) {
@@ -203,7 +215,8 @@ export class ServerManager extends EventEmitter {
       if (!(await portFree(port, p.protocol))) throw new Error(`Port ${port}/${p.protocol} is already in use`)
     }
 
-    const secrets = this.plainSecrets(server)
+    const secrets = this.plainSecrets(this.ensureAdminSecret(server))
+    this.provideSteamClient()
     if (game.configAdapter === 'palworld') {
       prepareConfig(server.installDir, this.deps.platform, {
         serverName: server.settings.serverName ?? server.name,
@@ -220,7 +233,11 @@ export class ServerManager extends EventEmitter {
       logFile: join(this.deps.dataDir, 'logs', id, 'server.log'),
       readyPattern: game.logPatterns?.ready ? new RegExp(game.logPatterns.ready) : undefined
     })
-    proc.on('line', (line: string) => this.addLine(id, line))
+    rt.tracker = new LogPlayerTracker(game.logPatterns ?? {})
+    proc.on('line', (line: string) => {
+      rt.tracker?.feed(line)
+      this.addLine(id, line)
+    })
     proc.on('state', (state: ProcessState) => {
       if (state === 'crashed') rt.message = `Server stopped unexpectedly (exit code ${proc.lastExitCode})`
       if (state === 'stopped' || state === 'crashed') rt.proc = undefined
@@ -259,6 +276,18 @@ export class ServerManager extends EventEmitter {
       }
     } else if (control?.type === 'stdin') {
       graceful = () => proc.write(control.shutdown ?? 'quit')
+    } else if (control?.type === 'rcon' || control?.type === 'webrcon') {
+      const admin = this.admin(server)
+      graceful = async () => {
+        try {
+          if (control.save) await admin.command?.(control.save)
+          await admin.command?.(control.shutdown ?? 'quit')
+        } catch (e) {
+          // Remote console unreachable: fall back to Ctrl+C where the OS allows it.
+          this.addLine(id, `[NeledPort] ${(e as Error).message}; sending Ctrl+C instead`)
+          proc.interrupt()
+        }
+      }
     } else {
       graceful = () => proc.interrupt()
     }
@@ -295,6 +324,73 @@ export class ServerManager extends EventEmitter {
     }
   }
 
+  async players(id: string): Promise<PlayerInfo[]> {
+    if (!this.rt(id).proc) throw new Error('Start the server to see who is online')
+    return this.admin(this.config(id)).players()
+  }
+
+  async kick(id: string, player: PlayerInfo, reason = 'Kicked by an admin'): Promise<void> {
+    const kick = this.admin(this.config(id)).kick
+    if (!kick) throw new Error('This game cannot kick players')
+    await kick(player, reason)
+    this.addLine(id, `[NeledPort] Kicked ${player.name}`)
+  }
+
+  async ban(id: string, player: PlayerInfo, reason = 'Banned by an admin'): Promise<void> {
+    const ban = this.admin(this.config(id)).ban
+    if (!ban) throw new Error('This game cannot ban players from NeledPort yet')
+    await ban(player, reason)
+    this.addLine(id, `[NeledPort] Banned ${player.name}`)
+  }
+
+  async unban(id: string, banId: string): Promise<void> {
+    const unban = this.admin(this.config(id)).unban
+    if (!unban) throw new Error('This game cannot unban players from NeledPort yet')
+    await unban(banId)
+    this.addLine(id, `[NeledPort] Unbanned ${banId}`)
+  }
+
+  async bans(id: string): Promise<BanEntry[]> {
+    return (await this.admin(this.config(id)).bans?.()) ?? []
+  }
+
+  /** Runs a console command; input and output are echoed to the console. */
+  async command(id: string, text: string): Promise<string> {
+    const server = this.config(id)
+    const rt = this.rt(id)
+    if (!rt.proc) throw new Error('Start the server first')
+    const cmd = text.trim()
+    if (!cmd) return ''
+    this.addLine(id, `> ${cmd}`)
+    if (this.game(server).control?.type === 'stdin') {
+      rt.proc.write(cmd)
+      return ''
+    }
+    const run = this.admin(server).command
+    if (!run) throw new Error('This game has no remote console')
+    const output = await run(cmd)
+    for (const line of output.split(/\r?\n/)) if (line) this.addLine(id, line)
+    return output
+  }
+
+  /** Compares the installed build with the latest public build on Steam. */
+  async checkBuild(id: string): Promise<BuildInfo> {
+    const server = this.config(id)
+    const game = this.game(server)
+    const rt = this.rt(id)
+    try {
+      const steam = this.deps.steamcmd ?? { ensure: ensureSteamCmd, run: runSteamCmd, capture: captureSteamCmd }
+      const exe = await steam.ensure(join(this.deps.dataDir, 'steamcmd'), this.deps.platform)
+      const latest = parseLatestBuild(await (steam.capture ?? captureSteamCmd)(exe, appInfoArgs(game.serverAppId)))
+      if (!latest) throw new Error('Steam did not return build information')
+      rt.latestBuild = latest
+      rt.buildError = undefined
+    } catch (e) {
+      rt.buildError = `Could not check for updates: ${(e as Error).message}`
+    }
+    return this.changed(id).build!
+  }
+
   async backup(id: string, reason: BackupReason = 'manual'): Promise<BackupInfo | null> {
     const server = this.config(id)
     const game = this.game(server)
@@ -325,7 +421,56 @@ export class ServerManager extends EventEmitter {
       status,
       progress: rt.progress,
       message: rt.message,
-      gracefulStop: !(game.control?.type === 'signal' && this.deps.platform === 'windows')
+      gracefulStop: !(game.control?.type === 'signal' && this.deps.platform === 'windows'),
+      admin: capabilities(game, this.admin(server)),
+      build: this.buildInfo(server, game, rt)
+    }
+  }
+
+  private buildInfo(server: ServerConfig, game: GameDefinition, rt: Runtime): BuildInfo {
+    const installed = installedBuild(server.installDir, game.serverAppId)
+    return {
+      installed,
+      latest: rt.latestBuild,
+      updateAvailable: !!installed && !!rt.latestBuild && installed !== rt.latestBuild,
+      error: rt.buildError
+    }
+  }
+
+  private admin(server: ServerConfig): Admin {
+    return adminFor({
+      game: this.game(server),
+      installDir: server.installDir,
+      ports: server.ports,
+      adminPassword: this.plainSecrets(server)[ADMIN_SECRET] ?? '',
+      tracker: this.rt(server.id).tracker,
+      net: this.deps.net
+    })
+  }
+
+  /** Servers created before every server got an admin password receive one on their next start. */
+  private ensureAdminSecret(server: ServerConfig): ServerConfig {
+    if (!server.secrets[ADMIN_SECRET]) {
+      server.secrets[ADMIN_SECRET] = this.deps.secrets.encrypt(randomBytes(18).toString('base64url'))
+      this.persist()
+    }
+    return server
+  }
+
+  // Many Linux servers look for ~/.steam/sdk64/steamclient.so; SteamCMD ships it, so copy it there once.
+  private provideSteamClient(): void {
+    const sdk = this.deps.steamSdkDir
+    if (this.deps.platform !== 'linux' || !sdk) return
+    for (const [from, to] of [['linux64', 'sdk64'], ['linux32', 'sdk32']]) {
+      const src = join(this.deps.dataDir, 'steamcmd', from, 'steamclient.so')
+      const dest = join(sdk, to, 'steamclient.so')
+      if (!existsSync(src) || existsSync(dest)) continue
+      try {
+        mkdirSync(join(sdk, to), { recursive: true })
+        copyFileSync(src, dest)
+      } catch {
+        // Not fatal: servers that bundle their own steamclient.so still start.
+      }
     }
   }
 
@@ -386,7 +531,12 @@ export function buildLaunch(
 ): LaunchSpec {
   const def = game.platforms[platform]
   if (!def) throw new Error(`${game.name} has no ${platform} server`)
-  const ctx = { ports: server.ports, settings: { ...server.settings, ...secrets }, installDir: server.installDir }
+  const ctx = {
+    ports: server.ports,
+    settings: { ...server.settings, ...secrets },
+    installDir: server.installDir,
+    adminPassword: secrets[ADMIN_SECRET]
+  }
   return {
     command: join(server.installDir, def.executable),
     args: def.args.map((a) => expand(a, ctx)),

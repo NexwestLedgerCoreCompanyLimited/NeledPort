@@ -73,6 +73,11 @@ describe('loadCatalog', () => {
     expect(errors[0].message).toContain('../saves')
   })
 
+  it('rejects a ban file outside the install folder', () => {
+    const def = { ...valid, bans: { method: 'file', file: '../../.ssh/authorized_keys', format: 'lines' } }
+    expect(loadCatalog(dirWith({ 'example.json': def })).errors[0].message).toContain('authorized_keys')
+  })
+
   it('returns an error, not a throw, when the directory is missing', () => {
     const { games, errors } = loadCatalog(join(tmpdir(), 'does-not-exist-neledport'))
     expect(games).toEqual([])
@@ -107,6 +112,18 @@ describe('loadCatalog', () => {
     const { games, errors } = loadCatalog(dirWith({ 'example.json': def }))
     expect(games).toEqual([])
     expect(errors[0].message).toContain(arg.slice(1, -1))
+  })
+
+  it('accepts {adminPassword} and remote ports, rejects undeclared ones', () => {
+    const ok = {
+      ...valid,
+      platforms: { linux: { executable: 'server.sh', args: ['+rcon.password', '{adminPassword}'] } },
+      control: { type: 'webrcon', port: 'game', shutdown: 'quit' },
+      players: { source: 'a2s', port: 'game' }
+    }
+    expect(loadCatalog(dirWith({ 'example.json': ok })).errors).toEqual([])
+    const bad = { ...ok, players: { source: 'a2s', port: 'query' } }
+    expect(loadCatalog(dirWith({ 'example.json': bad })).errors[0].message).toContain('port:query')
   })
 
   it('rejects a REST control that points at an undeclared port', () => {

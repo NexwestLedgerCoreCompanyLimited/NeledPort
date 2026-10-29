@@ -1,0 +1,27 @@
+{
+  "$schema": "./schema.json",
+  "id": "cs2",
+  "name": "Counter-Strike 2",
+  "serverAppId": 730,
+  "gameAppId": 730,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    { "key": "map", "label": "Start map", "type": "text", "default": "de_dust2" },
+    { "key": "maxPlayers", "label": "Max players", "type": "number", "default": 10 },
+    { "key": "gslt", "label": "Steam game server token (needed to be listed online)", "type": "password", "secret": true }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "game/cs2.sh",
+      "args": ["-dedicated", "-console", "-usercon", "-port", "{port:game}", "-maxplayers", "{setting:maxPlayers}", "+map", "{setting:map}", "+rcon_password", "{adminPassword}", "+sv_setsteamaccount", "{setting:gslt}"]
+    },
+    "windows": {
+      "executable": "game/bin/win64/cs2.exe",
+      "args": ["-dedicated", "-console", "-usercon", "-port", "{port:game}", "-maxplayers", "{setting:maxPlayers}", "+map", "{setting:map}", "+rcon_password", "{adminPassword}", "+sv_setsteamaccount", "{setting:gslt}"]
+    }
+  },
+  "ports": [{ "name": "game", "default": 27015, "protocol": "udp" }],
+  "control": { "type": "rcon", "port": "game", "shutdown": "quit" },
+  "players": { "source": "a2s", "port": "game" }
+}

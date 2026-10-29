@@ -10,6 +10,11 @@ describe('expand', () => {
     expect(expand('{installDir}/saves', ctx)).toBe('/srv/valheim/saves')
   })
 
+  it('fills the generated admin password', () => {
+    expect(expand('+rcon.password {adminPassword}', { ...ctx, adminPassword: 'x1' })).toBe('+rcon.password x1')
+    expect(() => expand('{adminPassword}', ctx)).toThrow(/adminPassword/)
+  })
+
   it('leaves text without placeholders alone', () => {
     expect(expand('-nographics', ctx)).toBe('-nographics')
   })
