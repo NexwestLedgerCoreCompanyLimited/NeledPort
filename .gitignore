@@ -1,0 +1,20 @@
+# Dependencies and build output
+node_modules/
+out/
+dist/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local tooling (never publish)
+.claude/
+.playwright-mcp/
+.remember/
+.zcode/
+.superpowers/
+
+# Env and secrets
+.env
+.env.*

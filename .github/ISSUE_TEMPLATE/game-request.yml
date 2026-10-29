@@ -1,0 +1,32 @@
+name: Game request or broken game
+description: Ask for a new game, or report that a supported game no longer starts
+labels: [game-request]
+body:
+  - type: input
+    id: game
+    attributes:
+      label: Game name
+    validations:
+      required: true
+  - type: input
+    id: appid
+    attributes:
+      label: Dedicated server SteamCMD App ID (if you know it)
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Request type
+      options: [Add a new game, A supported game is broken]
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Launch command, config file locations, or the error you see. Remove passwords first.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Can you help?
+      options:
+        - label: I can test this game's server and open a pull request with its JSON definition

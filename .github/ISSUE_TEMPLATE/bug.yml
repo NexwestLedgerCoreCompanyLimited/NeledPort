@@ -1,0 +1,39 @@
+name: Bug report
+description: Something in NeledPort is broken
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: NeledPort version
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [Windows, Linux, Other]
+    validations:
+      required: true
+  - type: input
+    id: game
+    attributes:
+      label: Game server (if any)
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log lines
+      description: Remove passwords and IP addresses before pasting.
+      render: text
