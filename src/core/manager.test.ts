@@ -133,7 +133,7 @@ describe('ServerManager', () => {
     const spec = processes[0].spec!
     expect(spec.command).toBe(join(installDir, 'valheim_server.x86_64'))
     expect(spec.args).toEqual(expect.arrayContaining(['-password', 'secret1', '-world', 'Midgard', '-port', '2456']))
-    expect(spec.env).toEqual({ LD_LIBRARY_PATH: join(installDir, 'linux64'), SteamAppId: '892970' })
+    expect(spec.env).toEqual({ LD_LIBRARY_PATH: `${installDir}/linux64`, SteamAppId: '892970' })
     expect(manager.get(id).status).toBe('running')
   })
 

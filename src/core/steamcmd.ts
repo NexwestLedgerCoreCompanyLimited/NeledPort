@@ -3,7 +3,7 @@ import { createWriteStream, existsSync, mkdirSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
-import { lineReader } from './lines'
+import { lineReader, stripAnsi } from './lines'
 import type { Platform } from './types'
 
 const VALVE_INSTALLER = 'https://steamcdn-a.akamaihd.net/client/installer/'
@@ -34,7 +34,7 @@ export function appUpdateArgs(o: { installDir: string; appId: number; validate: 
 export type SteamCmdEvent = { kind: 'progress'; percent: number } | { kind: 'success' } | { kind: 'error'; message: string }
 
 export function parseSteamCmdLine(line: string): SteamCmdEvent | null {
-  const text = line.trim()
+  const text = stripAnsi(line).trim()
   const progress = /Update state \(0x[0-9a-f]+\) [\w ]+, progress: (\d+(?:\.\d+)?)/i.exec(text)
   if (progress) return { kind: 'progress', percent: Number(progress[1]) }
   if (/^Success! App '\d+' fully installed/.test(text)) return { kind: 'success' }

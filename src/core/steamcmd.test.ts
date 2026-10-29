@@ -79,6 +79,11 @@ describe('parseSteamCmdLine', () => {
     })
   })
 
+  it('ignores the ANSI colour codes SteamCMD prints on Linux', () => {
+    expect(parseSteamCmdLine("\x1b[0mSuccess! App '896660' fully installed.")).toEqual({ kind: 'success' })
+    expect(parseSteamCmdLine('\x1b[0mERROR! Failed to install app')).toEqual({ kind: 'error', message: 'ERROR! Failed to install app' })
+  })
+
   it('ignores other lines', () => {
     expect(parseSteamCmdLine('Loading Steam API...OK')).toBeNull()
     expect(parseSteamCmdLine('')).toBeNull()
