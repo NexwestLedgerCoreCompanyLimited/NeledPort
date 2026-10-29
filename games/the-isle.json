@@ -1,0 +1,31 @@
+{
+  "$schema": "./schema.json",
+  "id": "the-isle",
+  "name": "The Isle",
+  "serverAppId": 412680,
+  "gameAppId": 376210,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "TheIsle/Binaries/Linux/TheIsleServer-Linux-Shipping",
+      "args": [
+        "/Game/TheIsle/Maps/Game/Gateway/Gateway",
+        "-Port={port:game}",
+        "-log",
+        "-ini:Engine:[EpicOnlineServices]:DedicatedServerClientId=xyza7891gk5PRo3J7G9puCJGFJjmEguW",
+        "-ini:Engine:[EpicOnlineServices]:DedicatedServerClientSecret=pKWl6t5i9NJK8gTpVlAxzENZ65P8hYzodV8Dqe5Rlc8"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "./schema.json",
+  "id": "jedi-knight-jedi-academy",
+  "name": "Jedi Knight: Jedi Academy",
+  "serverAppId": 6020,
+  "anonymous": false,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "GameData/openjkded.x86_64",
+      "args": [
+        "+set",
+        "dedicated",
+        "2",
+        "+set",
+        "fs_basepath",
+        "{installDir}/GameData",
+        "+set",
+        "fs_homepath",
+        "{installDir}/GameData",
+        "+set",
+        "net_ip",
+        "0.0.0.0",
+        "+set",
+        "net_port",
+        "{port:game}",
+        "+exec",
+        "neledport.cfg",
+        "+map",
+        "mp/ffa3"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 29070,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

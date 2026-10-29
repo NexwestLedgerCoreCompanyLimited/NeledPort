@@ -1,0 +1,74 @@
+{
+  "$schema": "./schema.json",
+  "id": "team-fortress-2",
+  "name": "Team Fortress 2",
+  "serverAppId": 232250,
+  "gameAppId": 440,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 16
+    },
+    {
+      "key": "gslt",
+      "label": "Steam game server token (optional)",
+      "type": "password",
+      "secret": true
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "srcds_run_64",
+      "args": [
+        "-game",
+        "tf",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "+map",
+        "cp_badlands",
+        "+sv_setsteamaccount",
+        "{setting:gslt}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "-norestart"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "client",
+      "default": 27005,
+      "protocol": "udp"
+    },
+    {
+      "name": "sourcetv",
+      "default": 27020,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "game"
+  }
+}

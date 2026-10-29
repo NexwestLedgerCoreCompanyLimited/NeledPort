@@ -1,0 +1,79 @@
+{
+  "$schema": "./schema.json",
+  "id": "wurm-unlimited",
+  "name": "Wurm Unlimited",
+  "serverAppId": 402370,
+  "gameAppId": 366220,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 200
+    },
+    {
+      "key": "password",
+      "label": "Server password (optional)",
+      "type": "password",
+      "secret": true
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "WurmServerLauncher",
+      "args": [
+        "start=Creative",
+        "adminpwd={adminPassword}",
+        "epicsettings=false",
+        "externalport={port:game}",
+        "homeserver=true",
+        "homekingdom=4",
+        "loginserver=true",
+        "maxplayers={setting:maxPlayers}",
+        "queryport={port:query}",
+        "rmiport={port:rmi}",
+        "rmiregport={port:rmireg}",
+        "servername={setting:serverName}",
+        "serverpassword={setting:password}",
+        "ip=0.0.0.0"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 3724,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27016,
+      "protocol": "udp"
+    },
+    {
+      "name": "rmi",
+      "default": 7221,
+      "protocol": "udp"
+    },
+    {
+      "name": "rmireg",
+      "default": 7220,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

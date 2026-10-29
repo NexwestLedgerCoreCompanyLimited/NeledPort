@@ -1,0 +1,59 @@
+{
+  "$schema": "./schema.json",
+  "id": "double-action-boogaloo",
+  "name": "Double Action: Boogaloo",
+  "serverAppId": 317800,
+  "gameAppId": 317360,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 10
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "dabds.sh",
+      "args": [
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "+map",
+        "da_rooftops",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "client",
+      "default": 27005,
+      "protocol": "udp"
+    },
+    {
+      "name": "sourcetv",
+      "default": 27020,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "./schema.json",
+  "id": "sven-co-op",
+  "name": "Sven Co-op",
+  "serverAppId": 276060,
+  "gameAppId": 225840,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 16
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "svends_run",
+      "args": [
+        "-game",
+        "svencoop",
+        "-strictportbind",
+        "+ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+map",
+        "svencoop1",
+        "+servercfgfile",
+        "neledport.cfg",
+        "+maxplayers",
+        "{setting:maxPlayers}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "client",
+      "default": 27005,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

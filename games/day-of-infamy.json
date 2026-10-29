@@ -1,0 +1,70 @@
+{
+  "$schema": "./schema.json",
+  "id": "day-of-infamy",
+  "name": "Day of Infamy",
+  "serverAppId": 462310,
+  "gameAppId": 447820,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 32
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "srcds_run",
+      "args": [
+        "-game",
+        "doi",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "-tickrate",
+        "64",
+        "+map",
+        "bastogne",
+        "stronghold",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "-workshop",
+        "-norestart"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "client",
+      "default": 27005,
+      "protocol": "udp"
+    },
+    {
+      "name": "sourcetv",
+      "default": 27020,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "game"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "./schema.json",
+  "id": "soulmask",
+  "name": "Soulmask",
+  "serverAppId": 3017300,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 50
+    },
+    {
+      "key": "password",
+      "label": "Server password (optional)",
+      "type": "password",
+      "secret": true
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "WS/Binaries/Linux/WSServer-Linux-Shipping",
+      "args": [
+        "WS",
+        "Level01_Main",
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-EchoPort={port:telnet}",
+        "-QueryPort={port:query}",
+        "-SteamServerName={setting:serverName}",
+        "-PSW={setting:password}",
+        "-adminpsw={adminPassword}",
+        "-MaxPlayers={setting:maxPlayers}",
+        "-initbackup",
+        "-backupinterval=15",
+        "-UTF8Output",
+        "-forcepassthrough",
+        "-log"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 8777,
+      "protocol": "udp"
+    },
+    {
+      "name": "telnet",
+      "default": 18888,
+      "protocol": "tcp"
+    },
+    {
+      "name": "query",
+      "default": 27015,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

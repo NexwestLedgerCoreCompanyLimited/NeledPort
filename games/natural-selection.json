@@ -1,0 +1,57 @@
+{
+  "$schema": "./schema.json",
+  "id": "natural-selection",
+  "name": "Natural Selection",
+  "serverAppId": 90,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 16
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "hlds_run",
+      "args": [
+        "-game",
+        "ns",
+        "-strictportbind",
+        "+ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+map",
+        "ns_hera",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "client",
+      "default": 27005,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "game"
+  }
+}

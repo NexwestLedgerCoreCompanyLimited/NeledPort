@@ -1,0 +1,65 @@
+{
+  "$schema": "./schema.json",
+  "id": "unturned",
+  "name": "Unturned",
+  "serverAppId": 1110390,
+  "gameAppId": 304930,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 20
+    },
+    {
+      "key": "gslt",
+      "label": "Steam game server token (optional)",
+      "type": "password",
+      "secret": true
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "Unturned_Headless.x86_64",
+      "args": [
+        "-nographics",
+        "-batchmode",
+        "-bind",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "-perspective",
+        "first",
+        "-mode",
+        "normal",
+        "-name",
+        "{setting:serverName}",
+        "-map",
+        "PEI",
+        "-gslt",
+        "{setting:gslt}",
+        "+InternetServer/neledport"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

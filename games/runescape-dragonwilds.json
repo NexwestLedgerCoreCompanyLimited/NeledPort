@@ -1,0 +1,27 @@
+{
+  "$schema": "./schema.json",
+  "id": "runescape-dragonwilds",
+  "name": "RuneScape: Dragonwilds",
+  "serverAppId": 4019830,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "RSDragonwilds/Binaries/Linux/RSDragonwildsServer-Linux-Shipping",
+      "args": [
+        "-Port={port:game}",
+        "-log"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

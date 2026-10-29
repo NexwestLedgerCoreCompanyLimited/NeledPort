@@ -1,0 +1,65 @@
+{
+  "$schema": "./schema.json",
+  "id": "iosoccer",
+  "name": "IOSoccer",
+  "serverAppId": 673990,
+  "gameAppId": 673560,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 32
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "srcds_run_64",
+      "args": [
+        "-game",
+        "iosoccer",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "+map",
+        "8v8_vienna",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "client",
+      "default": 27005,
+      "protocol": "udp"
+    },
+    {
+      "name": "sourcetv",
+      "default": 27020,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "game"
+  }
+}

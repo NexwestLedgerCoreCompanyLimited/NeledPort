@@ -1,0 +1,40 @@
+{
+  "$schema": "./schema.json",
+  "id": "tower-unite",
+  "name": "Tower Unite",
+  "serverAppId": 439660,
+  "gameAppId": 394690,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "Tower/Binaries/Linux/TowerServer-Linux-Shipping",
+      "args": [
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-TowerServerINI=neledport.ini",
+        "-log"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27015,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

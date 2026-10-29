@@ -1,0 +1,58 @@
+{
+  "$schema": "./schema.json",
+  "id": "day-of-defeat",
+  "name": "Day of Defeat",
+  "serverAppId": 90,
+  "gameAppId": 30,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 16
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "hlds_run",
+      "args": [
+        "-game",
+        "dod",
+        "-strictportbind",
+        "+ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+map",
+        "dod_Anzio",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "client",
+      "default": 27005,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "game"
+  }
+}

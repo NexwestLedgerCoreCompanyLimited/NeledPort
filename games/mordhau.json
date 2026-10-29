@@ -1,0 +1,48 @@
+{
+  "$schema": "./schema.json",
+  "id": "mordhau",
+  "name": "MORDHAU",
+  "serverAppId": 629800,
+  "gameAppId": 629760,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "Mordhau/Binaries/Linux/MordhauServer-Linux-Shipping",
+      "args": [
+        "Mordhau",
+        "FFA_ThePit",
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-BeaconPort={port:beacon}",
+        "-QueryPort={port:query}",
+        "-GameIni={installDir}/Mordhau/Saved/Config/LinuxServer/Game.ini",
+        "-log"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
+    {
+      "name": "beacon",
+      "default": 15000,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27015,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

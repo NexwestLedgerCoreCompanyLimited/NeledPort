@@ -1,0 +1,35 @@
+{
+  "$schema": "./schema.json",
+  "id": "arma-3",
+  "name": "ARMA 3",
+  "serverAppId": 233780,
+  "gameAppId": 107410,
+  "anonymous": false,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "arma3server_x64",
+      "args": [
+        "-ip=0.0.0.0",
+        "-port={port:game}",
+        "-cfg={installDir}/cfg/neledport.network.cfg",
+        "-config={installDir}/cfg/neledport.server.cfg",
+        "-mod=",
+        "-servermod=",
+        "-bepath=",
+        "-autoinit",
+        "-loadmissiontomemory"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 2302,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "./schema.json",
+  "id": "insurgency",
+  "name": "Insurgency",
+  "serverAppId": 237410,
+  "gameAppId": 222880,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 32
+    },
+    {
+      "key": "gslt",
+      "label": "Steam game server token (optional)",
+      "type": "password",
+      "secret": true
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "srcds_run",
+      "args": [
+        "-game",
+        "insurgency",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "-tickrate",
+        "64",
+        "+sv_setsteamaccount",
+        "{setting:gslt}",
+        "+map",
+        "embassy_coop",
+        "checkpoint",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "-workshop",
+        "-norestart"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "client",
+      "default": 27005,
+      "protocol": "udp"
+    },
+    {
+      "name": "sourcetv",
+      "default": 27020,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "game"
+  }
+}

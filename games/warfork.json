@@ -1,0 +1,42 @@
+{
+  "$schema": "./schema.json",
+  "id": "warfork",
+  "name": "Warfork",
+  "serverAppId": 1136510,
+  "gameAppId": 671610,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "wf_server.x86_64",
+      "args": [
+        "+exec",
+        "neledport.cfg",
+        "+sv_http_ip",
+        "0.0.0.0",
+        "+set",
+        "sv_http_port",
+        "{port:http}",
+        "+sv_ip",
+        "0.0.0.0",
+        "+sv_port",
+        "{port:game}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 44400,
+      "protocol": "udp"
+    },
+    {
+      "name": "http",
+      "default": 44444,
+      "protocol": "tcp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

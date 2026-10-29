@@ -1,0 +1,41 @@
+{
+  "$schema": "./schema.json",
+  "id": "ark-survival-evolved",
+  "name": "ARK: Survival Evolved",
+  "serverAppId": 376030,
+  "gameAppId": 346110,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "ShooterGame/Binaries/Linux/ShooterGameServer",
+      "args": [
+        "TheIsland?AltSaveDirectoryName=TheIsland",
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-AutoManagedMods",
+        "-Crossplay"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27015,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

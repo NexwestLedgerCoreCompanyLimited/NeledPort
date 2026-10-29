@@ -1,0 +1,31 @@
+{
+  "$schema": "./schema.json",
+  "id": "killing-floor-2",
+  "name": "Killing Floor 2",
+  "serverAppId": 232130,
+  "gameAppId": 232090,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "Binaries/Win64/KFGameSteamServer.bin.x86_64",
+      "args": [
+        "KF-BioticsLab?Game=KFGameContent.KFGameInfo_VersusSurvival?ConfigSubDir=neledport -QueryPort={port:query}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "query",
+      "default": 27015,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

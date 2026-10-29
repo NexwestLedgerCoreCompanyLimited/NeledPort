@@ -1,0 +1,41 @@
+{
+  "$schema": "./schema.json",
+  "id": "chivalry-medieval-warfare",
+  "name": "Chivalry: Medieval Warfare",
+  "serverAppId": 220070,
+  "gameAppId": 219640,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "Binaries/Linux/UDKGameServer-Linux",
+      "args": [
+        "AOCTD-Frigid_p?steamsockets",
+        "-multihome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-seekfreeloadingserver",
+        "-configsubdir=neledport"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 7779,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

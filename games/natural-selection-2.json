@@ -1,0 +1,76 @@
+{
+  "$schema": "./schema.json",
+  "id": "natural-selection-2",
+  "name": "Natural Selection 2",
+  "serverAppId": 4940,
+  "gameAppId": 4920,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 20
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "x64/server_linux",
+      "args": [
+        "-name",
+        "{setting:serverName}",
+        "-port",
+        "{port:game}",
+        "-webadmin",
+        "-webdomain",
+        "0.0.0.0",
+        "-webuser",
+        "admin",
+        "-webpassword",
+        "CHANGE_ME",
+        "-webport",
+        "{port:http}",
+        "-startmodserver",
+        "-modserverport",
+        "{port:modserver}",
+        "-map",
+        "ns2_summit",
+        "-limit",
+        "{setting:maxPlayers}",
+        "-speclimit",
+        "5",
+        "-config_path",
+        "{installDir}/neledport",
+        "-modstorage",
+        "{installDir}/neledport/Workshop"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "http",
+      "default": 8080,
+      "protocol": "tcp"
+    },
+    {
+      "name": "modserver",
+      "default": 27031,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

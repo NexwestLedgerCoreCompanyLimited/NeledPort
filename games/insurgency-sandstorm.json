@@ -1,0 +1,69 @@
+{
+  "$schema": "./schema.json",
+  "id": "insurgency-sandstorm",
+  "name": "Insurgency: Sandstorm",
+  "serverAppId": 581330,
+  "gameAppId": 581320,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 28
+    },
+    {
+      "key": "gslt",
+      "label": "Steam game server token (optional)",
+      "type": "password",
+      "secret": true
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "Insurgency/Binaries/Linux/InsurgencyServer-Linux-Shipping",
+      "args": [
+        "Oilfield?Scenario=Scenario_Refinery_Push_Security?MaxPlayers={setting:maxPlayers}",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-hostname={setting:serverName}",
+        "-Rcon",
+        "-RconPassword={adminPassword}",
+        "-RconListenPort={port:rcon}",
+        "-GSLTToken={setting:gslt}",
+        "-log"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27102,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27131,
+      "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 27015,
+      "protocol": "tcp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

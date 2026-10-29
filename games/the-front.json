@@ -1,0 +1,98 @@
+{
+  "$schema": "./schema.json",
+  "id": "the-front",
+  "name": "The Front",
+  "serverAppId": 2334200,
+  "gameAppId": 2285150,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 40
+    },
+    {
+      "key": "password",
+      "label": "Server password (optional)",
+      "type": "password",
+      "secret": true
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "ProjectWar/Binaries/Linux/TheFrontServer",
+      "args": [
+        "ProjectWar_Start?DedicatedServer?MaxPlayers={setting:maxPlayers}",
+        "-server",
+        "-game",
+        "-log",
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-BeaconPort={port:beacon}",
+        "-ShutDownServicePort={port:shutdown}",
+        "-ConfigServerName=neledport",
+        "-ServerTags=LinuxGSM",
+        "-UseSteamSocket=0",
+        "-UserDir={installDir}/neledport",
+        "-ServerName={setting:serverName}",
+        "-EnableParallelCharacterMovementTickFunction",
+        "-EnableParallelCharacterTickFunction",
+        "-UseDynamicPhysicsScene",
+        "-Game.PhysicsVehicle=false",
+        "-ansimalloc",
+        "-Game.MaxFrameRate=35",
+        "-MaxQueueSize=50",
+        "-QueueValidTime=120",
+        "-QueueThreshold={setting:maxPlayers}",
+        "-ServerFightModeType=0",
+        "-IsCanSelfDamage=true",
+        "-SaveWorldInterval=300",
+        "-GMOverlapRatio=2",
+        "-GreenHand=true",
+        "-SensitiveWords=true",
+        "-UseEAC=true",
+        "-ServerAdminAccounts=",
+        "-IsShowGmTitle=true",
+        "-ServerPassword={setting:password}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 5001,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "beacon",
+      "default": 5002,
+      "protocol": "udp"
+    },
+    {
+      "name": "shutdown",
+      "default": 5003,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "./schema.json",
+  "id": "humanitz",
+  "name": "Humanitz",
+  "serverAppId": 2728330,
+  "gameAppId": 1766060,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "HumanitZServer/Binaries/Linux/HumanitZServer-Linux-Shipping",
+      "args": [
+        "-log",
+        "-port={port:game}",
+        "-queryport={port:query}",
+        "-steamservername={setting:serverName}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27015,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

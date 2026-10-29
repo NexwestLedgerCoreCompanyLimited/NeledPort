@@ -1,0 +1,35 @@
+{
+  "$schema": "./schema.json",
+  "id": "satisfactory",
+  "name": "Satisfactory",
+  "serverAppId": 1690800,
+  "gameAppId": 526870,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "Engine/Binaries/Linux/FactoryServer-Linux-Shipping",
+      "args": [
+        "FactoryGame",
+        "-Port={port:game}",
+        "-ReliablePort={port:reliable}",
+        "-log"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
+    {
+      "name": "reliable",
+      "default": 8888,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

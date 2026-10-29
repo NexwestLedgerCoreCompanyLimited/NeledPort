@@ -1,0 +1,51 @@
+{
+  "$schema": "./schema.json",
+  "id": "hurtworld",
+  "name": "Hurtworld",
+  "serverAppId": 405100,
+  "gameAppId": 393420,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 20
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "Hurtworld.x86_64",
+      "args": [
+        "-batchmode",
+        "-nographics"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 12871,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 12881,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

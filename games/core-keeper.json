@@ -1,0 +1,33 @@
+{
+  "$schema": "./schema.json",
+  "id": "core-keeper",
+  "name": "Core Keeper",
+  "serverAppId": 1963720,
+  "gameAppId": 1621690,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "CoreKeeperServer",
+      "args": [
+        "-batchmode",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "-datapath",
+        "{installDir}/gamedata/neledport"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 1234,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "./schema.json",
+  "id": "conan-exiles",
+  "name": "Conan Exiles",
+  "serverAppId": 443030,
+  "gameAppId": 440900,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 40
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "ConanSandbox/Binaries/Linux/ConanSandboxServer-Linux-Shipping",
+      "args": [
+        "ConanSandbox",
+        "-log",
+        "-MULTIHOME=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-ServerName={setting:serverName}",
+        "-MaxPlayers={setting:maxPlayers}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27015,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

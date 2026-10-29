@@ -1,0 +1,61 @@
+{
+  "$schema": "./schema.json",
+  "id": "operation-harsh-doorstop",
+  "name": "Operation: Harsh Doorstop",
+  "serverAppId": 950900,
+  "gameAppId": 736590,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 16
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "HarshDoorstop/Binaries/Linux/HarshDoorstopServer-Linux-Shipping",
+      "args": [
+        "AAS-TestMap?MaxPlayers={setting:maxPlayers}",
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-RconPort={port:rcon}",
+        "-SteamServerName={setting:serverName}",
+        "-log"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27005,
+      "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 7778,
+      "protocol": "tcp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "./schema.json",
+  "id": "squad",
+  "name": "Squad",
+  "serverAppId": 403240,
+  "gameAppId": 393380,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "SquadGameServer.sh",
+      "args": [
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7787,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27165,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "./schema.json",
+  "id": "pavlov-vr",
+  "name": "Pavlov VR",
+  "serverAppId": 622970,
+  "gameAppId": 555160,
+  "anonymous": true,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "Pavlov/Binaries/Linux/PavlovServer-Linux-Shipping",
+      "args": [
+        "Pavlov",
+        "datacenter",
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "ApiKey=",
+        "-log"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

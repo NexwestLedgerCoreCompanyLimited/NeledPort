@@ -1,0 +1,36 @@
+{
+  "$schema": "./schema.json",
+  "id": "dayz",
+  "name": "DayZ",
+  "serverAppId": 223350,
+  "gameAppId": 221100,
+  "anonymous": false,
+  "tier": "basic",
+  "platforms": {
+    "linux": {
+      "executable": "DayZServer",
+      "args": [
+        "-ip=0.0.0.0",
+        "-port={port:game}",
+        "-config={installDir}/cfg/neledport.server.cfg",
+        "-mod=",
+        "-servermod=",
+        "-bepath=",
+        "-limitFPS=60",
+        "-dologs",
+        "-adminlog",
+        "-freezeCheck"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 2302,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

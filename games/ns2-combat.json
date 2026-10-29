@@ -1,0 +1,67 @@
+{
+  "$schema": "./schema.json",
+  "id": "ns2-combat",
+  "name": "NS2: Combat",
+  "serverAppId": 313900,
+  "gameAppId": 310110,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 24
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "ia32/ns2combatserver_linux32",
+      "args": [
+        "-name",
+        "{setting:serverName}",
+        "-port",
+        "{port:game}",
+        "-webadmin",
+        "-webdomain",
+        "0.0.0.0",
+        "-webuser",
+        "admin",
+        "-webpassword",
+        "CHANGE_ME",
+        "-webport",
+        "{port:http}",
+        "-map",
+        "co_core",
+        "-limit",
+        "{setting:maxPlayers}",
+        "-config_path",
+        "{installDir}/neledport",
+        "-modstorage",
+        "{installDir}/neledport/Workshop",
+        "-mods"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 27015,
+      "protocol": "udp"
+    },
+    {
+      "name": "http",
+      "default": 8080,
+      "protocol": "tcp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  }
+}

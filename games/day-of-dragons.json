@@ -1,0 +1,48 @@
+{
+  "$schema": "./schema.json",
+  "id": "day-of-dragons",
+  "name": "Day of Dragons",
+  "serverAppId": 1088320,
+  "gameAppId": 1088090,
+  "anonymous": true,
+  "tier": "basic",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort server"
+    }
+  ],
+  "platforms": {
+    "linux": {
+      "executable": "Dragons/Binaries/Linux/DragonsServer-Linux-Shipping",
+      "args": [
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-SteamServerName={setting:serverName}",
+        "-log"
+      ]
+    }
+  },
+  "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27015,
+      "protocol": "udp"
+    }
+  ],
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
+}
