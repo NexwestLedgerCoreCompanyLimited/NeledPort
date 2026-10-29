@@ -73,6 +73,29 @@ describe('loadCatalog', () => {
     expect(errors[0].message).toContain('../saves')
   })
 
+  const loader = {
+    id: 'oxide',
+    name: 'Oxide',
+    download: { linux: 'https://github.com/OxideMod/Oxide.Rust/releases/latest/download/Oxide.Rust-linux.zip' },
+    pluginDir: 'oxide/plugins',
+    pluginExtensions: ['.cs']
+  }
+
+  it('accepts a mod loader from GitHub or Thunderstore', () => {
+    const def = { ...valid, modLoaders: [loader, { ...loader, id: 'bep', download: { linux: 'https://thunderstore.io/package/download/a/b/1.0.0/' } }] }
+    expect(loadCatalog(dirWith({ 'example.json': def })).errors).toEqual([])
+  })
+
+  it.each(['http://github.com/x.zip', 'https://evil.example/x.zip', 'https://github.com.evil.example/x.zip'])('rejects a loader download from %s', (url) => {
+    const def = { ...valid, modLoaders: [{ ...loader, download: { linux: url } }] }
+    expect(loadCatalog(dirWith({ 'example.json': def })).errors[0].message).toMatch(/download/)
+  })
+
+  it('rejects a plugin folder outside the install folder', () => {
+    const def = { ...valid, modLoaders: [{ ...loader, pluginDir: '../plugins' }] }
+    expect(loadCatalog(dirWith({ 'example.json': def })).errors[0].message).toContain('../plugins')
+  })
+
   it('rejects a ban file outside the install folder', () => {
     const def = { ...valid, bans: { method: 'file', file: '../../.ssh/authorized_keys', format: 'lines' } }
     expect(loadCatalog(dirWith({ 'example.json': def })).errors[0].message).toContain('authorized_keys')

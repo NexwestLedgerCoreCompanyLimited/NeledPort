@@ -103,5 +103,28 @@
     "join": "Got connection SteamID (?<id>\\d+)",
     "leave": "Closing socket (?<id>\\d+)",
     "character": "Got character ZDOID from (?<name>.+?) :"
-  }
+  },
+  "modLoaders": [
+    {
+      "id": "bepinex",
+      "name": "BepInEx",
+      "download": {
+        "windows": "https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.2360/",
+        "linux": "https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.2360/"
+      },
+      "stripTopFolder": "BepInExPack_Valheim",
+      "pluginDir": "BepInEx/plugins",
+      "pluginExtensions": [
+        ".dll"
+      ],
+      "env": {
+        "linux": {
+          "DOORSTOP_ENABLED": "1",
+          "DOORSTOP_TARGET_ASSEMBLY": "{installDir}/BepInEx/core/BepInEx.Preloader.dll",
+          "LD_LIBRARY_PATH": "{installDir}/doorstop_libs:{installDir}/linux64",
+          "LD_PRELOAD": "libdoorstop_x64.so"
+        }
+      }
+    }
+  ]
 }

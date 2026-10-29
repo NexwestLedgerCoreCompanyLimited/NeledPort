@@ -39,8 +39,19 @@ export interface GameDefinition {
   players?: { source: 'rest' | 'rcon' | 'a2s' | 'log'; port?: string }
   bans?: { method: 'rest' | 'rcon' | 'file'; file?: string; format?: 'lines' | 'rust-cfg' }
   logPatterns?: { ready?: string; join?: string; leave?: string; character?: string }
-  workshop?: Record<string, unknown> | null
-  modLoaders?: unknown[]
+  workshop?: { command: string } | null
+  modLoaders?: ModLoaderDefinition[]
+}
+
+export interface ModLoaderDefinition {
+  id: string
+  name: string
+  download: Partial<Record<Platform, string>>
+  stripTopFolder?: string
+  pluginDir: string
+  pluginExtensions: string[]
+  reapplyAfterUpdate?: boolean
+  env?: Partial<Record<Platform, Record<string, string>>>
 }
 
 export type CatalogError = { file: string; message: string }
@@ -72,6 +83,19 @@ export interface AdminCapabilities {
   banOnNextJoin: boolean
 }
 
+export interface LoaderInfo {
+  id: string
+  name: string
+  installed: boolean
+  installedAt?: string
+}
+
+export interface PluginInfo {
+  name: string
+  enabled: boolean
+  size: number
+}
+
 export interface BuildInfo {
   installed?: string
   latest?: string
@@ -101,6 +125,9 @@ export interface ServerView {
   /** No launcher is known for this OS: the user picks the server program once after installing. */
   needsLaunchSetup: boolean
   custom: boolean
+  loaders: LoaderInfo[]
+  /** Workshop items can be loaded through the console. */
+  workshop: boolean
   launch?: { executable: string; args: string[] }
 }
 
@@ -155,6 +182,14 @@ export interface NeledPortApi {
   setLaunch(id: string, program: string, args: string): Promise<ServerView>
   /** Opens a prefilled GitHub pull request page with this server's definition; returns its URL. */
   shareDefinition(id: string): Promise<string>
+  installLoader(id: string, loaderId: string): Promise<void>
+  uninstallLoader(id: string, loaderId: string): Promise<void>
+  plugins(id: string, loaderId: string): Promise<PluginInfo[]>
+  setPluginEnabled(id: string, loaderId: string, name: string, enabled: boolean): Promise<void>
+  removePlugin(id: string, loaderId: string, name: string): Promise<void>
+  /** Opens a file picker; false when the user cancelled. */
+  addPlugin(id: string, loaderId: string): Promise<boolean>
+  workshop(id: string, itemId: string): Promise<void>
   onServerChanged(cb: (server: ServerView) => void): () => void
   onServerLine(cb: (id: string, line: string) => void): () => void
 }

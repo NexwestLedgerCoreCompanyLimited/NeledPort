@@ -270,13 +270,100 @@
       }
     },
     "workshop": {
+      "description": "How to load a Steam Workshop item on a running server.",
       "type": [
         "object",
         "null"
-      ]
+      ],
+      "additionalProperties": false,
+      "required": [
+        "command"
+      ],
+      "properties": {
+        "command": {
+          "description": "Console command with {id} for the Workshop item id.",
+          "type": "string",
+          "pattern": "\\{id\\}"
+        }
+      }
     },
     "modLoaders": {
-      "type": "array"
+      "description": "Server-side mod loaders NeledPort can install with one click.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "download",
+          "pluginDir",
+          "pluginExtensions"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "download": {
+            "description": "Zip per platform; HTTPS from github.com or thunderstore.io only.",
+            "type": "object",
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "windows": {
+                "type": "string"
+              },
+              "linux": {
+                "type": "string"
+              }
+            }
+          },
+          "stripTopFolder": {
+            "description": "Folder inside the zip whose contents go to the server folder.",
+            "type": "string"
+          },
+          "pluginDir": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pluginExtensions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^\\.[a-z0-9]+$"
+            }
+          },
+          "reapplyAfterUpdate": {
+            "description": "The loader patches game files, so updates remove it.",
+            "type": "boolean"
+          },
+          "env": {
+            "description": "Extra environment per platform while the loader is installed.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "windows": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "linux": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {

@@ -5,6 +5,7 @@ import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { splitArgs } from './args'
 import { adminFor, capabilities, LogPlayerTracker, type Admin, type AdminNet } from './admin'
 import { createBackup, listBackups, pruneBackups } from './backup'
+import { addPlugin, downloadZip, installLoader, listPlugins, loaderState, removePlugin, setPluginEnabled, uninstallLoader } from './mods'
 import { appInfoArgs, installedBuild, parseLatestBuild } from './build'
 import { palworldRest, prepareConfig } from './palworld'
 import { isPortFree } from './ports'
@@ -18,6 +19,9 @@ import type {
   BanEntry,
   BuildInfo,
   CreateServerInput,
+  LoaderInfo,
+  ModLoaderDefinition,
+  PluginInfo,
   GameDefinition,
   Platform,
   PlayerInfo,
@@ -54,6 +58,8 @@ export interface ManagerDeps {
   }
   /** Player/ban/console transports; real network clients when omitted. */
   net?: AdminNet
+  /** Mod loader downloads; HTTPS from GitHub/Thunderstore when omitted. */
+  download?: (url: string) => Promise<Buffer>
   /** Linux: ~/.steam, where many servers look for steamclient.so. Skipped when omitted. */
   steamSdkDir?: string
 }
@@ -248,7 +254,7 @@ export class ServerManager extends EventEmitter {
     })
     rt.proc = proc
     rt.message = undefined
-    proc.start(buildLaunch(game, this.deps.platform, server, secrets))
+    proc.start(buildLaunch(game, this.deps.platform, server, secrets, this.loaderEnv(server, game)))
     this.changed(id)
   }
 
@@ -308,6 +314,7 @@ export class ServerManager extends EventEmitter {
         if (wasRunning) await this.stop(id)
         await this.backup(id, 'update')
         await this.installNow(id, true)
+        await this.reapplyLoaders(id)
       } finally {
         rt.status = undefined
         this.changed(id)
@@ -349,6 +356,62 @@ export class ServerManager extends EventEmitter {
     if (server.launch) platforms[this.deps.platform] = { executable: server.launch.executable, args: server.launch.args }
     const base = server.custom ? { tier: 'basic' as const } : {}
     return { $schema: './schema.json', ...game, ...base, id: slug(game.name), platforms }
+  }
+
+  installLoader(id: string, loaderId: string): Promise<void> {
+    return this.exclusive(id, async () => {
+      const server = this.config(id)
+      if (!this.isInstalled(server)) throw new Error('Install the server first')
+      if (this.rt(id).proc) throw new Error('Stop the server before changing mod loaders')
+      const loader = this.loader(server, loaderId)
+      this.addLine(id, `[NeledPort] Installing ${loader.name}…`)
+      await installLoader(server.installDir, loader, this.deps.platform, this.deps.download ?? downloadZip)
+      this.addLine(id, `[NeledPort] ${loader.name} installed`)
+      this.changed(id)
+    })
+  }
+
+  uninstallLoader(id: string, loaderId: string): Promise<void> {
+    return this.exclusive(id, async () => {
+      const server = this.config(id)
+      if (this.rt(id).proc) throw new Error('Stop the server before changing mod loaders')
+      const loader = this.loader(server, loaderId)
+      const { needsValidate } = uninstallLoader(server.installDir, loader.id)
+      // The loader overwrote game files: SteamCMD validate puts the originals back.
+      if (needsValidate) await this.installNow(id, true)
+      this.addLine(id, `[NeledPort] ${loader.name} removed`)
+      this.changed(id)
+    })
+  }
+
+  plugins(id: string, loaderId: string): PluginInfo[] {
+    const server = this.config(id)
+    return listPlugins(server.installDir, this.loader(server, loaderId))
+  }
+
+  setPluginEnabled(id: string, loaderId: string, name: string, enabled: boolean): void {
+    const server = this.config(id)
+    setPluginEnabled(server.installDir, this.loader(server, loaderId), name, enabled)
+  }
+
+  addPlugin(id: string, loaderId: string, file: string): void {
+    const server = this.config(id)
+    addPlugin(server.installDir, this.loader(server, loaderId), file)
+    this.addLine(id, `[NeledPort] Added plugin ${file.split(/[\\/]/).pop()}`)
+  }
+
+  removePlugin(id: string, loaderId: string, name: string): void {
+    const server = this.config(id)
+    removePlugin(server.installDir, this.loader(server, loaderId), name)
+    this.addLine(id, `[NeledPort] Removed plugin ${name}`)
+  }
+
+  /** Loads a Steam Workshop item on the running server with the game's own console command. */
+  async workshop(id: string, itemId: string): Promise<void> {
+    const command = this.game(this.config(id)).workshop?.command
+    if (!command) throw new Error('This game has no Workshop support in NeledPort yet')
+    if (!/^\d{1,20}$/.test(itemId)) throw new Error('A Workshop item id is a number')
+    await this.command(id, command.replace('{id}', itemId))
   }
 
   async players(id: string): Promise<PlayerInfo[]> {
@@ -453,7 +516,35 @@ export class ServerManager extends EventEmitter {
       build: this.buildInfo(server, game, rt),
       needsLaunchSetup: this.needsLaunchSetup(server),
       custom: !!server.custom,
+      loaders: (game.modLoaders ?? []).map((l): LoaderInfo => {
+        const state = loaderState(server.installDir, l.id)
+        return { id: l.id, name: l.name, installed: !!state, ...(state ? { installedAt: state.installedAt } : {}) }
+      }),
+      workshop: !!game.workshop,
       ...(server.launch ? { launch: server.launch } : {})
+    }
+  }
+
+  private loader(server: ServerConfig, loaderId: string): ModLoaderDefinition {
+    const loader = this.game(server).modLoaders?.find((l) => l.id === loaderId)
+    if (!loader) throw new Error(`Unknown mod loader "${loaderId}"`)
+    return loader
+  }
+
+  private loaderEnv(server: ServerConfig, game: GameDefinition): Record<string, string> {
+    return Object.assign(
+      {},
+      ...(game.modLoaders ?? []).filter((l) => loaderState(server.installDir, l.id)).map((l) => l.env?.[this.deps.platform] ?? {})
+    )
+  }
+
+  /** Loaders that patch game files are wiped by an update; install their latest build again. */
+  private async reapplyLoaders(id: string): Promise<void> {
+    const server = this.config(id)
+    for (const loader of this.game(server).modLoaders ?? []) {
+      if (!loader.reapplyAfterUpdate || !loaderState(server.installDir, loader.id)) continue
+      this.addLine(id, `[NeledPort] Reinstalling ${loader.name} after the update…`)
+      await installLoader(server.installDir, loader, this.deps.platform, this.deps.download ?? downloadZip)
     }
   }
 
@@ -565,9 +656,11 @@ export function buildLaunch(
   game: GameDefinition,
   platform: Platform,
   server: ServerConfig,
-  secrets: Record<string, string>
+  secrets: Record<string, string>,
+  extraEnv: Record<string, string> = {}
 ): LaunchSpec {
-  const def = server.launch ?? game.platforms[platform]
+  const def: { executable: string; args: string[]; env?: Record<string, string> } | undefined =
+    server.launch ?? game.platforms[platform]
   if (!def) throw new Error(`${game.name} has no ${platform} server`)
   const ctx = {
     ports: server.ports,
@@ -575,12 +668,12 @@ export function buildLaunch(
     installDir: server.installDir,
     adminPassword: secrets[ADMIN_SECRET]
   }
-  const env = 'env' in def ? def.env : undefined
+  const env = def.env ?? {}
   return {
     command: join(server.installDir, def.executable),
     args: def.args.map((a) => expand(a, ctx)),
     cwd: server.installDir,
-    env: Object.fromEntries(Object.entries(env ?? {}).map(([k, v]) => [k, expand(v, ctx)]))
+    env: Object.fromEntries(Object.entries({ ...env, ...extraEnv }).map(([k, v]) => [k, expand(v, ctx)]))
   }
 }
 

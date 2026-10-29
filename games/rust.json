@@ -7,31 +7,149 @@
   "anonymous": true,
   "tier": "full",
   "settings": [
-    { "key": "serverName", "label": "Server name", "type": "text", "default": "NeledPort Rust" },
-    { "key": "maxPlayers", "label": "Max players", "type": "number", "default": 50 },
-    { "key": "worldSize", "label": "World size (1000-6000)", "type": "number", "default": 3500 },
-    { "key": "seed", "label": "Map seed", "type": "number", "default": 12345 }
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Rust"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 50
+    },
+    {
+      "key": "worldSize",
+      "label": "World size (1000-6000)",
+      "type": "number",
+      "default": 3500
+    },
+    {
+      "key": "seed",
+      "label": "Map seed",
+      "type": "number",
+      "default": 12345
+    }
   ],
   "platforms": {
     "linux": {
       "executable": "RustDedicated",
-      "args": ["-batchmode", "+server.identity", "neledport", "+server.hostname", "{setting:serverName}", "+server.port", "{port:game}", "+server.queryport", "{port:query}", "+server.maxplayers", "{setting:maxPlayers}", "+server.worldsize", "{setting:worldSize}", "+server.seed", "{setting:seed}", "+rcon.web", "1", "+rcon.ip", "127.0.0.1", "+rcon.port", "{port:rcon}", "+rcon.password", "{adminPassword}", "+app.port", "{port:app}"],
-      "env": { "LD_LIBRARY_PATH": "{installDir}/RustDedicated_Data/Plugins/x86_64" }
+      "args": [
+        "-batchmode",
+        "+server.identity",
+        "neledport",
+        "+server.hostname",
+        "{setting:serverName}",
+        "+server.port",
+        "{port:game}",
+        "+server.queryport",
+        "{port:query}",
+        "+server.maxplayers",
+        "{setting:maxPlayers}",
+        "+server.worldsize",
+        "{setting:worldSize}",
+        "+server.seed",
+        "{setting:seed}",
+        "+rcon.web",
+        "1",
+        "+rcon.ip",
+        "127.0.0.1",
+        "+rcon.port",
+        "{port:rcon}",
+        "+rcon.password",
+        "{adminPassword}",
+        "+app.port",
+        "{port:app}"
+      ],
+      "env": {
+        "LD_LIBRARY_PATH": "{installDir}/RustDedicated_Data/Plugins/x86_64"
+      }
     },
     "windows": {
       "executable": "RustDedicated.exe",
-      "args": ["-batchmode", "+server.identity", "neledport", "+server.hostname", "{setting:serverName}", "+server.port", "{port:game}", "+server.queryport", "{port:query}", "+server.maxplayers", "{setting:maxPlayers}", "+server.worldsize", "{setting:worldSize}", "+server.seed", "{setting:seed}", "+rcon.web", "1", "+rcon.ip", "127.0.0.1", "+rcon.port", "{port:rcon}", "+rcon.password", "{adminPassword}", "+app.port", "{port:app}"]
+      "args": [
+        "-batchmode",
+        "+server.identity",
+        "neledport",
+        "+server.hostname",
+        "{setting:serverName}",
+        "+server.port",
+        "{port:game}",
+        "+server.queryport",
+        "{port:query}",
+        "+server.maxplayers",
+        "{setting:maxPlayers}",
+        "+server.worldsize",
+        "{setting:worldSize}",
+        "+server.seed",
+        "{setting:seed}",
+        "+rcon.web",
+        "1",
+        "+rcon.ip",
+        "127.0.0.1",
+        "+rcon.port",
+        "{port:rcon}",
+        "+rcon.password",
+        "{adminPassword}",
+        "+app.port",
+        "{port:app}"
+      ]
     }
   },
   "ports": [
-    { "name": "game", "default": 28015, "protocol": "udp" },
-    { "name": "query", "default": 28017, "protocol": "udp" },
-    { "name": "rcon", "default": 28016, "protocol": "tcp" },
-    { "name": "app", "default": 28082, "protocol": "tcp" }
+    {
+      "name": "game",
+      "default": 28015,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 28017,
+      "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 28016,
+      "protocol": "tcp"
+    },
+    {
+      "name": "app",
+      "default": 28082,
+      "protocol": "tcp"
+    }
   ],
   "saveDir": "server/neledport",
-  "control": { "type": "webrcon", "port": "rcon", "save": "server.save", "shutdown": "quit" },
-  "players": { "source": "rcon" },
-  "bans": { "method": "rcon", "file": "server/neledport/cfg/bans.cfg", "format": "rust-cfg" },
-  "logPatterns": { "ready": "Server startup complete" }
+  "control": {
+    "type": "webrcon",
+    "port": "rcon",
+    "save": "server.save",
+    "shutdown": "quit"
+  },
+  "players": {
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "server/neledport/cfg/bans.cfg",
+    "format": "rust-cfg"
+  },
+  "logPatterns": {
+    "ready": "Server startup complete"
+  },
+  "modLoaders": [
+    {
+      "id": "oxide",
+      "name": "Oxide (uMod)",
+      "download": {
+        "windows": "https://github.com/OxideMod/Oxide.Rust/releases/latest/download/Oxide.Rust.zip",
+        "linux": "https://github.com/OxideMod/Oxide.Rust/releases/latest/download/Oxide.Rust-linux.zip"
+      },
+      "pluginDir": "oxide/plugins",
+      "pluginExtensions": [
+        ".cs"
+      ],
+      "reapplyAfterUpdate": true
+    }
+  ]
 }

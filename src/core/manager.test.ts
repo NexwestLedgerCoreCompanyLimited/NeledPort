@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { loadCatalog, validateDefinition } from './catalog'
+import { makeZip } from './testing/zip'
 import { ServerManager, type ManagerDeps, type ProcessLike } from './manager'
 import type { LaunchSpec, ProcessState } from './process'
 import type { Platform } from './types'
@@ -85,7 +86,14 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
     },
     portFree: async (port) => !(opts.busyPorts ?? []).includes(port),
     net: {
-      webrcon: async (o, cmd) => (restCalls.push(`web:${cmd}`), cmd === 'status' ? 'hostname: test\nplayers : 0' : '')
+      webrcon: async (o, cmd) => (restCalls.push(`web:${cmd}`), cmd === 'status' ? 'hostname: test\nplayers : 0' : ''),
+      rcon: async (o, cmd) => (restCalls.push(`rcon:${cmd}`), '')
+    },
+    download: async (url) => {
+      log.push(`download ${url.split('/').pop() || url}`)
+      return url.includes('thunderstore')
+        ? makeZip([{ name: 'BepInExPack_Valheim/BepInEx/core/BepInEx.Preloader.dll', text: 'bep' }, { name: 'BepInExPack_Valheim/winhttp.dll', text: 'w' }])
+        : makeZip([{ name: 'RustDedicated_Data/Managed/Assembly-CSharp.dll', text: 'patched' }, { name: 'RustDedicated_Data/Managed/Oxide.Core.dll', text: 'o' }])
     },
     rest: (o) => ({
       save: async () => void restCalls.push(`save as ${o.username}:${o.password}`),
@@ -339,5 +347,66 @@ describe('ServerManager', () => {
       ports: [{ name: 'game', default: 27016, protocol: 'udp' }]
     })
     expect(validateDefinition('some-game.json', def)).toBeNull()
+  })
+
+  const rust = { gameId: 'rust', name: 'Wasteland', settings: { serverName: 'Wasteland' } }
+
+  it('installs a mod loader only while the server is stopped', async () => {
+    const { manager } = setup()
+    const { id } = manager.create(rust)
+    await expect(manager.installLoader(id, 'oxide')).rejects.toThrow(/Install the server first/)
+    await manager.install(id)
+    await manager.start(id)
+    await expect(manager.installLoader(id, 'oxide')).rejects.toThrow(/Stop the server/)
+    await manager.stop(id)
+    await manager.installLoader(id, 'oxide')
+    expect(manager.get(id).loaders).toEqual([expect.objectContaining({ id: 'oxide', installed: true })])
+  })
+
+  it('puts Oxide back after an update, because the update overwrites it', async () => {
+    const { manager, log } = setup()
+    const { id } = manager.create(rust)
+    await manager.install(id)
+    await manager.installLoader(id, 'oxide')
+    log.length = 0
+    await manager.update(id)
+    expect(log).toEqual(['steamcmd validate', 'download Oxide.Rust-linux.zip'])
+  })
+
+  it('restores the files a loader replaced when it is removed', async () => {
+    const { manager, log } = setup()
+    const { id, installDir } = manager.create(rust)
+    await manager.install(id)
+    mkdirSync(join(installDir, 'RustDedicated_Data/Managed'), { recursive: true })
+    writeFileSync(join(installDir, 'RustDedicated_Data/Managed/Assembly-CSharp.dll'), 'vanilla')
+    await manager.installLoader(id, 'oxide')
+    log.length = 0
+    await manager.uninstallLoader(id, 'oxide')
+    expect(log).toEqual(['steamcmd validate'])
+    expect(manager.get(id).loaders[0].installed).toBe(false)
+  })
+
+  it('starts Valheim with the BepInEx environment on Linux', async () => {
+    const { manager, processes } = setup('linux')
+    const { id, installDir } = manager.create(valheim)
+    await manager.install(id)
+    await manager.installLoader(id, 'bepinex')
+    await manager.start(id)
+    expect(processes[0].spec!.env).toMatchObject({
+      DOORSTOP_ENABLED: '1',
+      DOORSTOP_TARGET_ASSEMBLY: `${installDir}/BepInEx/core/BepInEx.Preloader.dll`,
+      LD_PRELOAD: 'libdoorstop_x64.so',
+      SteamAppId: '892970'
+    })
+  })
+
+  it('loads a Workshop map through the console', async () => {
+    const { manager, restCalls } = setup()
+    const { id } = manager.create({ gameId: 'cs2', name: 'Arena', settings: {} })
+    await manager.install(id)
+    await manager.start(id)
+    await manager.workshop(id, '3070284539')
+    expect(restCalls).toEqual(['rcon:host_workshop_map 3070284539'])
+    await expect(manager.workshop(id, '1; quit')).rejects.toThrow(/Workshop item id/)
   })
 })

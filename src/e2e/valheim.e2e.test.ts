@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readdirSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -61,5 +61,17 @@ describe.skipIf(!enabled)('Valheim on Linux, end to end', () => {
 
     await manager.update(id)
     expect(manager.backups(id).map((b) => b.reason)).toContain('update')
+
+    // Real BepInEx from Thunderstore: the loader writes its own log once it has injected into the server.
+    await manager.installLoader(id, 'bepinex')
+    await manager.start(id)
+    await waitForStatus(manager, id, 'running', 10 * 60_000)
+    await new Promise((r) => setTimeout(r, 10_000))
+    const bepLog = join(installDir, 'BepInEx', 'LogOutput.log')
+    expect(existsSync(bepLog)).toBe(true)
+    expect(readFileSync(bepLog, 'utf8')).toMatch(/Chainloader/)
+    await manager.stop(id)
+    await manager.uninstallLoader(id, 'bepinex')
+    expect(existsSync(join(installDir, 'BepInEx', 'core', 'BepInEx.Preloader.dll'))).toBe(false)
   })
 })

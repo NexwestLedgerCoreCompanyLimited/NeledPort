@@ -18,12 +18,24 @@ function isUnsafePath(p: string): boolean {
 }
 
 function definitionPaths(def: GameDefinition): string[] {
-  const paths = [def.saveDir, def.bans?.file].filter((p): p is string => !!p)
+  const paths = [def.saveDir, def.bans?.file, ...(def.modLoaders ?? []).map((l) => l.pluginDir)].filter((p): p is string => !!p)
   for (const platform of Object.values(def.platforms)) {
     if (!platform) continue
     paths.push(platform.executable, ...(platform.configFiles ?? []).map((c) => c.path))
   }
   return paths
+}
+
+// Loader archives run code inside the game server, so they may only come from these hosts.
+const DOWNLOAD_HOSTS = new Set(['github.com', 'thunderstore.io'])
+
+export function isAllowedDownload(url: string): boolean {
+  try {
+    const u = new URL(url)
+    return u.protocol === 'https:' && DOWNLOAD_HOSTS.has(u.hostname)
+  } catch {
+    return false
+  }
 }
 
 function undeclaredReferences(def: GameDefinition): string[] {
@@ -36,6 +48,9 @@ function undeclaredReferences(def: GameDefinition): string[] {
   const used = Object.values(def.platforms).flatMap((p) =>
     p ? [...p.args, ...Object.values(p.env ?? {})].flatMap(placeholders) : []
   )
+  for (const loader of def.modLoaders ?? []) {
+    for (const env of Object.values(loader.env ?? {})) used.push(...Object.values(env ?? {}).flatMap(placeholders))
+  }
   if (def.control?.rest) used.push(`port:${def.control.rest.port}`)
   if (def.control?.port) used.push(`port:${def.control.port}`)
   if (def.players?.port) used.push(`port:${def.players.port}`)
@@ -51,6 +66,8 @@ function checkDefinition(file: string, data: unknown): GameDefinition | string {
   if (`${data.id}.json` !== file) return `id '${data.id}' must match the filename`
   const unsafe = definitionPaths(data).filter(isUnsafePath)
   if (unsafe.length) return `unsafe path(s): ${unsafe.join(', ')}`
+  const badDownloads = (data.modLoaders ?? []).flatMap((l) => Object.values(l.download)).filter((u) => !isAllowedDownload(u!))
+  if (badDownloads.length) return `mod loader download must be HTTPS from github.com or thunderstore.io: ${badDownloads.join(', ')}`
   const undeclared = undeclaredReferences(data)
   if (undeclared.length) return `undeclared port or setting: ${undeclared.join(', ')}`
   return data
