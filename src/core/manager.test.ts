@@ -50,7 +50,7 @@ class FakeProcess extends EventEmitter implements ProcessLike {
   }
 }
 
-function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; installFails?: boolean; appInfo?: string } = {}) {
+function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; installFails?: boolean; appInfo?: string; failFirst?: string } = {}) {
   const dataDir = mkdtempSync(join(tmpdir(), 'mgr-'))
   const log: string[] = []
   const processes: FakeProcess[] = []
@@ -70,6 +70,7 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
         log.push(`steamcmd ${args.includes('validate') ? 'validate' : 'install'}`)
         onLine(' Update state (0x61) downloading, progress: 42.00 (1 / 2)')
         if (opts.installFails) return { ok: false, error: 'ERROR! Failed to install app (Disk write failure)' }
+        if (opts.failFirst && steamArgs.length === 1) return { ok: false, error: opts.failFirst }
         const dir = args[1]
         mkdirSync(join(dir, 'steamapps'), { recursive: true })
         writeFileSync(join(dir, 'steamapps', `appmanifest_${args[5]}.acf`), '"AppState" { "buildid" "1" }')
@@ -458,5 +459,22 @@ describe('Steam account', () => {
     expect(await manager.steamSignedIn()).toBe(false)
     manager.setSteamAccount('gamer_1')
     expect(await manager.steamSignedIn()).toBe(true)
+  })
+})
+
+describe('SteamCMD hiccups', () => {
+  it('retries once when a fresh SteamCMD reports Missing configuration', async () => {
+    const { manager, steamArgs } = setup('linux', { failFirst: "ERROR! Failed to install app '896660' (Missing configuration)" })
+    const { id } = manager.create(valheim)
+    await manager.install(id)
+    expect(steamArgs).toHaveLength(2)
+    expect(manager.get(id).status).toBe('stopped')
+  })
+
+  it('does not retry real failures', async () => {
+    const { manager, steamArgs } = setup('linux', { failFirst: "ERROR! Failed to install app '896660' (No subscription)" })
+    const { id } = manager.create(valheim)
+    await expect(manager.install(id)).rejects.toThrow(/No subscription/)
+    expect(steamArgs).toHaveLength(1)
   })
 })

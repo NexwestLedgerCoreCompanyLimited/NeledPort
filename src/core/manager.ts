@@ -227,14 +227,20 @@ export class ServerManager extends EventEmitter {
       this.addLine(id, '[NeledPort] Preparing SteamCMD…')
       const exe = await steam.ensure(join(this.deps.dataDir, 'steamcmd'), this.deps.platform)
       const args = appUpdateArgs({ installDir: server.installDir, appId: game.serverAppId, validate, login })
-      const result = await steam.run(exe, args, (line) => {
+      const onLine = (line: string) => {
         this.addLine(id, line)
         const event = parseSteamCmdLine(line)
         if (event?.kind === 'progress') {
           rt.progress = event.percent
           this.changed(id)
         }
-      })
+      }
+      let result = await steam.run(exe, args, onLine)
+      // A SteamCMD that just updated itself can fail its first app_update this way; a second run works.
+      if (!result.ok && /\(Missing configuration\)/.test(result.error ?? '')) {
+        this.addLine(id, '[NeledPort] SteamCMD was not ready yet, trying again…')
+        result = await steam.run(exe, args, onLine)
+      }
       if (!result.ok) throw new Error(result.error ?? 'SteamCMD failed')
       rt.message = undefined
     } catch (e) {
