@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import type { AppInfo, BackupInfo, GameDefinition, ServerAction, ServerView } from '../../../core/types'
-import { coverUrl, statusDot, statusLabel } from '../status'
+import { cleanError, coverUrl, statusDot, statusLabel } from '../status'
+import { Players } from './Players'
 
 const MAX_LINES = 2000
 
@@ -18,7 +19,7 @@ interface Props {
 }
 
 export function ServerPage({ server, game, info, onRemoved }: Props) {
-  const [tab, setTab] = useState<'overview' | 'console'>('overview')
+  const [tab, setTab] = useState<'overview' | 'console' | 'players'>('overview')
   const [error, setError] = useState<string | null>(null)
   const canHost = !!info?.canHostServers
 
@@ -29,7 +30,7 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
       await window.neledport.serverAction(action, server.id)
       if (action === 'remove') onRemoved()
     } catch (e) {
-      setError((e as Error).message.replace(/^Error invoking remote method '[^']+': (Error: )?/, ''))
+      setError(cleanError(e))
     }
   }
 
@@ -94,7 +95,7 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
       </header>
 
       <nav aria-label="Server sections" className="mt-5 flex gap-1 border-b border-white/5">
-        {(['overview', 'console'] as const).map((t) => (
+        {(['overview', 'console', 'players'] as const).map((t) => (
           <button
             key={t}
             type="button"
@@ -113,7 +114,9 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
         </p>
       )}
 
-      {tab === 'overview' ? <Overview server={server} game={game} /> : <Console id={server.id} />}
+      {tab === 'overview' && <Overview server={server} game={game} />}
+      {tab === 'console' && <Console server={server} />}
+      {tab === 'players' && <Players server={server} />}
     </div>
   )
 }
@@ -124,7 +127,7 @@ function Overview({ server, game }: { server: ServerView; game?: GameDefinition 
     void window.neledport.serverBackups(server.id).then(setBackups)
   }, [server.id, server.status])
 
-  const localOnly = new Set([game?.control?.rest?.port].filter(Boolean))
+  const localOnly = new Set([game?.control?.rest?.port, game?.control?.port].filter(Boolean))
   return (
     <div className="mt-5 grid gap-4 md:grid-cols-[3fr_2fr]">
       <section className="flex flex-col gap-4 rounded-[14px] border border-white/5 bg-ink-900 p-5">
@@ -147,6 +150,7 @@ function Overview({ server, game }: { server: ServerView; game?: GameDefinition 
             On Windows, {server.gameName} cannot be asked to save before it stops. NeledPort backs up the world first, but save in-game before stopping to be safe.
           </p>
         )}
+        <BuildLine server={server} />
         <div>
           <h3 className="mb-2 text-xs font-semibold tracking-[0.1em] text-slate-400 uppercase">Recent backups</h3>
           {backups.length === 0 ? (
@@ -202,8 +206,11 @@ function describe(server: ServerView): string {
   }
 }
 
-function Console({ id }: { id: string }) {
+function Console({ server }: { server: ServerView }) {
+  const id = server.id
   const [lines, setLines] = useState<string[]>([])
+  const [cmd, setCmd] = useState('')
+  const [cmdError, setCmdError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [follow, setFollow] = useState(true)
   const box = useRef<HTMLDivElement>(null)
@@ -223,6 +230,19 @@ function Console({ id }: { id: string }) {
   useEffect(() => {
     if (follow && box.current) box.current.scrollTop = box.current.scrollHeight
   }, [shown, follow])
+
+  async function send(e: FormEvent) {
+    e.preventDefault()
+    const text = cmd.trim()
+    if (!text) return
+    setCmdError(null)
+    try {
+      await window.neledport.command(id, text)
+      setCmd('')
+    } catch (err) {
+      setCmdError(cleanError(err))
+    }
+  }
 
   return (
     <div className="mt-5 flex flex-col gap-3">
@@ -258,6 +278,58 @@ function Console({ id }: { id: string }) {
           ))
         )}
       </div>
+      {server.admin.command && (
+        <form onSubmit={send} className="flex gap-2">
+          <label className="flex min-h-11 flex-1 items-center gap-2.5 rounded-xl border border-accent/40 bg-ink-900 px-3.5">
+            <span aria-hidden="true" className="font-mono text-accent">›</span>
+            <span className="sr-only">Console command</span>
+            <input
+              value={cmd}
+              onChange={(e) => setCmd(e.target.value)}
+              disabled={server.status !== 'running'}
+              maxLength={500}
+              placeholder={server.status === 'running' ? 'Type a console command and press Enter' : 'Start the server to send commands'}
+              className="min-w-0 flex-1 bg-transparent font-mono text-[13px] text-slate-100 placeholder:text-slate-500 focus:outline-none disabled:opacity-60"
+            />
+          </label>
+          <button type="submit" disabled={server.status !== 'running'} className="min-h-11 rounded-xl bg-accent px-5 text-sm font-semibold text-ink-950 hover:bg-cyan-300 disabled:opacity-50">
+            Send
+          </button>
+        </form>
+      )}
+      {cmdError && <p role="alert" className="text-sm text-red-300">{cmdError}</p>}
+    </div>
+  )
+}
+
+function BuildLine({ server }: { server: ServerView }) {
+  const [checking, setChecking] = useState(false)
+  const b = server.build
+  if (!b.installed) return null
+  const status = b.error
+    ? b.error
+    : !b.latest
+      ? 'Not checked yet'
+      : b.updateAvailable
+        ? `Update available: build ${b.latest}`
+        : 'Up to date'
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/5 bg-ink-950 px-3 py-2.5 text-sm">
+      <span>
+        <span className="font-mono text-slate-200">Build {b.installed}</span>
+        <span className={`ml-2 ${b.updateAvailable ? 'text-accent' : b.error ? 'text-amber-200' : 'text-slate-400'}`}>· {status}</span>
+      </span>
+      <button
+        type="button"
+        disabled={checking}
+        onClick={() => {
+          setChecking(true)
+          void window.neledport.checkBuild(server.id).finally(() => setChecking(false))
+        }}
+        className="min-h-8 rounded-lg border border-white/10 px-3 text-xs text-slate-200 hover:bg-ink-800 disabled:opacity-60"
+      >
+        {checking ? 'Checking…' : 'Check for updates'}
+      </button>
     </div>
   )
 }

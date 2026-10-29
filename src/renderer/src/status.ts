@@ -25,3 +25,7 @@ export const statusDot: Record<ServerStatus, string> = {
 
 export const coverUrl = (gameAppId?: number): string | null =>
   gameAppId ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${gameAppId}/header.jpg` : null
+
+/** Electron wraps errors from the main process; show only the useful part. */
+export const cleanError = (e: unknown): string =>
+  (e as Error).message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '')

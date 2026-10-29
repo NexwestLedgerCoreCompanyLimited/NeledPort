@@ -3,7 +3,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { loadCatalog } from '../core/catalog'
 import { ServerManager } from '../core/manager'
-import type { AppInfo, CreateServerInput, Platform, ServerAction } from '../core/types'
+import type { AppInfo, CreateServerInput, Platform, PlayerInfo, ServerAction } from '../core/types'
 
 const gamesDir = (): string =>
   app.isPackaged ? join(process.resourcesPath, 'games') : join(app.getAppPath(), 'games')
@@ -30,6 +30,13 @@ const secrets = {
 }
 
 const isId = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}$/.test(v)
+const isText = (v: unknown, max = 200): v is string => typeof v === 'string' && v.length <= max
+function parsePlayer(v: unknown): PlayerInfo {
+  const p = v as Record<string, unknown>
+  if (!isText(p?.id) || !isText(p?.name)) throw new Error('Invalid player')
+  return { id: p.id, name: p.name }
+}
+
 const isStringRecord = (v: unknown): v is Record<string, string> =>
   typeof v === 'object' && v !== null && Object.values(v).every((x) => typeof x === 'string')
 
@@ -80,6 +87,32 @@ function registerIpc(): void {
     if (!isId(id)) throw new Error('Invalid request')
     return manager.backups(id)
   })
+  const withId = <A extends unknown[], R>(fn: (id: string, ...args: A) => R) => (_e: unknown, id: unknown, ...args: A): R => {
+    if (!isId(id)) throw new Error('Invalid request')
+    return fn(id, ...args)
+  }
+  ipcMain.handle('servers:players', withId((id) => manager.players(id)))
+  ipcMain.handle('servers:kick', withId((id, player: unknown) => manager.kick(id, parsePlayer(player))))
+  ipcMain.handle(
+    'servers:ban',
+    withId((id, player: unknown, reason: unknown) => manager.ban(id, parsePlayer(player), isText(reason) && reason ? reason : undefined))
+  )
+  ipcMain.handle(
+    'servers:unban',
+    withId((id, banId: unknown) => {
+      if (!isText(banId) || !banId) throw new Error('Invalid ban')
+      return manager.unban(id, banId)
+    })
+  )
+  ipcMain.handle('servers:bans', withId((id) => manager.bans(id)))
+  ipcMain.handle(
+    'servers:command',
+    withId((id, text: unknown) => {
+      if (!isText(text, 500)) throw new Error('Invalid command')
+      return manager.command(id, text)
+    })
+  )
+  ipcMain.handle('servers:checkBuild', withId((id) => manager.checkBuild(id)))
 }
 
 function createWindow(): void {
@@ -143,7 +176,8 @@ void app.whenReady().then(() => {
     serversDir,
     platform,
     games: () => catalog().games,
-    secrets
+    secrets,
+    steamSdkDir: process.platform === 'linux' ? join(homedir(), '.steam') : undefined
   })
   manager.on('changed', (view) => win?.webContents.send('servers:changed', view))
   manager.on('line', (id: string, line: string) => win?.webContents.send('servers:line', id, line))

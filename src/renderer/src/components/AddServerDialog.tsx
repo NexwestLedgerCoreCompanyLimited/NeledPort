@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { AppInfo, GameDefinition, ServerView } from '../../../core/types'
+import { cleanError } from '../status'
 
 interface Props {
   game: GameDefinition
@@ -37,7 +38,7 @@ export function AddServerDialog({ game, info, onClose, onCreated }: Props) {
       onCreated(server)
       if (info?.canHostServers) void window.neledport.serverAction('install', server.id).catch(() => {})
     } catch (err) {
-      setError((err as Error).message.replace(/^Error invoking remote method '[^']+': (Error: )?/, ''))
+      setError(cleanError(err))
       setBusy(false)
     }
   }
