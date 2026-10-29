@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { loadCatalog } from './catalog'
+import { loadCatalog, validateDefinition } from './catalog'
 import { ServerManager, type ManagerDeps, type ProcessLike } from './manager'
 import type { LaunchSpec, ProcessState } from './process'
 import type { Platform } from './types'
@@ -68,8 +68,10 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
         onLine(' Update state (0x61) downloading, progress: 42.00 (1 / 2)')
         if (opts.installFails) return { ok: false, error: 'ERROR! Failed to install app (Disk write failure)' }
         const dir = args[1]
-        mkdirSync(dir, { recursive: true })
-        for (const p of Object.values(games.find((g) => g.serverAppId === Number(args[5]))!.platforms)) {
+        mkdirSync(join(dir, 'steamapps'), { recursive: true })
+        writeFileSync(join(dir, 'steamapps', `appmanifest_${args[5]}.acf`), '"AppState" { "buildid" "1" }')
+        for (const p of Object.values(games.find((g) => g.serverAppId === Number(args[5]))?.platforms ?? {})) {
+          mkdirSync(join(dir, p!.executable, '..'), { recursive: true })
           writeFileSync(join(dir, p!.executable), '')
         }
         writeFileSync(join(dir, 'DefaultPalWorldSettings.ini'), 'OptionSettings=(ServerName="x",AdminPassword="",RESTAPIEnabled=False)\n')
@@ -286,5 +288,56 @@ describe('ServerManager', () => {
     const build = await manager.checkBuild(id)
     expect(build.updateAvailable).toBe(false)
     expect(build.error).toMatch(/Could not check/)
+  })
+
+  it('hosts any App ID and asks for the program after install', async () => {
+    const { manager, processes } = setup()
+    const view = manager.create({ gameId: 'custom', name: 'My Server', custom: { appId: 999999, name: 'Some Game' }, ports: { game: 27016 }, settings: {} })
+    expect(view).toMatchObject({ status: 'not-installed', custom: true, gameName: 'Some Game' })
+    await manager.install(view.id)
+    expect(manager.get(view.id)).toMatchObject({ status: 'stopped', needsLaunchSetup: true })
+    await expect(manager.start(view.id)).rejects.toThrow(/Choose the program/)
+
+    mkdirSync(join(view.installDir, 'bin'), { recursive: true })
+    writeFileSync(join(view.installDir, 'bin', 'srv'), '')
+    manager.setLaunch(view.id, join(view.installDir, 'bin', 'srv'), '-port {port:game} -name "My Server"')
+    expect(manager.get(view.id).needsLaunchSetup).toBe(false)
+    await manager.start(view.id)
+    expect(processes[0].spec).toMatchObject({ command: join(view.installDir, 'bin/srv'), args: ['-port', '27016', '-name', 'My Server'] })
+  })
+
+  it('refuses a program outside the server folder', async () => {
+    const { manager } = setup()
+    const { id, installDir } = manager.create({ gameId: 'custom', name: 'X', custom: { appId: 5, name: 'X' }, settings: {} })
+    await manager.install(id)
+    expect(() => manager.setLaunch(id, '/etc/hosts', '')).toThrow(/inside the server folder/)
+    expect(() => manager.setLaunch(id, join(installDir, '..', 'escape'), '')).toThrow(/inside the server folder/)
+    expect(() => manager.setLaunch(id, join(installDir, 'missing.exe'), '')).toThrow(/does not exist/)
+  })
+
+  it('lets a catalog game without this OS run with a chosen program', async () => {
+    const { manager } = setup('linux')
+    const { id } = manager.create({ gameId: 'scum', name: 'Scum', settings: {} })
+    await manager.install(id)
+    expect(manager.get(id)).toMatchObject({ status: 'stopped', needsLaunchSetup: true })
+  })
+
+  it('builds a definition to share that passes the catalog checks', async () => {
+    const { manager } = setup()
+    const { id, installDir } = manager.create({ gameId: 'custom', name: 'My Server', custom: { appId: 999999, name: 'Some Game' }, ports: { game: 27016 }, settings: {} })
+    await manager.install(id)
+    mkdirSync(join(installDir, 'bin'), { recursive: true })
+    writeFileSync(join(installDir, 'bin', 'srv'), '')
+    manager.setLaunch(id, join(installDir, 'bin', 'srv'), '-port {port:game}')
+    const def = manager.shareDefinition(id)
+    expect(def).toMatchObject({
+      id: 'some-game',
+      name: 'Some Game',
+      serverAppId: 999999,
+      tier: 'basic',
+      platforms: { linux: { executable: 'bin/srv', args: ['-port', '{port:game}'] } },
+      ports: [{ name: 'game', default: 27016, protocol: 'udp' }]
+    })
+    expect(validateDefinition('some-game.json', def)).toBeNull()
   })
 })

@@ -150,6 +150,7 @@ function Overview({ server, game }: { server: ServerView; game?: GameDefinition 
             On Windows, {server.gameName} cannot be asked to save before it stops. NeledPort backs up the world first, but save in-game before stopping to be safe.
           </p>
         )}
+        <LaunchSetup server={server} />
         <BuildLine server={server} />
         <div>
           <h3 className="mb-2 text-xs font-semibold tracking-[0.1em] text-slate-400 uppercase">Recent backups</h3>
@@ -175,7 +176,7 @@ function Overview({ server, game }: { server: ServerView; game?: GameDefinition 
         <p className="text-sm text-slate-300">Open these on your router so friends can join.</p>
         <table className="w-full text-sm">
           <tbody>
-            {(game?.ports ?? []).map((p) => (
+            {(game?.ports ?? Object.keys(server.ports).map((name) => ({ name, protocol: 'udp' as const }))).map((p) => (
               <tr key={p.name} className="border-b border-white/5 last:border-0">
                 <td className="py-1.5 font-mono text-white">{server.ports[p.name]}</td>
                 <td className="text-slate-300">{p.protocol.toUpperCase()}</td>
@@ -298,6 +299,72 @@ function Console({ server }: { server: ServerView }) {
         </form>
       )}
       {cmdError && <p role="alert" className="text-sm text-red-300">{cmdError}</p>}
+    </div>
+  )
+}
+
+function LaunchSetup({ server }: { server: ServerView }) {
+  const [program, setProgram] = useState<string | null>(null)
+  const [args, setArgs] = useState(server.launch?.args.join(' ') ?? '-port {port:game}')
+  const [error, setError] = useState<string | null>(null)
+  const [shared, setShared] = useState(false)
+  const installed = server.status !== 'not-installed' && server.status !== 'installing'
+  if (!installed || (!server.needsLaunchSetup && !server.launch)) return null
+
+  async function save() {
+    if (!program) return
+    try {
+      await window.neledport.setLaunch(server.id, program, args)
+      setError(null)
+    } catch (e) {
+      setError(cleanError(e))
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border border-accent-2/40 bg-accent-2/5 p-4">
+      {server.needsLaunchSetup ? (
+        <>
+          <p className="text-sm text-slate-200">
+            <b className="text-white">One more step:</b> choose the program that starts this server. NeledPort remembers it.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void window.neledport.pickProgram(server.id).then((p) => p && setProgram(p))}
+              className="min-h-9 rounded-lg border border-white/10 bg-ink-900 px-3 text-sm text-slate-100 hover:bg-ink-800"
+            >
+              Choose program…
+            </button>
+            <span className="min-w-0 truncate font-mono text-xs text-slate-300">{program ?? 'Nothing chosen yet'}</span>
+          </div>
+          <label className="flex flex-col gap-1.5 text-xs text-slate-300">
+            Arguments (use {'{port:game}'} for the game port)
+            <input
+              value={args}
+              onChange={(e) => setArgs(e.target.value)}
+              className="min-h-9 rounded-lg border border-white/10 bg-ink-950 px-2.5 font-mono text-xs text-slate-100 focus:border-accent focus:outline-none"
+            />
+          </label>
+          <button type="button" disabled={!program} onClick={() => void save()} className="min-h-9 self-start rounded-lg bg-accent px-4 text-sm font-semibold text-ink-950 disabled:opacity-50">
+            Save
+          </button>
+        </>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-200">
+            Runs <span className="font-mono text-xs">{server.launch?.executable}</span>. Works? Share it so everyone gets this game in the catalog.
+          </p>
+          <button
+            type="button"
+            onClick={() => void window.neledport.shareDefinition(server.id).then(() => setShared(true), (e) => setError(cleanError(e)))}
+            className="min-h-9 rounded-lg border border-accent-2/50 px-3 text-sm text-accent-2 hover:bg-accent-2/10"
+          >
+            {shared ? 'Opened on GitHub ✓' : 'Share with the community'}
+          </button>
+        </div>
+      )}
+      {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
     </div>
   )
 }

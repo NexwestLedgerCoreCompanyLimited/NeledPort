@@ -17,6 +17,7 @@ export interface SettingDefinition {
 }
 
 export interface GameDefinition {
+  $schema?: string
   id: string
   name: string
   serverAppId: number
@@ -97,6 +98,10 @@ export interface ServerView {
   gracefulStop: boolean
   admin: AdminCapabilities
   build: BuildInfo
+  /** No launcher is known for this OS: the user picks the server program once after installing. */
+  needsLaunchSetup: boolean
+  custom: boolean
+  launch?: { executable: string; args: string[] }
 }
 
 export interface CreateServerInput {
@@ -105,6 +110,8 @@ export interface CreateServerInput {
   installDir?: string
   ports?: Record<string, number>
   settings: Record<string, string>
+  /** gameId "custom": any SteamCMD App ID that is not in the catalog. */
+  custom?: { appId: number; name: string }
 }
 
 export type BackupReason = 'manual' | 'update' | 'scheduled' | 'config' | 'stop'
@@ -142,6 +149,12 @@ export interface NeledPortApi {
   bans(id: string): Promise<BanEntry[]>
   command(id: string, text: string): Promise<string>
   checkBuild(id: string): Promise<BuildInfo>
+  /** Steam dedicated servers that are not in the catalog yet, for the any-App-ID search. */
+  steamServers(): Promise<{ appId: number; name: string }[]>
+  pickProgram(id: string): Promise<string | null>
+  setLaunch(id: string, program: string, args: string): Promise<ServerView>
+  /** Opens a prefilled GitHub pull request page with this server's definition; returns its URL. */
+  shareDefinition(id: string): Promise<string>
   onServerChanged(cb: (server: ServerView) => void): () => void
   onServerLine(cb: (id: string, line: string) => void): () => void
 }

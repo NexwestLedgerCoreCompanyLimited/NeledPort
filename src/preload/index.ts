@@ -22,6 +22,10 @@ const api: NeledPortApi = {
   bans: (id) => ipcRenderer.invoke('servers:bans', id),
   command: (id, text) => ipcRenderer.invoke('servers:command', id, text),
   checkBuild: (id) => ipcRenderer.invoke('servers:checkBuild', id),
+  steamServers: () => ipcRenderer.invoke('catalog:steamServers'),
+  pickProgram: (id) => ipcRenderer.invoke('servers:pickProgram', id),
+  setLaunch: (id, program, args) => ipcRenderer.invoke('servers:setLaunch', id, program, args),
+  shareDefinition: (id) => ipcRenderer.invoke('servers:share', id),
   onServerChanged: (cb) => subscribe<[ServerView]>('servers:changed', cb),
   onServerLine: (cb) => subscribe<[string, string]>('servers:line', cb)
 }

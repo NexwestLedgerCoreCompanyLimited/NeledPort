@@ -53,10 +53,11 @@ Get the latest installer for Windows (`.exe`) or Linux (`.AppImage`, `.deb`) fro
 | Rust | full | install, run, update, players, kick/ban, WebRCON console |
 | Counter-Strike 2 | basic | install, run, RCON console, players, kick |
 | SCUM | basic | install, run, players (Windows only) |
-| 100+ more Steam dedicated servers | basic | planned |
-| Any SteamCMD App ID | custom | planned |
+| ARK, Team Fortress 2, Satisfactory, Conan Exiles, Squad and 70+ more | basic | install, run, console ([full list](docs/GAMES.md)) |
+| **Any Steam App ID** | custom | search 380+ more servers by name, install, pick the program once, share it |
 
-Every game is a single JSON file in [`games/`](games). Missing yours? [Add it](CONTRIBUTING.md#add-a-game) in about five minutes.
+Every game is a single JSON file in [`games/`](games). Missing yours? Install it with **Any Steam App ID**, press
+**Share with the community**, and NeledPort opens a ready-made pull request for you. Or [add it by hand](CONTRIBUTING.md#add-a-game).
 
 ## Development
 

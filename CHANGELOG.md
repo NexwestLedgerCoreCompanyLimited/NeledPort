@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-30
+
+### Added
+
+- **84 games in the catalog** (was 5): ARK, Team Fortress 2, Satisfactory, Conan Exiles, Squad, Garry's Mod,
+  Left 4 Dead 2, Unturned and more, imported from LinuxGSM as basic definitions. Full list in `docs/GAMES.md`.
+- **Any Steam App ID**: search 380 more Steam dedicated servers by name (or type an App ID), install with SteamCMD,
+  then choose the program that starts it once.
+- Games without a launcher for your OS (for example Linux-only imports on Windows) can still be installed; you pick
+  the program after install.
+- **Share with the community**: turns a working custom setup into a game definition and opens a prefilled GitHub
+  pull request.
+- Catalog filters (All / Full / Basic), cover art for most games, and clear labels for servers that need a Steam
+  account (Steam sign-in is coming later).
+- `scripts/import-catalog.mjs` regenerates the imported games and `docs/GAMES.md`; credits in `THIRD_PARTY_NOTICES.md`.
+
 ## [0.3.0] - 2026-10-30
 
 ### Added
@@ -53,7 +69,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - CI on Linux and Windows (typecheck, tests, build) and a tag-driven release workflow.
 - Community files: MIT license, contributing guide, code of conduct, security policy.
 
-[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/tag/v0.1.0

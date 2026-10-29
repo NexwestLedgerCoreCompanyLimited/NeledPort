@@ -56,6 +56,12 @@ function checkDefinition(file: string, data: unknown): GameDefinition | string {
   return data
 }
 
+/** Null when the definition would be accepted into games/, otherwise the reason it would not. */
+export function validateDefinition(file: string, data: unknown): string | null {
+  const result = checkDefinition(file, data)
+  return typeof result === 'string' ? result : null
+}
+
 export function loadCatalog(dir: string): CatalogResult {
   const games: GameDefinition[] = []
   const errors: CatalogError[] = []

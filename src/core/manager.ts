@@ -1,7 +1,8 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 import { EventEmitter } from 'node:events'
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { splitArgs } from './args'
 import { adminFor, capabilities, LogPlayerTracker, type Admin, type AdminNet } from './admin'
 import { createBackup, listBackups, pruneBackups } from './backup'
 import { appInfoArgs, installedBuild, parseLatestBuild } from './build'
@@ -108,9 +109,9 @@ export class ServerManager extends EventEmitter {
   }
 
   create(input: CreateServerInput): ServerView {
-    const game = this.deps.games().find((g) => g.id === input.gameId)
+    const custom = input.gameId === 'custom' ? parseCustom(input.custom) : undefined
+    const game = custom ? customGame(custom, input.ports) : this.deps.games().find((g) => g.id === input.gameId)
     if (!game) throw new Error(`Unknown game "${input.gameId}"`)
-    if (!game.platforms[this.deps.platform]) throw new Error(`${game.name} has no ${this.deps.platform} server`)
     const name = input.name.trim()
     if (!name || name.length > 64) throw new Error('Server name must be 1–64 characters')
 
@@ -140,7 +141,8 @@ export class ServerManager extends EventEmitter {
       ports,
       settings,
       secrets,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      ...(custom ? { custom } : {})
     }
     this.servers.push(server)
     this.persist()
@@ -208,6 +210,7 @@ export class ServerManager extends EventEmitter {
     const rt = this.rt(id)
     if (rt.proc) throw new Error('Server is already running')
     if (!this.isInstalled(server)) throw new Error('Install the server first')
+    if (this.needsLaunchSetup(server)) throw new Error('Choose the program that starts the server first')
 
     const portFree = this.deps.portFree ?? isPortFree
     for (const p of game.ports) {
@@ -324,6 +327,30 @@ export class ServerManager extends EventEmitter {
     }
   }
 
+  /** Remembers which program starts the server (for games without a launcher on this OS). */
+  setLaunch(id: string, program: string, argsText: string): ServerView {
+    const server = this.config(id)
+    const rel = relative(resolve(server.installDir), resolve(program))
+    if (!rel || rel.startsWith('..') || isAbsolute(rel)) throw new Error('The program must be inside the server folder')
+    if (!existsSync(join(server.installDir, rel))) throw new Error('That program does not exist')
+    const args = splitArgs(argsText)
+    // Fail now, not at start time, if the arguments use a placeholder this server does not have.
+    buildLaunch(this.game(server), this.deps.platform, { ...server, launch: { executable: rel, args } }, { [ADMIN_SECRET]: '' })
+    server.launch = { executable: rel.split(sep).join('/'), args }
+    this.persist()
+    return this.changed(id)
+  }
+
+  /** A catalog definition built from this server, so the user can contribute it. */
+  shareDefinition(id: string): GameDefinition {
+    const server = this.config(id)
+    const game = this.game(server)
+    const platforms = { ...game.platforms }
+    if (server.launch) platforms[this.deps.platform] = { executable: server.launch.executable, args: server.launch.args }
+    const base = server.custom ? { tier: 'basic' as const } : {}
+    return { $schema: './schema.json', ...game, ...base, id: slug(game.name), platforms }
+  }
+
   async players(id: string): Promise<PlayerInfo[]> {
     if (!this.rt(id).proc) throw new Error('Start the server to see who is online')
     return this.admin(this.config(id)).players()
@@ -423,8 +450,15 @@ export class ServerManager extends EventEmitter {
       message: rt.message,
       gracefulStop: !(game.control?.type === 'signal' && this.deps.platform === 'windows'),
       admin: capabilities(game, this.admin(server)),
-      build: this.buildInfo(server, game, rt)
+      build: this.buildInfo(server, game, rt),
+      needsLaunchSetup: this.needsLaunchSetup(server),
+      custom: !!server.custom,
+      ...(server.launch ? { launch: server.launch } : {})
     }
+  }
+
+  private needsLaunchSetup(server: ServerConfig): boolean {
+    return !server.launch && !this.game(server).platforms[this.deps.platform]
   }
 
   private buildInfo(server: ServerConfig, game: GameDefinition, rt: Runtime): BuildInfo {
@@ -475,8 +509,11 @@ export class ServerManager extends EventEmitter {
   }
 
   private isInstalled(server: ServerConfig): boolean {
-    const exe = this.game(server).platforms[this.deps.platform]?.executable
-    return !!exe && existsSync(join(server.installDir, exe))
+    const game = this.game(server)
+    const exe = server.launch?.executable ?? game.platforms[this.deps.platform]?.executable
+    if (exe) return existsSync(join(server.installDir, exe))
+    // No known launcher yet: SteamCMD's manifest says whether the files are there.
+    return existsSync(join(server.installDir, 'steamapps', `appmanifest_${game.serverAppId}.acf`))
   }
 
   private plainSecrets(server: ServerConfig): Record<string, string> {
@@ -490,6 +527,7 @@ export class ServerManager extends EventEmitter {
   }
 
   private game(server: ServerConfig): GameDefinition {
+    if (server.custom) return customGame(server.custom, server.ports)
     const game = this.deps.games().find((g) => g.id === server.gameId)
     if (!game) throw new Error(`The game definition "${server.gameId}" is missing`)
     return game
@@ -529,7 +567,7 @@ export function buildLaunch(
   server: ServerConfig,
   secrets: Record<string, string>
 ): LaunchSpec {
-  const def = game.platforms[platform]
+  const def = server.launch ?? game.platforms[platform]
   if (!def) throw new Error(`${game.name} has no ${platform} server`)
   const ctx = {
     ports: server.ports,
@@ -537,10 +575,39 @@ export function buildLaunch(
     installDir: server.installDir,
     adminPassword: secrets[ADMIN_SECRET]
   }
+  const env = 'env' in def ? def.env : undefined
   return {
     command: join(server.installDir, def.executable),
     args: def.args.map((a) => expand(a, ctx)),
     cwd: server.installDir,
-    env: Object.fromEntries(Object.entries(def.env ?? {}).map(([k, v]) => [k, expand(v, ctx)]))
+    env: Object.fromEntries(Object.entries(env ?? {}).map(([k, v]) => [k, expand(v, ctx)]))
   }
 }
+
+function parseCustom(v: CreateServerInput['custom']): { appId: number; name: string } {
+  const name = v?.name?.trim() ?? ''
+  if (!v || !Number.isInteger(v.appId) || v.appId < 1) throw new Error('Enter a valid SteamCMD App ID')
+  if (!name || name.length > 80) throw new Error('Game name must be 1–80 characters')
+  return { appId: v.appId, name }
+}
+
+/** A minimal definition for a bare App ID: install with SteamCMD, the user picks the program. */
+function customGame(custom: { appId: number; name: string }, ports?: Record<string, number>): GameDefinition {
+  return {
+    id: `custom-${custom.appId}`,
+    name: custom.name,
+    serverAppId: custom.appId,
+    anonymous: true,
+    tier: 'custom',
+    platforms: {},
+    ports: [{ name: 'game', default: ports?.game ?? 27015, protocol: 'udp' }],
+    control: { type: 'signal' }
+  }
+}
+
+const slug = (name: string) =>
+  name
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')

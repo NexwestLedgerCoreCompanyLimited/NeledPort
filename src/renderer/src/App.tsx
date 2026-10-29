@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { AppInfo, CatalogResult, GameDefinition, ServerView } from '../../core/types'
 import { AddServerDialog } from './components/AddServerDialog'
 import { Catalog } from './components/Catalog'
+import { CustomServerDialog } from './components/CustomServerDialog'
 import { ServerPage } from './components/ServerPage'
 import { Sidebar } from './components/Sidebar'
 
@@ -11,6 +12,7 @@ export default function App() {
   const [servers, setServers] = useState<ServerView[]>([])
   const [selected, setSelected] = useState<string | null>(null)
   const [adding, setAdding] = useState<GameDefinition | null>(null)
+  const [addingCustom, setAddingCustom] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   const reloadServers = () => void window.neledport.listServers().then(setServers)
@@ -55,9 +57,20 @@ export default function App() {
             }}
           />
         ) : (
-          <Catalog info={info} catalog={catalog} servers={servers} onPick={setAdding} />
+          <Catalog info={info} catalog={catalog} servers={servers} onPick={setAdding} onCustom={() => setAddingCustom(true)} />
         )}
       </main>
+      {addingCustom && (
+        <CustomServerDialog
+          info={info}
+          onClose={() => setAddingCustom(false)}
+          onCreated={(view) => {
+            setAddingCustom(false)
+            setServers((list) => (list.some((s) => s.id === view.id) ? list : [...list, view]))
+            setSelected(view.id)
+          }}
+        />
+      )}
       {adding && (
         <AddServerDialog
           game={adding}

@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
+import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { loadCatalog } from '../core/catalog'
@@ -29,6 +30,13 @@ const secrets = {
       : Buffer.from(stored.slice(3), 'base64').toString()
 }
 
+const REPO = 'NexwestLedgerCoreCompanyLimited/NeledPort'
+
+function steamServers(): { appId: number; name: string }[] {
+  const file = join(gamesDir(), 'index', 'steam-servers.json')
+  return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).servers : []
+}
+
 const isId = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}$/.test(v)
 const isText = (v: unknown, max = 200): v is string => typeof v === 'string' && v.length <= max
 function parsePlayer(v: unknown): PlayerInfo {
@@ -47,6 +55,8 @@ function parseCreate(v: unknown): CreateServerInput {
     throw new Error('Invalid server details')
   }
   if (o.installDir !== undefined && typeof o.installDir !== 'string') throw new Error('Invalid install folder')
+  const custom = o.custom as { appId?: unknown; name?: unknown } | undefined
+  if (custom !== undefined && (!Number.isInteger(custom?.appId) || !isText(custom?.name, 80))) throw new Error('Invalid App ID')
   if (o.ports !== undefined && (typeof o.ports !== 'object' || !Object.values(o.ports as object).every(Number.isInteger))) {
     throw new Error('Invalid ports')
   }
@@ -55,7 +65,8 @@ function parseCreate(v: unknown): CreateServerInput {
     name: o.name,
     settings: o.settings,
     installDir: o.installDir as string | undefined,
-    ports: o.ports as Record<string, number> | undefined
+    ports: o.ports as Record<string, number> | undefined,
+    ...(custom ? { custom: { appId: custom.appId as number, name: custom.name as string } } : {})
   }
 }
 
@@ -113,6 +124,34 @@ function registerIpc(): void {
     })
   )
   ipcMain.handle('servers:checkBuild', withId((id) => manager.checkBuild(id)))
+  ipcMain.handle('catalog:steamServers', () => steamServers())
+  ipcMain.handle(
+    'servers:pickProgram',
+    withId(async (id) => {
+      const result = await dialog.showOpenDialog(win!, {
+        title: 'Choose the program that starts the server',
+        defaultPath: manager.get(id).installDir,
+        properties: ['openFile']
+      })
+      return result.canceled ? null : result.filePaths[0]
+    })
+  )
+  ipcMain.handle(
+    'servers:setLaunch',
+    withId((id, program: unknown, args: unknown) => {
+      if (!isText(program, 1000) || !isText(args, 1000)) throw new Error('Invalid program')
+      return manager.setLaunch(id, program, args)
+    })
+  )
+  ipcMain.handle(
+    'servers:share',
+    withId(async (id) => {
+      const def = manager.shareDefinition(id)
+      const url = `https://github.com/${REPO}/new/main/games?filename=${def.id}.json&value=${encodeURIComponent(JSON.stringify(def, null, 2) + '\n')}`
+      await shell.openExternal(url)
+      return url
+    })
+  )
 }
 
 function createWindow(): void {

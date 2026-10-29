@@ -4,6 +4,16 @@ Thanks for helping! The easiest and most valuable contribution is adding or fixi
 
 ## Add a game
 
+**The easy way:** in NeledPort choose **Any Steam App ID**, install the server, pick the program that starts it, check
+that it runs, then press **Share with the community**. NeledPort opens GitHub with the definition filled in; just create the
+pull request.
+
+**Test a basic game:** many games in [docs/GAMES.md](docs/GAMES.md) were imported from LinuxGSM and never run by a human.
+If one works for you (or needs a fix), open a pull request that updates its file and say what you tested. Adding the
+Windows launcher to a Linux-only game is a great first contribution.
+
+**By hand:**
+
 1. Find the server's SteamCMD App ID (the *Dedicated Server* app, not the game itself).
 2. Copy [`games/palworld.json`](games/palworld.json) to `games/<id>.json`. The `id` is lowercase letters, digits and dashes, and must match the filename.
 3. Fill in what you know. The [schema](games/schema.json) documents every field, and editors with JSON Schema support will autocomplete it.
