@@ -3,6 +3,9 @@ import { appendFileSync, existsSync, mkdirSync, renameSync, statSync } from 'nod
 import { dirname } from 'node:path'
 import { EventEmitter } from 'node:events'
 import { lineReader } from './lines'
+import type { ProcessState } from './types'
+
+export type { ProcessState }
 
 export interface LaunchSpec {
   command: string
@@ -11,7 +14,6 @@ export interface LaunchSpec {
   env?: Record<string, string>
 }
 
-export type ProcessState = 'stopped' | 'starting' | 'running' | 'stopping' | 'crashed'
 
 const MAX_LOG_BYTES = 5 * 1024 * 1024
 const IS_WINDOWS = process.platform === 'win32'

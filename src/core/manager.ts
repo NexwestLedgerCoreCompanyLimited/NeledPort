@@ -2,31 +2,23 @@ import { randomBytes, randomUUID } from 'node:crypto'
 import { EventEmitter } from 'node:events'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { createBackup, listBackups, pruneBackups, type BackupInfo, type BackupReason } from './backup'
+import { createBackup, listBackups, pruneBackups } from './backup'
 import { palworldRest, prepareConfig } from './palworld'
 import { isPortFree } from './ports'
-import { ServerProcess, type LaunchSpec, type ProcessState } from './process'
+import { ServerProcess, type LaunchSpec } from './process'
 import { appUpdateArgs, ensureSteamCmd, parseSteamCmdLine, runSteamCmd } from './steamcmd'
 import { loadServers, saveServers, type ServerConfig } from './store'
 import { expand } from './template'
-import type { GameDefinition, Platform } from './types'
-
-export type ServerStatus = 'not-installed' | 'installing' | 'updating' | ProcessState
-
-export interface ServerView {
-  id: string
-  name: string
-  gameId: string
-  gameName: string
-  installDir: string
-  ports: Record<string, number>
-  settings: Record<string, string>
-  status: ServerStatus
-  progress?: number
-  message?: string
-  /** False where NeledPort cannot ask the server to save before stopping (signal-only games on Windows). */
-  gracefulStop: boolean
-}
+import type {
+  BackupInfo,
+  BackupReason,
+  CreateServerInput,
+  GameDefinition,
+  Platform,
+  ProcessState,
+  ServerStatus,
+  ServerView
+} from './types'
 
 export interface ProcessLike extends EventEmitter {
   state: ProcessState
@@ -53,14 +45,6 @@ export interface ManagerDeps {
     save(): Promise<unknown>
     shutdown(waitSeconds: number, message: string): Promise<unknown>
   }
-}
-
-export interface CreateInput {
-  gameId: string
-  name: string
-  installDir?: string
-  ports?: Record<string, number>
-  settings: Record<string, string>
 }
 
 interface Runtime {
@@ -108,7 +92,7 @@ export class ServerManager extends EventEmitter {
     return listBackups(this.backupsDir(id))
   }
 
-  create(input: CreateInput): ServerView {
+  create(input: CreateServerInput): ServerView {
     const game = this.deps.games().find((g) => g.id === input.gameId)
     if (!game) throw new Error(`Unknown game "${input.gameId}"`)
     if (!game.platforms[this.deps.platform]) throw new Error(`${game.name} has no ${this.deps.platform} server`)

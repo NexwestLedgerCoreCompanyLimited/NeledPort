@@ -1,15 +1,7 @@
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
-
-export type BackupReason = 'manual' | 'update' | 'scheduled' | 'config' | 'stop'
-
-export interface BackupInfo {
-  file: string
-  reason: BackupReason
-  createdAt: string
-  size: number
-}
+import type { BackupInfo, BackupReason } from './types'
 
 const NAME = /^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)_([a-z]+)\.tar\.gz$/
 

@@ -45,7 +45,61 @@ export type CatalogError = { file: string; message: string }
 
 export type CatalogResult = { games: GameDefinition[]; errors: CatalogError[] }
 
+export type ProcessState = 'stopped' | 'starting' | 'running' | 'stopping' | 'crashed'
+
+export type ServerStatus = 'not-installed' | 'installing' | 'updating' | ProcessState
+
+export interface ServerView {
+  id: string
+  name: string
+  gameId: string
+  gameName: string
+  installDir: string
+  ports: Record<string, number>
+  settings: Record<string, string>
+  status: ServerStatus
+  progress?: number
+  message?: string
+  /** False where NeledPort cannot ask the server to save before stopping (signal-only games on Windows). */
+  gracefulStop: boolean
+}
+
+export interface CreateServerInput {
+  gameId: string
+  name: string
+  installDir?: string
+  ports?: Record<string, number>
+  settings: Record<string, string>
+}
+
+export type BackupReason = 'manual' | 'update' | 'scheduled' | 'config' | 'stop'
+
+export interface BackupInfo {
+  file: string
+  reason: BackupReason
+  createdAt: string
+  size: number
+}
+
+export interface AppInfo {
+  platform: Platform
+  /** False on macOS, where game servers cannot run (UI development only). */
+  canHostServers: boolean
+  serversDir: string
+  loadError?: string
+}
+
+export type ServerAction = 'install' | 'start' | 'stop' | 'restart' | 'update' | 'backup' | 'remove' | 'openFolder'
+
 /** What the preload script exposes to the renderer as `window.neledport`. */
 export interface NeledPortApi {
+  appInfo(): Promise<AppInfo>
   listGames(): Promise<CatalogResult>
+  listServers(): Promise<ServerView[]>
+  createServer(input: CreateServerInput): Promise<ServerView>
+  serverAction(action: ServerAction, id: string): Promise<void>
+  serverLines(id: string): Promise<string[]>
+  serverBackups(id: string): Promise<BackupInfo[]>
+  onServerChanged(cb: (server: ServerView) => void): () => void
+  onServerLine(cb: (id: string, line: string) => void): () => void
 }
