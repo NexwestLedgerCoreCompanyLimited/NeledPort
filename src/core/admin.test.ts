@@ -110,6 +110,77 @@ describe('Valheim admin (log + ban file)', () => {
   })
 })
 
+// Source engine games (srcds): TF2, Counter-Strike: Source, Garry's Mod, Left 4 Dead 2, ...
+const sourceGame: GameDefinition = {
+  id: 'tf-like',
+  name: 'TF2-like',
+  serverAppId: 232250,
+  anonymous: true,
+  tier: 'full',
+  platforms: { linux: { executable: 'srcds_run_64', args: [] } },
+  ports: [{ name: 'game', default: 27015, protocol: 'udp' }],
+  control: { type: 'rcon', port: 'game', shutdown: 'quit' },
+  players: { source: 'rcon' },
+  bans: { method: 'rcon', file: 'tf/cfg/banned_user.cfg', format: 'source-cfg' }
+}
+
+const TF2_STATUS = `hostname: NeledPort
+version : 9233375/24 9233375 secure
+players : 2 humans, 1 bots (24 max)
+# userid name                uniqueid            connected ping loss state  adr
+#      2 "Mira"              [U:1:12345]         01:02:03    45    0 active 203.0.113.9:27005
+#      3 "Rook "the" Bold"   [U:1:67890]         00:42       80    0 active 198.51.100.7:27005
+#      4 "Bot01"             BOT                             active
+`
+// CS:GO-era builds put the slot after the userid; Left 4 Dead adds the rate.
+const OTHER_STATUS = `# userid name uniqueid connected ping loss state rate adr
+# 5 1 "Ploy" STEAM_1:0:4242 00:31 50 0 active 128000 192.0.2.1:27005
+#  6 "Kai" STEAM_0:1:777 10:05 20 0 active 30000 192.0.2.2:27005
+`
+
+describe('Source engine admin (RCON)', () => {
+  function source(status: string) {
+    const calls: string[] = []
+    const net: AdminNet = { rcon: async (o, cmd) => (calls.push(`rcon:${o.port}:${cmd}`), cmd === 'status' ? status : '') }
+    return { calls, admin: adminFor({ game: sourceGame, installDir: dir(), ports: { game: 27015 }, adminPassword: 'pw', net }) }
+  }
+
+  it('lists players from status with their SteamIDs, skipping bots', async () => {
+    expect(await source(TF2_STATUS).admin.players()).toEqual([
+      { id: '[U:1:12345]', name: 'Mira', ping: 45, seconds: 3723 },
+      { id: '[U:1:67890]', name: 'Rook "the" Bold', ping: 80, seconds: 42 }
+    ])
+    expect(await source(OTHER_STATUS).admin.players()).toEqual([
+      { id: 'STEAM_1:0:4242', name: 'Ploy', ping: 50, seconds: 31 },
+      { id: 'STEAM_0:1:777', name: 'Kai', ping: 20, seconds: 605 }
+    ])
+  })
+
+  it('kicks and bans by quoted SteamID, keeps colons out of the reason, and saves the ban list', async () => {
+    const { calls, admin } = source('')
+    await admin.kick!({ id: '[U:1:12345]', name: 'Mira' }, 'spam: "links"')
+    await admin.kick!({ id: 'STEAM_0:1:777', name: 'Kai' }, '')
+    await admin.ban!({ id: 'STEAM_0:1:777', name: 'Kai' }, 'grief')
+    await admin.unban!('[U:1:12345]')
+    expect(calls).toEqual([
+      'rcon:27015:kickid "[U:1:12345]" "spam links"',
+      'rcon:27015:kickid "STEAM_0:1:777"',
+      'rcon:27015:banid 0 "STEAM_0:1:777" kick',
+      'rcon:27015:writeid',
+      'rcon:27015:removeid "[U:1:12345]"',
+      'rcon:27015:writeid'
+    ])
+  })
+
+  it('reads banned_user.cfg as written by writeid', async () => {
+    const d = dir()
+    mkdirSync(join(d, 'tf/cfg'), { recursive: true })
+    writeFileSync(join(d, 'tf/cfg/banned_user.cfg'), 'banid 0 STEAM_0:1:777\nbanid 0.000000 [U:1:12345]\n\n')
+    const admin = adminFor({ game: sourceGame, installDir: d, ports: { game: 27015 }, adminPassword: 'pw', net: {} })
+    expect(await admin.bans!()).toEqual([{ id: 'STEAM_0:1:777' }, { id: '[U:1:12345]' }])
+  })
+})
+
 describe('Counter-Strike 2 admin (RCON + A2S)', () => {
   it('lists players by query and kicks by quoted name', async () => {
     const { calls, net } = recorder()

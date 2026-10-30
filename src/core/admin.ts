@@ -93,9 +93,15 @@ function banFile(installDir: string, game: GameDefinition): string | undefined {
   return game.bans?.file ? join(installDir, game.bans.file) : undefined
 }
 
-function readBans(file: string | undefined, format: 'lines' | 'rust-cfg' = 'lines'): BanEntry[] {
+function readBans(file: string | undefined, format: 'lines' | 'rust-cfg' | 'source-cfg' = 'lines'): BanEntry[] {
   if (!file || !existsSync(file)) return []
   const lines = readFileSync(file, 'utf8').split(/\r?\n/).map((l) => l.trim())
+  if (format === 'source-cfg') {
+    return lines.flatMap((l) => {
+      const id = /^banid\s+[\d.]+\s+(\S+)/.exec(l)?.[1]
+      return id ? [{ id }] : []
+    })
+  }
   if (format === 'rust-cfg') {
     return lines.flatMap((l) => {
       const m = /^banid\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"/.exec(l)
@@ -111,6 +117,16 @@ function writeLineBan(file: string, id: string, add: boolean): void {
   if (add) kept.push(id)
   mkdirSync(dirname(file), { recursive: true })
   writeFileSync(file, kept.length ? kept.join('\n') + '\n' : '')
+}
+
+/** Player rows of a Source engine `status` (# userid [slot] "name" uniqueid connected ping loss state ...). Bots have no time. */
+function parseSourceStatus(text: string): PlayerInfo[] {
+  return text.split(/\r?\n/).flatMap((line) => {
+    const m = /^#\s*\d+\s+(?:\d+\s+)?"(.*)"\s+(\S+)\s+(\d+(?::\d+){1,2})\s+(\d+)\s/.exec(line)
+    if (!m) return []
+    const seconds = m[3].split(':').reduce((total, part) => total * 60 + Number(part), 0)
+    return [{ id: m[2], name: m[1], ping: Number(m[4]), seconds }]
+  })
 }
 
 export function adminFor(ctx: AdminContext): Admin {
@@ -158,6 +174,9 @@ export function adminFor(ctx: AdminContext): Admin {
 
   if (remote) {
     admin.command = remote
+    // Source engine: status rows carry the SteamID that kickid, banid and removeid need.
+    const sourceIds = control?.type === 'rcon' && game.players?.source === 'rcon'
+    if (sourceIds) admin.players = async () => parseSourceStatus(await remote('status'))
     if (game.players?.source === 'rcon' && control?.type === 'webrcon') {
       admin.players = async () =>
         (JSON.parse((await remote('playerlist')) || '[]') as { SteamID: string; DisplayName: string; Ping: number; ConnectedSeconds: number }[]).map((p) => ({
@@ -167,8 +186,26 @@ export function adminFor(ctx: AdminContext): Admin {
           seconds: p.ConnectedSeconds
         }))
     }
-    admin.kick = async (p, reason) => void (await remote(control?.type === 'webrcon' ? `kick "${q(p.id)}" "${q(reason)}"` : `kick "${q(p.name)}"`))
-    if (game.bans?.method === 'rcon') {
+    admin.kick = async (p, reason) =>
+      void (await remote(
+        control?.type === 'webrcon'
+          ? `kick "${q(p.id)}" "${q(reason)}"`
+          : sourceIds
+            ? // A colon in the reason would make the engine read it as part of a STEAM_ id.
+              `kickid "${q(p.id)}"${reason ? ` "${q(reason).replace(/:/g, '')}"` : ''}`
+            : `kick "${q(p.name)}"`
+      ))
+    if (game.bans?.method === 'rcon' && control?.type === 'rcon') {
+      admin.ban = async (p) => {
+        await remote(`banid 0 "${q(p.id)}" kick`)
+        await remote('writeid')
+      }
+      admin.unban = async (id) => {
+        await remote(`removeid "${q(id)}"`)
+        await remote('writeid')
+      }
+      admin.bans = async () => readBans(file, game.bans?.format)
+    } else if (game.bans?.method === 'rcon') {
       admin.ban = async (p, reason) => {
         await remote(`banid ${q(p.id)} "${q(p.name)}" "${q(reason)}"`)
         await remote('server.writecfg')

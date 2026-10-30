@@ -141,7 +141,8 @@ function Overview({ server, game }: { server: ServerView; game?: GameDefinition 
     void window.neledport.serverBackups(server.id).then(setBackups)
   }, [server.id, server.status])
 
-  const localOnly = new Set([game?.control?.rest?.port, game?.control?.port].filter(Boolean))
+  // Remote-control ports stay on this computer, except when control shares the port players join on (Source RCON).
+  const localOnly = new Set([game?.control?.rest?.port, game?.control?.port].filter((p) => p && p !== 'game'))
   return (
     <div className="mt-5 grid gap-4 md:grid-cols-[3fr_2fr]">
       <section className="flex flex-col gap-4 rounded-[14px] border border-white/5 bg-ink-900 p-5">
