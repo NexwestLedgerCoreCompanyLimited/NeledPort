@@ -1,10 +1,15 @@
 name: E2E (real server)
 
 # Installs SteamCMD and real dedicated servers, starts them, stops them and checks the world was saved:
-# Valheim on Linux and Windows; Palworld, Rust, Source, GoldSrc and Unreal Engine RCON games on Linux.
+# Valheim on Linux and Windows; Palworld, Rust, Source, GoldSrc, Unreal Engine RCON and console games on Linux.
 # Heavy (Rust alone is ~10 GB), so it runs on demand and weekly rather than on every push.
 on:
   workflow_dispatch:
+    inputs:
+      only:
+        description: Comma-separated game ids to test (empty = all)
+        required: false
+        default: ''
   schedule:
     - cron: '0 3 * * 1'
 
@@ -16,31 +21,26 @@ env:
   NELEDPORT_E2E: '1'
 
 jobs:
+  # Games and their test files live in e2e-games.json; "only" runs a comma-separated subset of them.
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: pick
+        env:
+          ONLY: ${{ inputs.only }}
+        run: echo "matrix=$(jq -c --arg only "$ONLY" '[.[] | select(.game as $g | $only == "" or ($only | split(",") | index($g) != null))]' .github/e2e-games.json)" >> "$GITHUB_OUTPUT"
+
   linux:
     name: ${{ matrix.game }} on Linux
+    needs: plan
+    if: needs.plan.outputs.matrix != '[]'
     strategy:
       fail-fast: false
       matrix:
-        game: [valheim, palworld, rust, counter-strike-source, team-fortress-2, counter-strike-1-6, day-of-defeat, sven-co-op, ark-survival-evolved, squad, squad-44, insurgency-sandstorm, mordhau, operation-harsh-doorstop, conan-exiles, humanitz]
-        include:
-          # Source and GoldSrc games share one test file per engine; NELEDPORT_E2E_GAME picks the game.
-          - { game: valheim, test: valheim }
-          - { game: palworld, test: palworld }
-          - { game: rust, test: rust }
-          - { game: counter-strike-source, test: source }
-          - { game: team-fortress-2, test: source }
-          - { game: counter-strike-1-6, test: goldsrc }
-          - { game: day-of-defeat, test: goldsrc }
-          - { game: sven-co-op, test: goldsrc }
-          # Unreal Engine games driven over RCON by their definitions' own commands.
-          - { game: ark-survival-evolved, test: rcon }
-          - { game: squad, test: rcon }
-          - { game: squad-44, test: rcon }
-          - { game: insurgency-sandstorm, test: rcon }
-          - { game: mordhau, test: rcon }
-          - { game: operation-harsh-doorstop, test: rcon }
-          - { game: conan-exiles, test: rcon }
-          - { game: humanitz, test: rcon }
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
     runs-on: ubuntu-latest
     timeout-minutes: 100
     steps:
@@ -66,6 +66,7 @@ jobs:
 
   windows:
     name: valheim on Windows
+    if: inputs.only == '' || contains(format(',{0},', inputs.only), ',valheim,')
     runs-on: windows-latest
     timeout-minutes: 60
     steps:

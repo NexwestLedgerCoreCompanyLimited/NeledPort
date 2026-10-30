@@ -412,7 +412,10 @@ export class ServerManager extends EventEmitter {
         await rest.shutdown(1, 'Server is shutting down')
       }
     } else if (control?.type === 'stdin') {
-      graceful = () => proc.write(control.shutdown ?? 'quit')
+      graceful = () => {
+        if (control.save) proc.write(control.save)
+        proc.write(control.shutdown ?? 'quit')
+      }
     } else if (control?.type === 'rcon' || control?.type === 'webrcon' || control?.type === 'goldsrc') {
       const admin = this.admin(server)
       graceful = async () => {
@@ -582,14 +585,11 @@ export class ServerManager extends EventEmitter {
     const cmd = text.trim()
     if (!cmd) return ''
     this.addLine(id, `> ${cmd}`)
-    if (this.game(server).control?.type === 'stdin') {
-      rt.proc.write(cmd)
-      return ''
-    }
     const run = this.admin(server).command
     if (!run) throw new Error('This game has no remote console')
     const output = await run(cmd)
-    for (const line of output.split(/\r?\n/)) if (line) this.addLine(id, line)
+    // A console game's reply is already in the console: it is the server's own output.
+    if (this.game(server).control?.type !== 'stdin') for (const line of output.split(/\r?\n/)) if (line) this.addLine(id, line)
     return output
   }
 
@@ -715,7 +715,33 @@ export class ServerManager extends EventEmitter {
       ports: server.ports,
       adminPassword: this.plainSecrets(server)[ADMIN_SECRET] ?? '',
       tracker: this.rt(server.id).tracker,
-      net: this.deps.net
+      net: this.deps.net,
+      console: (command) => this.consoleReply(server.id, command)
+    })
+  }
+
+  /** Types a line into the server's console and collects what it prints until it goes quiet (no reply after 1 s). */
+  private consoleReply(id: string, command: string): Promise<string> {
+    const proc = this.rt(id).proc
+    if (!proc) return Promise.reject(new Error('Start the server first'))
+    return new Promise((resolve) => {
+      const lines: string[] = []
+      const done = () => {
+        this.off('line', onLine)
+        clearTimeout(quiet)
+        clearTimeout(cap)
+        resolve(lines.join('\n'))
+      }
+      const onLine = (lineId: string, line: string) => {
+        if (lineId !== id) return
+        lines.push(line)
+        clearTimeout(quiet)
+        quiet = setTimeout(done, 300)
+      }
+      let quiet = setTimeout(done, 1000)
+      const cap = setTimeout(done, 5000)
+      this.on('line', onLine)
+      proc.write(command)
     })
   }
 

@@ -218,6 +218,7 @@
           "enum": [
             "rest",
             "rcon",
+            "console",
             "a2s",
             "log"
           ]
@@ -531,7 +532,8 @@
               "style": {
                 "enum": [
                   "equals",
-                  "space"
+                  "space",
+                  "colon"
                 ]
               },
               "set": {

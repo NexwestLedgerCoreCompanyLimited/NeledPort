@@ -8,7 +8,7 @@ export interface PlatformDefinition {
   /** Steam beta branch holding this platform's server (HumanitZ's Linux build is on "linuxbranch"). */
   steamBranch?: string
   /** Values written into the game's own config on every start (RCON password, ports, name); templates like args. */
-  configWrites?: { file: string; section?: string; style?: 'equals' | 'space'; set: Record<string, string> }[]
+  configWrites?: { file: string; section?: string; style?: 'equals' | 'space' | 'colon'; set: Record<string, string> }[]
 }
 
 export interface SettingDefinition {
@@ -43,7 +43,7 @@ export interface GameDefinition {
     port?: string
   }
   /** command + pattern (named groups id, name, ping, seconds) and kick: for games that speak RCON their own way. */
-  players?: { source: 'rest' | 'rcon' | 'a2s' | 'log'; port?: string; command?: string; pattern?: string; kick?: string }
+  players?: { source: 'rest' | 'rcon' | 'console' | 'a2s' | 'log'; port?: string; command?: string; pattern?: string; kick?: string }
   /** ban / unban (with {id}) and save: the game's own RCON commands; with no unban, the line is taken out of the file. */
   bans?: { method: 'rest' | 'rcon' | 'file'; file?: string; format?: 'lines' | 'rust-cfg' | 'source-cfg' | 'squad-cfg'; ban?: string; unban?: string; save?: string }
   logPatterns?: { ready?: string; join?: string; leave?: string; character?: string }

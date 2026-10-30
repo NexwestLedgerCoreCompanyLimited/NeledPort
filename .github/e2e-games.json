@@ -1,0 +1,74 @@
+[
+ {
+  "game": "valheim",
+  "test": "valheim"
+ },
+ {
+  "game": "palworld",
+  "test": "palworld"
+ },
+ {
+  "game": "rust",
+  "test": "rust"
+ },
+ {
+  "game": "counter-strike-source",
+  "test": "source"
+ },
+ {
+  "game": "team-fortress-2",
+  "test": "source"
+ },
+ {
+  "game": "counter-strike-1-6",
+  "test": "goldsrc"
+ },
+ {
+  "game": "day-of-defeat",
+  "test": "goldsrc"
+ },
+ {
+  "game": "sven-co-op",
+  "test": "goldsrc"
+ },
+ {
+  "game": "ark-survival-evolved",
+  "test": "rcon"
+ },
+ {
+  "game": "squad",
+  "test": "rcon"
+ },
+ {
+  "game": "squad-44",
+  "test": "rcon"
+ },
+ {
+  "game": "insurgency-sandstorm",
+  "test": "rcon"
+ },
+ {
+  "game": "mordhau",
+  "test": "rcon"
+ },
+ {
+  "game": "operation-harsh-doorstop",
+  "test": "rcon"
+ },
+ {
+  "game": "conan-exiles",
+  "test": "rcon"
+ },
+ {
+  "game": "humanitz",
+  "test": "rcon"
+ },
+ {
+  "game": "scp-secret-laboratory",
+  "test": "console"
+ },
+ {
+  "game": "unturned",
+  "test": "console"
+ }
+]

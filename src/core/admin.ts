@@ -40,6 +40,8 @@ export interface AdminContext {
   adminPassword: string
   tracker?: LogPlayerTracker
   net?: AdminNet
+  /** Types a line into the server's own console and resolves with what it prints next (stdin-controlled games). */
+  console?: (command: string) => Promise<string>
 }
 
 // Values end up inside "quoted" console arguments; a quote or newline would let them run other commands.
@@ -240,7 +242,9 @@ export function adminFor(ctx: AdminContext): Admin {
         ? (cmd) => net.rcon({ port: remotePort, password: adminPassword }, cmd)
         : control?.type === 'goldsrc' && remotePort
           ? (cmd) => net.goldsrc({ port: remotePort, password: adminPassword }, cmd)
-          : undefined
+          : control?.type === 'stdin'
+            ? ctx.console
+            : undefined
 
   if (control?.type === 'rest' && control.rest) {
     const api = net.rest({ port: ports[control.rest.port], basePath: control.rest.basePath, username: control.rest.username, password: adminPassword })

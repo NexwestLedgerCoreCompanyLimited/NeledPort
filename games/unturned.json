@@ -5,7 +5,7 @@
   "serverAppId": 1110390,
   "gameAppId": 304930,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -49,6 +49,58 @@
         "-gslt",
         "{setting:gslt}",
         "+InternetServer/neledport"
+      ],
+      "configFiles": [
+        {
+          "path": "Servers/neledport/Server/Commands.dat",
+          "format": "txt"
+        },
+        {
+          "path": "Servers/neledport/Config.txt",
+          "format": "txt"
+        },
+        {
+          "path": "Servers/neledport/WorkshopDownloadConfig.json",
+          "format": "json"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "Unturned.exe",
+      "args": [
+        "-nographics",
+        "-batchmode",
+        "-bind",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "-perspective",
+        "first",
+        "-mode",
+        "normal",
+        "-name",
+        "{setting:serverName}",
+        "-map",
+        "PEI",
+        "-gslt",
+        "{setting:gslt}",
+        "+InternetServer/neledport"
+      ],
+      "configFiles": [
+        {
+          "path": "Servers/neledport/Server/Commands.dat",
+          "format": "txt"
+        },
+        {
+          "path": "Servers/neledport/Config.txt",
+          "format": "txt"
+        },
+        {
+          "path": "Servers/neledport/WorkshopDownloadConfig.json",
+          "format": "json"
+        }
       ]
     }
   },
@@ -57,9 +109,22 @@
       "name": "game",
       "default": 27015,
       "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 27016,
+      "protocol": "udp"
     }
   ],
+  "saveDir": "Servers/neledport",
   "control": {
-    "type": "signal"
+    "type": "stdin",
+    "save": "Save",
+    "shutdown": "Shutdown"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query",
+    "kick": "Kick {id}/{reason}"
   }
 }

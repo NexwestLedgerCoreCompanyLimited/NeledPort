@@ -39,6 +39,12 @@ describe('writeConfigValues', () => {
     expect(readFileSync(path, 'utf8')).toBe('hostname My server\nsv_lan 0\n')
   })
 
+  it('writes "key: value" files (SCP:SL)', () => {
+    const path = file('server_name: My Server\ngamedir_for_configs: false\n')
+    writeConfigValues(path, { style: 'colon', values: { gamedir_for_configs: 'true' } })
+    expect(readFileSync(path, 'utf8')).toBe('server_name: My Server\ngamedir_for_configs: true\n')
+  })
+
   it('keeps line breaks out of values, which would add other settings', () => {
     const path = file()
     writeConfigValues(path, { values: { Password: 'pw\nAdmin=everyone' } })

@@ -25,8 +25,11 @@ class FakeProcess extends EventEmitter implements ProcessLike {
     this.log.push('start')
     this.set('running')
   }
+  /** What the fake server prints back on its console after a line is typed in. */
+  reply?: (text: string) => string[]
   write(text: string) {
     this.written.push(text)
+    for (const line of this.reply?.(text) ?? []) setTimeout(() => this.emit('line', line), 10)
   }
   interrupt() {
     this.log.push('interrupt')
@@ -657,6 +660,32 @@ describe('Servers made with an older game definition', () => {
     await after.install(id)
     await after.start(id)
     expect(processes[0].spec!.args).toEqual(expect.arrayContaining(['-rcon', '25575', 'TheIsland']))
+  })
+})
+
+describe('Console-controlled games', () => {
+  // SCP:SL and Unturned take admin commands on their own console and answer there.
+  const consoleGame = (): GameDefinition => ({
+    ...games.find((g) => g.id === 'valheim')!,
+    id: 'console-game',
+    control: { type: 'stdin', save: 'Save', shutdown: 'Shutdown' },
+    players: { source: 'console', command: 'Players', pattern: '^- (?<name>.+): (?<id>\\d{17})@steam$', kick: 'Kick {id}/{reason}' },
+    bans: { method: 'rcon', ban: 'Ban {id}/{reason}', unban: 'Unban {id}' }
+  })
+
+  it('reads players from what the server prints after the command, kicks, and saves before quitting', async () => {
+    const { deps, processes } = setup()
+    const manager = new ServerManager({ ...deps, games: () => [...games, consoleGame()] })
+    const { id } = manager.create({ gameId: 'console-game', name: 'x', settings: { serverName: 'x', world: 'w', password: 'secret1' } })
+    await manager.install(id)
+    await manager.start(id)
+    processes[0].reply = (text) => (text === 'Players' ? ['List of players (1):', '- Mira: 76561198000000001@steam'] : [])
+    expect(await manager.players(id)).toEqual([{ id: '76561198000000001', name: 'Mira' }])
+    expect(await manager.command(id, 'Players')).toMatch(/Mira/)
+    await manager.kick(id, { id: '76561198000000001', name: 'Mira' }, 'afk')
+    expect(processes[0].written).toEqual(['Players', 'Players', 'Kick 76561198000000001/afk'])
+    await manager.stop(id)
+    expect(processes[0].written.slice(-2)).toEqual(['Save', 'Shutdown'])
   })
 })
 
