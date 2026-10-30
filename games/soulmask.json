@@ -4,7 +4,7 @@
   "name": "Soulmask",
   "serverAppId": 3017300,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -44,6 +44,12 @@
         "-UTF8Output",
         "-forcepassthrough",
         "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "WS/Saved/GameplaySettings/GameXishu.json",
+          "format": "json"
+        }
       ]
     }
   },
@@ -65,8 +71,13 @@
     }
   ],
   "control": {
-    "type": "signal"
+    "type": "telnet",
+    "port": "telnet",
+    "save": "saveworld 1",
+    "saveDone": "world is saved",
+    "shutdown": "quit 1"
   },
+  "saveDir": "WS/Saved/Worlds",
   "players": {
     "source": "a2s",
     "port": "query"

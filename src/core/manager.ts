@@ -9,6 +9,7 @@ import { addPlugin, downloadZip, installLoader, listPlugins, loaderState, remove
 import { appInfoArgs, installedBuild, parseLatestBuild } from './build'
 import { palworldRest, prepareConfig } from './palworld'
 import { satisfactoryApi } from './satisfactory'
+import { telnetExec } from './telnet'
 import { writeSourceConfig } from './sourcecfg'
 import { writeConfigValues } from './configwrite'
 import { isPortFree } from './ports'
@@ -411,6 +412,19 @@ export class ServerManager extends EventEmitter {
       graceful = async () => {
         await rest.save()
         await rest.shutdown(1, 'Server is shutting down')
+      }
+    } else if (control?.type === 'telnet' && control.port) {
+      const telnet = this.deps.net?.telnet ?? telnetExec
+      const port = server.ports[control.port]
+      graceful = async () => {
+        try {
+          // A save can take minutes on a big world; LinuxGSM allows 120 s for "world is saved".
+          if (control.save) await telnet({ port, until: control.saveDone ? new RegExp(control.saveDone, 'i') : undefined, timeoutMs: 120_000 }, control.save)
+          await telnet({ port }, control.shutdown ?? 'quit')
+        } catch (e) {
+          this.addLine(id, `[NeledPort] ${(e as Error).message}; sending Ctrl+C instead`)
+          proc.interrupt()
+        }
       }
     } else if (control?.type === 'satisfactory' && control.port) {
       const api = (this.deps.net?.satisfactory ?? satisfactoryApi)({ port: server.ports[control.port], password: this.plainSecrets(server)[control.passwordSetting ?? ''] || undefined })

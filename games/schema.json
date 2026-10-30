@@ -171,7 +171,8 @@
             "rest",
             "stdin",
             "signal",
-            "satisfactory"
+            "satisfactory",
+            "telnet"
           ]
         },
         "save": {
@@ -179,6 +180,11 @@
         },
         "shutdown": {
           "type": "string"
+        },
+        "saveDone": {
+          "description": "Regular expression for the text the console prints when the save command has finished (Soulmask: \"world is saved\").",
+          "type": "string",
+          "minLength": 1
         },
         "passwordSetting": {
           "description": "Secret setting holding the remote password when the player chooses it (Satisfactory's claim password).",

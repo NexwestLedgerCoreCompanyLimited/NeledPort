@@ -6,12 +6,12 @@ import { describe, expect, it } from 'vitest'
 import { loadCatalog } from '../core/catalog'
 import { e2e, e2eManager, platform, retry } from './harness'
 
-// Real end-to-end run of one Unreal Engine game that NeledPort drives over RCON with the definition's own commands
-// (ARK, Squad, Conan...), chosen by NELEDPORT_E2E_GAME. See .github/workflows/e2e.yml.
+// Real end-to-end run of one Unreal Engine game that NeledPort drives over RCON (or Soulmask's telnet console) with
+// the definition's own commands (ARK, Squad, Conan...), chosen by NELEDPORT_E2E_GAME. See .github/workflows/e2e.yml.
 const gameId = process.env.NELEDPORT_E2E_GAME ?? 'ark-survival-evolved'
 const game = loadCatalog(join(__dirname, '../../games')).games.find((g) => g.id === gameId)!
 // Games whose player list comes from A2S: a harmless command that shows what their own listing prints.
-const PROBE: Record<string, string> = { 'conan-exiles': 'listplayers', mordhau: 'playerlist', 'operation-harsh-doorstop': 'status' }
+const PROBE: Record<string, string> = { 'conan-exiles': 'listplayers', mordhau: 'playerlist', 'operation-harsh-doorstop': 'status', soulmask: 'help' }
 // A SteamID64 no player owns (account 1), for the ban round trip.
 const nobody = '76561197960265729'
 

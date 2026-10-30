@@ -5,6 +5,7 @@ import { goldsrcRconExec } from './goldsrc'
 import { palworldRest } from './palworld'
 import { rconExec } from './rcon'
 import { satisfactoryApi } from './satisfactory'
+import { telnetExec } from './telnet'
 import type { AdminCapabilities, BanEntry, GameDefinition, PlayerInfo } from './types'
 import { webRconExec } from './webrcon'
 
@@ -33,6 +34,7 @@ export interface AdminNet {
     save(): Promise<unknown>
   }
   satisfactory?: typeof satisfactoryApi
+  telnet?: typeof telnetExec
 }
 
 export interface AdminContext {
@@ -232,7 +234,8 @@ export function adminFor(ctx: AdminContext): Admin {
     goldsrc: ctx.net?.goldsrc ?? goldsrcRconExec,
     a2s: ctx.net?.a2s ?? ((port: number) => queryPlayers(port)),
     rest: ctx.net?.rest ?? palworldRest,
-    satisfactory: ctx.net?.satisfactory ?? satisfactoryApi
+    satisfactory: ctx.net?.satisfactory ?? satisfactoryApi,
+    telnet: ctx.net?.telnet ?? telnetExec
   }
   const file = banFile(installDir, game)
   const admin: Admin = { players: async () => Promise.reject(new Error('A player list is not available for this game yet')) }
@@ -246,7 +249,9 @@ export function adminFor(ctx: AdminContext): Admin {
         ? (cmd) => net.rcon({ port: remotePort, password: adminPassword }, cmd)
         : control?.type === 'goldsrc' && remotePort
           ? (cmd) => net.goldsrc({ port: remotePort, password: adminPassword }, cmd)
-          : control?.type === 'satisfactory' && remotePort
+          : control?.type === 'telnet' && remotePort
+            ? (cmd) => net.telnet({ port: remotePort }, cmd)
+            : control?.type === 'satisfactory' && remotePort
             ? (cmd) => net.satisfactory({ port: remotePort, password: adminPassword || undefined }).command(cmd)
             : control?.type === 'stdin'
               ? ctx.console

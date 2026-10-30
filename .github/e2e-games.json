@@ -114,5 +114,9 @@
  {
   "game": "satisfactory",
   "test": "satisfactory"
+ },
+ {
+  "game": "soulmask",
+  "test": "rcon"
  }
 ]

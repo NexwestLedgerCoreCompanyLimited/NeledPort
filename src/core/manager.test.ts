@@ -700,6 +700,22 @@ describe('Servers made with an older game definition', () => {
   })
 })
 
+describe('Soulmask (telnet console)', () => {
+  // LinuxGSM's fn_stop_graceful_sm_telnet: saveworld 1, wait for "world is saved", then quit 1.
+  it('saves, waits for the save to finish, then quits', async () => {
+    const { deps, log } = setup()
+    const calls: string[] = []
+    const net = { ...deps.net, telnet: async (o: { port: number; until?: RegExp }, cmd: string) => (calls.push(`${o.port} ${cmd}${o.until ? ` until ${o.until.source}` : ''}`), '') }
+    const manager = new ServerManager({ ...deps, net })
+    const { id } = manager.create({ gameId: 'soulmask', name: 'x', settings: {} })
+    await manager.install(id)
+    await manager.start(id)
+    await manager.stop(id)
+    expect(calls).toEqual(['18888 saveworld 1 until world is saved', '18888 quit 1'])
+    expect(log).not.toContain('interrupt')
+  })
+})
+
 describe('Satisfactory', () => {
   // Players claim the server in game with their own admin password; NeledPort logs in with it to save and quit.
   it('saves and shuts down through the server API with the claim password', async () => {
