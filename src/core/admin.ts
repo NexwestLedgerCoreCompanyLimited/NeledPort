@@ -120,13 +120,26 @@ function writeLineBan(file: string, id: string, add: boolean): void {
 }
 
 /** Player rows of a Source engine `status` (# userid [slot] "name" uniqueid connected ping loss state ...). Bots have no time. */
-function parseSourceStatus(text: string): PlayerInfo[] {
+function parseSourceStatus(text: string): (PlayerInfo & { userid: number })[] {
   return text.split(/\r?\n/).flatMap((line) => {
-    const m = /^#\s*\d+\s+(?:\d+\s+)?"(.*)"\s+(\S+)\s+(\d+(?::\d+){1,2})\s+(\d+)\s/.exec(line)
+    const m = /^#\s*(\d+)\s+(?:\d+\s+)?"(.*)"\s+(\S+)\s+(\d+(?::\d+){1,2})\s+(\d+)\s/.exec(line)
     if (!m) return []
-    const seconds = m[3].split(':').reduce((total, part) => total * 60 + Number(part), 0)
-    return [{ id: m[2], name: m[1], ping: Number(m[4]), seconds }]
+    const seconds = m[4].split(':').reduce((total, part) => total * 60 + Number(part), 0)
+    return [{ userid: Number(m[1]), id: m[3], name: m[2], ping: Number(m[5]), seconds }]
   })
+}
+
+/**
+ * A SteamID as Source stores bans: [U:1:N]. Real servers refuse a quoted ID in banid and write every ban in this form,
+ * so the ID is sent unquoted and must be nothing but a SteamID. Accepts STEAM_X:Y:Z, [U:1:N] and SteamID64.
+ */
+function steamId3(id: string): string {
+  const text = id.trim()
+  const legacy = /^STEAM_[0-5]:([01]):(\d{1,10})$/.exec(text)
+  if (legacy) return `[U:1:${Number(legacy[2]) * 2 + Number(legacy[1])}]`
+  if (/^\[U:1:\d{1,10}\]$/.test(text)) return text
+  if (/^7656119\d{10}$/.test(text)) return `[U:1:${BigInt(text) - 76561197960265728n}]`
+  throw new Error(`"${id}" is not a SteamID (use STEAM_0:1:123, [U:1:123] or a 7656119… number)`)
 }
 
 export function adminFor(ctx: AdminContext): Admin {
@@ -176,7 +189,7 @@ export function adminFor(ctx: AdminContext): Admin {
     admin.command = remote
     // Source engine: status rows carry the SteamID that kickid, banid and removeid need.
     const sourceIds = control?.type === 'rcon' && game.players?.source === 'rcon'
-    if (sourceIds) admin.players = async () => parseSourceStatus(await remote('status'))
+    if (sourceIds) admin.players = async () => parseSourceStatus(await remote('status')).map(({ userid: _, ...p }) => p)
     if (game.players?.source === 'rcon' && control?.type === 'webrcon') {
       admin.players = async () =>
         (JSON.parse((await remote('playerlist')) || '[]') as { SteamID: string; DisplayName: string; Ping: number; ConnectedSeconds: number }[]).map((p) => ({
@@ -190,18 +203,23 @@ export function adminFor(ctx: AdminContext): Admin {
       void (await remote(
         control?.type === 'webrcon'
           ? `kick "${q(p.id)}" "${q(reason)}"`
-          : sourceIds
-            ? // A colon in the reason would make the engine read it as part of a STEAM_ id.
-              `kickid "${q(p.id)}"${reason ? ` "${q(reason).replace(/:/g, '')}"` : ''}`
-            : `kick "${q(p.name)}"`
+          : `kick "${q(p.name)}"`
       ))
+    // kickid with the userid from status: the standard form, with no SteamID parsing involved.
+    if (sourceIds) {
+      admin.kick = async (p, reason) => {
+        const row = parseSourceStatus(await remote('status')).find((r) => r.id === p.id)
+        if (!row) throw new Error(`${p.name} is not on the server any more`)
+        await remote(`kickid ${row.userid}${reason ? ` "${q(reason)}"` : ''}`)
+      }
+    }
     if (game.bans?.method === 'rcon' && control?.type === 'rcon') {
       admin.ban = async (p) => {
-        await remote(`banid 0 "${q(p.id)}" kick`)
+        await remote(`banid 0 ${steamId3(p.id)} kick`)
         await remote('writeid')
       }
       admin.unban = async (id) => {
-        await remote(`removeid "${q(id)}"`)
+        await remote(`removeid ${steamId3(id)}`)
         await remote('writeid')
       }
       admin.bans = async () => readBans(file, game.bans?.format)

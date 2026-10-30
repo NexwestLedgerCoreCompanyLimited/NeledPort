@@ -24,12 +24,13 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
     expect(status).toMatch(/hostname:\s*NeledPort E2E/)
     expect(await manager.players(id)).toEqual([])
 
-    // A ban in the game's own SteamID format goes to banned_user.cfg through writeid, and comes back out.
-    const steamId = gameId === 'team-fortress-2' ? '[U:1:999999]' : 'STEAM_0:1:999999'
-    await manager.ban(id, { id: steamId, name: 'neledport-e2e' }, 'end-to-end test')
-    expect((await manager.bans(id)).map((b) => b.id)).toContain(steamId)
-    await manager.unban(id, steamId)
-    expect((await manager.bans(id)).map((b) => b.id)).not.toContain(steamId)
+    // Real bans: an ID in the forms people paste goes in, writeid stores it as [U:1:N], and it comes back out.
+    const [given, stored] = gameId === 'team-fortress-2' ? ['76561197961265727', '[U:1:999999]'] : ['STEAM_0:1:999999', '[U:1:1999999]']
+    await manager.ban(id, { id: given, name: 'neledport-e2e' }, 'end-to-end test')
+    expect((await manager.bans(id)).map((b) => b.id)).toContain(stored)
+    await manager.unban(id, stored)
+    expect((await manager.bans(id)).map((b) => b.id)).not.toContain(stored)
+    await expect(manager.kick(id, { id: '[U:1:5]', name: 'Nobody' }, '')).rejects.toThrow(/not on the server/)
 
     // quit over RCON: no forced kill.
     const { forced } = await manager.stop(id)

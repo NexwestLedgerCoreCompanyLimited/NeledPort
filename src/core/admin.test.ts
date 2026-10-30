@@ -156,20 +156,35 @@ describe('Source engine admin (RCON)', () => {
     ])
   })
 
-  it('kicks and bans by quoted SteamID, keeps colons out of the reason, and saves the ban list', async () => {
+  // Seen on real CS:S and TF2 servers: a quoted ID is refused ("Can't ban users with ID"), an unquoted STEAM_ or [U:1:]
+  // ID works, and writeid stores every ban as [U:1:N]. So IDs are checked strictly and sent unquoted as [U:1:N].
+  it('bans and unbans by SteamID in the form the server stores, and saves the ban list', async () => {
     const { calls, admin } = source('')
-    await admin.kick!({ id: '[U:1:12345]', name: 'Mira' }, 'spam: "links"')
-    await admin.kick!({ id: 'STEAM_0:1:777', name: 'Kai' }, '')
     await admin.ban!({ id: 'STEAM_0:1:777', name: 'Kai' }, 'grief')
+    await admin.ban!({ id: '76561198000000001', name: 'Pasted' }, '')
     await admin.unban!('[U:1:12345]')
     expect(calls).toEqual([
-      'rcon:27015:kickid "[U:1:12345]" "spam links"',
-      'rcon:27015:kickid "STEAM_0:1:777"',
-      'rcon:27015:banid 0 "STEAM_0:1:777" kick',
+      'rcon:27015:banid 0 [U:1:1555] kick',
       'rcon:27015:writeid',
-      'rcon:27015:removeid "[U:1:12345]"',
+      'rcon:27015:banid 0 [U:1:39734273] kick',
+      'rcon:27015:writeid',
+      'rcon:27015:removeid [U:1:12345]',
       'rcon:27015:writeid'
     ])
+  })
+
+  it('refuses anything that is not a SteamID, since the ID goes unquoted into the command', async () => {
+    const { calls, admin } = source('')
+    await expect(admin.ban!({ id: '1; quit', name: 'x' }, '')).rejects.toThrow(/SteamID/)
+    await expect(admin.unban!('[U:1:1] ; quit')).rejects.toThrow(/SteamID/)
+    expect(calls).toEqual([])
+  })
+
+  it('kicks by the userid from status', async () => {
+    const { calls, admin } = source(TF2_STATUS)
+    await admin.kick!({ id: '[U:1:67890]', name: 'Rook' }, 'spam: "links"')
+    expect(calls).toEqual(['rcon:27015:status', 'rcon:27015:kickid 3 "spam: links"'])
+    await expect(admin.kick!({ id: '[U:1:5]', name: 'Gone' }, '')).rejects.toThrow(/not on the server/)
   })
 
   it('reads banned_user.cfg as written by writeid', async () => {
