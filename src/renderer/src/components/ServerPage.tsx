@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import type { AppInfo, BackupInfo, GameDefinition, ServerAction, ServerView } from '../../../core/types'
 import { useLanguage, useT } from '../i18n'
 import { cleanError, coverUrl, statusDot } from '../status'
+import { Backups } from './Backups'
+import { Config } from './Config'
 import { Mods } from './Mods'
 import { Players } from './Players'
 import { SteamAccount } from './SteamAccount'
@@ -23,9 +25,11 @@ interface Props {
 
 export function ServerPage({ server, game, info, onRemoved }: Props) {
   const t = useT()
-  const [tab, setTab] = useState<'overview' | 'console' | 'players' | 'mods'>('overview')
+  const [tab, setTab] = useState<'overview' | 'console' | 'players' | 'mods' | 'config' | 'backups'>('overview')
   const [error, setError] = useState<string | null>(null)
   const canHost = !!info?.canHostServers
+  const configFiles = !!(info && game?.platforms[info.platform]?.configFiles?.length)
+  const tabs = ['overview', 'console', 'players', 'mods', ...(game?.settings?.length || configFiles ? (['config'] as const) : []), 'backups'] as const
 
   async function act(action: ServerAction) {
     if (action === 'remove' && !window.confirm(t('server.removeConfirm', { name: server.name }))) return
@@ -83,7 +87,8 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          {actions.map((a) => (
+          {/* The Backups tab has its own button, which also refreshes its list. */}
+          {actions.filter((a) => !(tab === 'backups' && a.action === 'backup')).map((a) => (
             <button
               key={a.action}
               type="button"
@@ -99,7 +104,7 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
       </header>
 
       <nav aria-label={t('server.sections')} className="mt-5 flex gap-1 border-b border-white/5">
-        {(['overview', 'console', 'players', 'mods'] as const).map((name) => (
+        {tabs.map((name) => (
           <button
             key={name}
             type="button"
@@ -122,6 +127,8 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
       {tab === 'console' && <Console server={server} />}
       {tab === 'players' && <Players server={server} />}
       {tab === 'mods' && <Mods server={server} />}
+      {tab === 'config' && game && <Config server={server} game={game} configFiles={configFiles} />}
+      {tab === 'backups' && <Backups server={server} game={game} />}
     </div>
   )
 }

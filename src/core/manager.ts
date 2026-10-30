@@ -1,10 +1,10 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 import { EventEmitter } from 'node:events'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { splitArgs } from './args'
 import { adminFor, capabilities, LogPlayerTracker, type Admin, type AdminNet } from './admin'
-import { createBackup, listBackups, pruneBackups } from './backup'
+import { createBackup, listBackups, pruneBackups, restoreBackup } from './backup'
 import { addPlugin, downloadZip, installLoader, listPlugins, loaderState, removePlugin, setPluginEnabled, uninstallLoader } from './mods'
 import { appInfoArgs, installedBuild, parseLatestBuild } from './build'
 import { palworldRest, prepareConfig } from './palworld'
@@ -13,6 +13,7 @@ import { ServerProcess, type LaunchSpec } from './process'
 import { appUpdateArgs, captureSteamCmd, ensureSteamCmd, isSteamUser, parseSignedIn, parseSteamCmdLine, runSteamCmd } from './steamcmd'
 import { loadServers, saveServers, type ServerConfig } from './store'
 import { expand } from './template'
+import { KEEP_BACKUPS } from './types'
 import type {
   BackupInfo,
   BackupReason,
@@ -47,7 +48,7 @@ export interface ManagerDeps {
   secrets: { encrypt(plain: string): string; decrypt(stored: string): string }
   steamcmd?: {
     ensure(dir: string, platform: Platform): Promise<string>
-    run(exe: string, args: string[], onLine: (line: string) => void): Promise<{ ok: boolean; error?: string }>
+    run(exe: string, args: string[], onLine: (line: string) => void, signal?: AbortSignal): Promise<{ ok: boolean; error?: string }>
     capture?(exe: string, args: string[], timeoutMs?: number): Promise<string>
   }
   createProcess?: (o: { logFile: string; readyPattern?: RegExp }) => ProcessLike
@@ -71,6 +72,8 @@ interface Runtime {
   proc?: ProcessLike
   /** Set while install/start/update/restart runs, so a double click cannot run two at once. */
   busy?: boolean
+  /** Stops the SteamCMD of a running install when NeledPort quits. */
+  install?: AbortController
   lines: string[]
   tracker?: LogPlayerTracker
   latestBuild?: string
@@ -78,7 +81,6 @@ interface Runtime {
 }
 
 const STOP_TIMEOUT_MS = 60_000
-const KEEP_BACKUPS = 10
 const MAX_LINES = 2000
 const ADMIN_SECRET = 'adminPassword'
 
@@ -155,15 +157,7 @@ export class ServerManager extends EventEmitter {
     const name = input.name.trim()
     if (!name || name.length > 64) throw new Error('Server name must be 1–64 characters')
 
-    const settings: Record<string, string> = {}
-    const secrets: Record<string, string> = {}
-    for (const s of game.settings ?? []) {
-      const value = (input.settings[s.key] ?? (s.default !== undefined ? String(s.default) : '')).trim()
-      if (s.minLength && value.length < s.minLength) throw new Error(`${s.label} must be at least ${s.minLength} characters`)
-      if (s.type === 'number' && !/^\d+$/.test(value)) throw new Error(`${s.label} must be a whole number`)
-      if (s.secret) secrets[s.key] = this.deps.secrets.encrypt(value)
-      else settings[s.key] = value
-    }
+    const { settings, secrets } = this.checkSettings(game, input.settings)
     // One generated password per server for whatever remote control the game uses (REST, RCON, WebRCON).
     secrets[ADMIN_SECRET] = this.deps.secrets.encrypt(randomBytes(18).toString('base64url'))
 
@@ -187,6 +181,55 @@ export class ServerManager extends EventEmitter {
     this.servers.push(server)
     this.persist()
     return this.changed(id)
+  }
+
+  /** New settings take effect the next time the server starts. An empty secret keeps the old one. */
+  updateSettings(id: string, input: Record<string, string>): ServerView {
+    const server = this.config(id)
+    const { settings, secrets } = this.checkSettings(this.game(server), input, server)
+    server.settings = settings
+    server.secrets = { ...server.secrets, ...secrets }
+    this.persist()
+    return this.changed(id)
+  }
+
+  private checkSettings(game: GameDefinition, input: Record<string, string>, current?: ServerConfig) {
+    const settings: Record<string, string> = {}
+    const secrets: Record<string, string> = {}
+    for (const s of game.settings ?? []) {
+      const value = (input[s.key] ?? current?.settings[s.key] ?? (s.default !== undefined ? String(s.default) : '')).trim()
+      if (s.secret && !value && current?.secrets[s.key]) continue
+      if (s.minLength && value.length < s.minLength) throw new Error(`${s.label} must be at least ${s.minLength} characters`)
+      if (s.type === 'number' && !/^\d+$/.test(value)) throw new Error(`${s.label} must be a whole number`)
+      if (s.secret) secrets[s.key] = this.deps.secrets.encrypt(value)
+      else settings[s.key] = value
+    }
+    return { settings, secrets }
+  }
+
+  /** The game's own settings files, as text. A file the game has not written yet reads as empty. */
+  configFiles(id: string): { path: string; text: string }[] {
+    const server = this.config(id)
+    return this.configPaths(server).map((path) => {
+      const full = join(server.installDir, path)
+      return { path, text: existsSync(full) ? readFileSync(full, 'utf8') : '' }
+    })
+  }
+
+  /** Only while stopped, because some games rewrite their config when they exit. The previous file is kept as .neledport.bak. */
+  saveConfigFile(id: string, path: string, text: string): void {
+    const server = this.config(id)
+    if (!this.configPaths(server).includes(path)) throw new Error('Unknown config file')
+    const rt = this.rt(id)
+    if (rt.proc || rt.busy) throw new Error('Stop the server before editing its config files')
+    const full = join(server.installDir, path)
+    if (existsSync(full)) copyFileSync(full, `${full}.neledport.bak`)
+    else mkdirSync(dirname(full), { recursive: true })
+    writeFileSync(full, text)
+  }
+
+  private configPaths(server: ServerConfig): string[] {
+    return (this.game(server).platforms[this.deps.platform]?.configFiles ?? []).map((c) => c.path)
   }
 
   /** Removes the server from NeledPort. Its files stay on disk. */
@@ -219,6 +262,7 @@ export class ServerManager extends EventEmitter {
     rt.status ??= 'installing'
     rt.progress = 0
     rt.message = undefined
+    const abort = (rt.install = new AbortController())
     this.changed(id)
     try {
       const login = game.anonymous ? undefined : this.steamAccount()
@@ -235,12 +279,13 @@ export class ServerManager extends EventEmitter {
           this.changed(id)
         }
       }
-      let result = await steam.run(exe, args, onLine)
+      let result = await steam.run(exe, args, onLine, abort.signal)
       // A SteamCMD that just updated itself can fail its first app_update this way; a second run works.
       if (!result.ok && /\(Missing configuration\)/.test(result.error ?? '')) {
         this.addLine(id, '[NeledPort] SteamCMD was not ready yet, trying again…')
-        result = await steam.run(exe, args, onLine)
+        result = await steam.run(exe, args, onLine, abort.signal)
       }
+      if (abort.signal.aborted) throw new Error('Install stopped: NeledPort is closing')
       if (!result.ok) throw new Error(result.error ?? 'SteamCMD failed')
       rt.message = undefined
     } catch (e) {
@@ -249,6 +294,7 @@ export class ServerManager extends EventEmitter {
     } finally {
       if (rt.status === 'installing') rt.status = undefined
       rt.progress = undefined
+      rt.install = undefined
       this.changed(id)
     }
   }
@@ -534,7 +580,22 @@ export class ServerManager extends EventEmitter {
     return info
   }
 
+  /** Puts a backup's world back. The current world is moved aside, never deleted. */
+  restore(id: string, file: string): Promise<void> {
+    return this.exclusive(id, async () => {
+      const server = this.config(id)
+      const saveDir = this.game(server).saveDir
+      if (this.rt(id).proc) throw new Error('Stop the server before restoring a backup')
+      const backup = this.backups(id).find((b) => b.file === file)
+      if (!backup || !saveDir) throw new Error('Unknown backup')
+      await restoreBackup(backup.file, join(server.installDir, saveDir))
+      this.addLine(id, `[NeledPort] Restored the backup from ${backup.createdAt}. The previous world is kept next to it.`)
+      this.changed(id)
+    })
+  }
+
   async stopAll(): Promise<void> {
+    for (const rt of this.runtime.values()) rt.install?.abort()
     await Promise.all(this.servers.filter((s) => this.rt(s.id).proc).map((s) => this.stop(s.id)))
   }
 

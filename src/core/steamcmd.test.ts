@@ -1,3 +1,6 @@
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { appUpdateArgs, captureSteamCmd, isSteamUser, parseSignedIn, parseSteamCmdLine, runSteamCmd, steamCmdDownload, steamCmdExecutable } from './steamcmd'
 
@@ -80,6 +83,34 @@ describe('runSteamCmd', () => {
   it('never waits for typed input, so an expired Steam login cannot hang an install', async () => {
     const [exe, args] = fake(`process.stdin.on('end', () => { console.log('ERROR! no input'); process.exit(5) }).resume()`)
     expect(await runSteamCmd(exe, [...args], () => {})).toEqual({ ok: false, error: 'ERROR! no input' })
+  }, 10_000)
+
+  it('stops SteamCMD when asked to', async () => {
+    const [exe, args] = fake('setInterval(() => {}, 1000)')
+    const abort = new AbortController()
+    setTimeout(() => abort.abort(), 100)
+    const result = await runSteamCmd(exe, [...args], () => {}, abort.signal)
+    expect(result.ok).toBe(false)
+  }, 10_000)
+
+  // steamcmd.sh runs the real SteamCMD as its child: stopping only the script would leave SteamCMD running.
+  it.skipIf(process.platform === 'win32')('stops the programs SteamCMD started too', async () => {
+    const pidFile = join(mkdtempSync(join(tmpdir(), 'steamcmd-')), 'child.pid')
+    const script = `const c = require('child_process').spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' }); require('fs').writeFileSync(${JSON.stringify(pidFile)}, String(c.pid)); setInterval(() => {}, 1000)`
+    const abort = new AbortController()
+    const run = runSteamCmd(process.execPath, ['-e', script], () => {}, abort.signal)
+    while (!existsSync(pidFile)) await new Promise((r) => setTimeout(r, 50))
+    abort.abort()
+    expect((await run).ok).toBe(false)
+    await new Promise((r) => setTimeout(r, 300))
+    const alive = (pid: number) => {
+      try {
+        return process.kill(pid, 0)
+      } catch {
+        return false
+      }
+    }
+    expect(alive(Number(readFileSync(pidFile, 'utf8')))).toBe(false)
   }, 10_000)
 
   it('fails when SteamCMD exits without a success line', async () => {

@@ -64,7 +64,13 @@
       ],
       "env": {
         "LD_LIBRARY_PATH": "{installDir}/RustDedicated_Data/Plugins/x86_64"
-      }
+      },
+      "configFiles": [
+        {
+          "path": "server/neledport/cfg/server.cfg",
+          "format": "cfg"
+        }
+      ]
     },
     "windows": {
       "executable": "RustDedicated.exe",
@@ -94,6 +100,12 @@
         "{adminPassword}",
         "+app.port",
         "{port:app}"
+      ],
+      "configFiles": [
+        {
+          "path": "server/neledport/cfg/server.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },

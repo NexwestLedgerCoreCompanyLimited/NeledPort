@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -50,7 +50,7 @@ class FakeProcess extends EventEmitter implements ProcessLike {
   }
 }
 
-function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; installFails?: boolean; appInfo?: string; failFirst?: string } = {}) {
+function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; installFails?: boolean; appInfo?: string; failFirst?: string; hang?: boolean } = {}) {
   const dataDir = mkdtempSync(join(tmpdir(), 'mgr-'))
   const log: string[] = []
   const processes: FakeProcess[] = []
@@ -65,8 +65,9 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
     steamcmd: {
       ensure: async () => 'steamcmd',
       capture: async () => opts.appInfo ?? '',
-      run: async (_exe, args, onLine) => {
+      run: async (_exe, args, onLine, signal) => {
         steamArgs.push(args)
+        if (opts.hang) return new Promise((done) => signal?.addEventListener('abort', () => done({ ok: false, error: 'The operation was aborted' })))
         log.push(`steamcmd ${args.includes('validate') ? 'validate' : 'install'}`)
         onLine(' Update state (0x61) downloading, progress: 42.00 (1 / 2)')
         if (opts.installFails) return { ok: false, error: 'ERROR! Failed to install app (Disk write failure)' }
@@ -476,5 +477,102 @@ describe('SteamCMD hiccups', () => {
     const { id } = manager.create(valheim)
     await expect(manager.install(id)).rejects.toThrow(/No subscription/)
     expect(steamArgs).toHaveLength(1)
+  })
+})
+
+describe('Backups', () => {
+  async function withBackup() {
+    const s = setup()
+    const { id, installDir } = s.manager.create(valheim)
+    await s.manager.install(id)
+    const world = join(installDir, 'saves', 'worlds_local', 'Midgard.db')
+    mkdirSync(join(world, '..'), { recursive: true })
+    writeFileSync(world, 'old world')
+    const backup = (await s.manager.backup(id))!
+    writeFileSync(world, 'new world')
+    return { ...s, id, installDir, world, backup }
+  }
+
+  it('restores a backup and keeps the current world aside', async () => {
+    const { manager, id, installDir, world, backup } = await withBackup()
+    await manager.restore(id, backup.file)
+    expect(readFileSync(world, 'utf8')).toBe('old world')
+    const aside = readdirSync(installDir).find((n) => n.startsWith('saves.before-restore-'))!
+    expect(readFileSync(join(installDir, aside, 'worlds_local', 'Midgard.db'), 'utf8')).toBe('new world')
+    expect(manager.lines(id).some((l) => l.includes('Restored'))).toBe(true)
+  })
+
+  it('refuses to restore while the server runs', async () => {
+    const { manager, id, world, backup } = await withBackup()
+    await manager.start(id)
+    await expect(manager.restore(id, backup.file)).rejects.toThrow(/Stop the server/)
+    expect(readFileSync(world, 'utf8')).toBe('new world')
+  })
+
+  it('refuses a file that is not one of its backups', async () => {
+    const { manager, id, world } = await withBackup()
+    await expect(manager.restore(id, '/etc/hosts')).rejects.toThrow(/Unknown backup/)
+    expect(readFileSync(world, 'utf8')).toBe('new world')
+  })
+})
+
+describe('Settings and config files', () => {
+  it('changes settings after creation; an empty secret keeps the old one', async () => {
+    const { manager, processes } = setup()
+    const { id } = manager.create(valheim)
+    await manager.install(id)
+    const view = manager.updateSettings(id, { serverName: 'Renamed', world: 'Midgard', password: '' })
+    expect(view.settings.serverName).toBe('Renamed')
+    await manager.start(id)
+    expect(processes[0].spec!.args).toEqual(expect.arrayContaining(['-name', 'Renamed', '-password', 'secret1']))
+  })
+
+  it('checks changed settings like new ones', () => {
+    const { manager } = setup()
+    const { id } = manager.create(valheim)
+    expect(() => manager.updateSettings(id, { ...valheim.settings, password: '123' })).toThrow(/at least 5/)
+    expect(manager.get(id).settings.serverName).toBe('Viking Night')
+  })
+
+  it("edits the game's own config file and keeps the previous copy", async () => {
+    const { manager } = setup()
+    const { id, installDir } = manager.create({ gameId: 'palworld', name: 'Friends', settings: { serverName: 'Friends', maxPlayers: '8' } })
+    await manager.install(id)
+    await manager.start(id)
+    await manager.stop(id)
+    const [file] = manager.configFiles(id)
+    expect(file.path).toBe('Pal/Saved/Config/LinuxServer/PalWorldSettings.ini')
+    expect(file.text).toContain('OptionSettings=')
+    manager.saveConfigFile(id, file.path, 'edited')
+    const full = join(installDir, file.path)
+    expect(readFileSync(full, 'utf8')).toBe('edited')
+    expect(readFileSync(`${full}.neledport.bak`, 'utf8')).toBe(file.text)
+  })
+
+  it('refuses config files it does not know, and edits while running', async () => {
+    const { manager } = setup()
+    const { id } = manager.create({ gameId: 'palworld', name: 'Friends', settings: { serverName: 'Friends', maxPlayers: '8' } })
+    await manager.install(id)
+    expect(() => manager.saveConfigFile(id, '../../evil.ini', 'x')).toThrow(/Unknown config file/)
+    await manager.start(id)
+    expect(() => manager.saveConfigFile(id, 'Pal/Saved/Config/LinuxServer/PalWorldSettings.ini', 'x')).toThrow(/Stop the server/)
+  })
+
+  it('lists no config files for games without them', () => {
+    const { manager } = setup()
+    const { id } = manager.create(valheim)
+    expect(manager.configFiles(id)).toEqual([])
+  })
+})
+
+describe('Quitting', () => {
+  it('stops a running install instead of leaving SteamCMD behind', async () => {
+    const { manager } = setup('linux', { hang: true })
+    const { id } = manager.create(valheim)
+    const install = manager.install(id)
+    await new Promise((r) => setTimeout(r, 10))
+    await manager.stopAll()
+    await expect(install).rejects.toThrow(/NeledPort is closing/)
+    expect(manager.get(id).status).toBe('not-installed')
   })
 })

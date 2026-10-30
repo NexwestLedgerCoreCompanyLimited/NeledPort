@@ -65,10 +65,29 @@ export async function ensureSteamCmd(dir: string, platform: Platform): Promise<s
   return exe
 }
 
+/**
+ * SteamCMD with no input, in its own process group: steamcmd.sh starts the real SteamCMD as a child, and stop() ends
+ * both. No one can type here, so a login prompt (expired Steam session) fails instead of waiting forever.
+ */
+function startSteamCmd(exe: string, args: string[]) {
+  const child = spawn(exe, args, { cwd: dirname(exe), windowsHide: true, detached: process.platform !== 'win32' })
+  child.stdin.end()
+  const stop = () => {
+    try {
+      if (process.platform === 'win32' || !child.pid) child.kill()
+      else process.kill(-child.pid, 'SIGTERM')
+    } catch {
+      // Already gone.
+    }
+  }
+  return { child, stop }
+}
+
 export function runSteamCmd(
   exe: string,
   args: string[],
-  onLine: (line: string) => void
+  onLine: (line: string) => void,
+  signal?: AbortSignal
 ): Promise<{ ok: boolean; error?: string }> {
   return new Promise((resolve) => {
     let success = false
@@ -79,13 +98,14 @@ export function runSteamCmd(
       if (event?.kind === 'success') success = true
       if (event?.kind === 'error') error = event.message
     })
-    const child = spawn(exe, args, { cwd: dirname(exe), windowsHide: true })
-    // No one can type here: a login prompt (expired Steam session) must fail, not wait forever.
-    child.stdin.end()
+    const { child, stop } = startSteamCmd(exe, args)
+    if (signal?.aborted) stop()
+    signal?.addEventListener('abort', stop, { once: true })
     child.stdout.on('data', reader.push)
     child.stderr.on('data', reader.push)
     child.on('error', (e) => resolve({ ok: false, error: e.message }))
     child.on('close', (code) => {
+      signal?.removeEventListener('abort', stop)
       reader.flush()
       if (success && !error) resolve({ ok: true })
       else resolve({ ok: false, error: error ?? `SteamCMD exited with code ${code} without finishing the install` })
@@ -97,9 +117,8 @@ export function runSteamCmd(
 export function captureSteamCmd(exe: string, args: string[], timeoutMs = 120_000): Promise<string> {
   return new Promise((resolve, reject) => {
     let out = ''
-    const child = spawn(exe, args, { cwd: dirname(exe), windowsHide: true })
-    child.stdin.end()
-    const timer = setTimeout(() => child.kill(), timeoutMs)
+    const { child, stop } = startSteamCmd(exe, args)
+    const timer = setTimeout(stop, timeoutMs)
     child.stdout.on('data', (d) => (out += d))
     child.stderr.on('data', (d) => (out += d))
     child.on('error', (e) => (clearTimeout(timer), reject(e)))

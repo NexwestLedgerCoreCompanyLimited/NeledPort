@@ -214,6 +214,28 @@ function registerIpc(): void {
     })
   )
   ipcMain.handle(
+    'servers:restore',
+    withId((id, file: unknown) => {
+      if (!isText(file, 1000)) throw new Error('Invalid backup')
+      return manager.restore(id, file)
+    })
+  )
+  ipcMain.handle(
+    'servers:settings',
+    withId((id, settings: unknown) => {
+      if (!isStringRecord(settings) || Object.values(settings).some((v) => v.length > 500)) throw new Error('Invalid settings')
+      return manager.updateSettings(id, settings)
+    })
+  )
+  ipcMain.handle('servers:configFiles', withId((id) => manager.configFiles(id)))
+  ipcMain.handle(
+    'servers:saveConfigFile',
+    withId((id, path: unknown, text: unknown) => {
+      if (!isText(path, 500) || !isText(text, 1_000_000)) throw new Error('Invalid config file')
+      return manager.saveConfigFile(id, path, text)
+    })
+  )
+  ipcMain.handle(
     'servers:share',
     withId(async (id) => {
       const def = manager.shareDefinition(id)

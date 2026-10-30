@@ -142,6 +142,8 @@ export interface CreateServerInput {
 }
 
 export type BackupReason = 'manual' | 'update' | 'scheduled' | 'config' | 'stop'
+/** Older backups are deleted; the UI tells the user this number. */
+export const KEEP_BACKUPS = 10
 
 export interface BackupInfo {
   file: string
@@ -184,6 +186,10 @@ export interface NeledPortApi {
   serverAction(action: ServerAction, id: string): Promise<void>
   serverLines(id: string): Promise<string[]>
   serverBackups(id: string): Promise<BackupInfo[]>
+  restoreBackup(id: string, file: string): Promise<void>
+  updateSettings(id: string, settings: Record<string, string>): Promise<ServerView>
+  configFiles(id: string): Promise<{ path: string; text: string }[]>
+  saveConfigFile(id: string, path: string, text: string): Promise<void>
   players(id: string): Promise<PlayerInfo[]>
   kick(id: string, player: PlayerInfo): Promise<void>
   ban(id: string, player: PlayerInfo, reason?: string): Promise<void>

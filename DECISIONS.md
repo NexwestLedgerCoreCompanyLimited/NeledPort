@@ -2,6 +2,17 @@
 
 Significant choices, why we made them, and what we turned down. Newest first.
 
+## 2026-10-30 · Config files edited as plain text, only while the server is stopped
+
+- **Decision:** the Config tab edits the server's settings from its game definition as a form, and the game's own
+  config files (`configFiles` in the definition) as plain text. Text files can be saved only while the server is
+  stopped; the previous version is kept as `<file>.neledport.bak`. Restoring a backup moves the current world aside
+  instead of deleting it.
+- **Why:** some games rewrite their config when they exit, which would silently undo an edit made while running.
+  Plain text works for every format without one parser per game.
+- **Rejected:** per-game forms parsed from each config format (one parser per game; contributors can add form
+  fields to a definition's `settings` instead).
+
 ## 2026-10-30 · Steam sign-in in SteamCMD's own window
 
 - **Decision:** for the few servers that need an account, NeledPort stores only the account name and opens SteamCMD

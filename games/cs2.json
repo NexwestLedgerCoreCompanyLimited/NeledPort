@@ -43,6 +43,12 @@
         "{adminPassword}",
         "+sv_setsteamaccount",
         "{setting:gslt}"
+      ],
+      "configFiles": [
+        {
+          "path": "game/csgo/cfg/server.cfg",
+          "format": "cfg"
+        }
       ]
     },
     "windows": {
@@ -61,6 +67,12 @@
         "{adminPassword}",
         "+sv_setsteamaccount",
         "{setting:gslt}"
+      ],
+      "configFiles": [
+        {
+          "path": "game/csgo/cfg/server.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
