@@ -8,13 +8,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- **Rust:** Players, bans and console commands could fail at random with "WebRCON is not reachable". Rust drops new
+  WebRCON connections from an address that opens many in a short time, and NeledPort opened one per command. It now
+  keeps one connection per server.
 - On Windows, stopping a server that cannot be asked to save (Valheim) no longer says it "did not stop in time":
   closing it at once, after the backup, is the plan there.
 
 ### Notes
 
-- The weekly real-server test now also runs Valheim on Windows and Palworld on Linux (install, start, REST API,
-  save on stop, update, BepInEx).
+- The weekly real-server test now also runs Valheim on Windows, Palworld on Linux (REST API, save on stop) and
+  Rust on Linux (WebRCON, a real ban and unban, save on stop, Oxide).
 
 ## [0.7.0] - 2026-10-30
 

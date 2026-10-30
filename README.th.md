@@ -38,7 +38,7 @@
 
 ## เกมที่รองรับ
 
-- **รองรับเต็มรูปแบบ:** Palworld, Valheim, Rust (ทดสอบกับเซิร์ฟเวอร์จริงทุกสัปดาห์: Valheim บน Linux และ Windows, Palworld บน Linux)
+- **รองรับเต็มรูปแบบ:** Palworld, Valheim, Rust (ทดสอบกับเซิร์ฟเวอร์จริงทุกสัปดาห์: Valheim บน Linux และ Windows, Palworld และ Rust บน Linux)
 - **พื้นฐาน (ติดตั้ง รัน คอนโซล):** Counter-Strike 2, SCUM, ARK, Team Fortress 2, Satisfactory และอีก 70+ เกม ([รายชื่อทั้งหมด](docs/GAMES.md))
 - **เกมที่ต้องใช้บัญชี Steam** เช่น ARMA 3 และ DayZ: ล็อกอินครั้งเดียวในหน้าต่าง SteamCMD ของ Valve เอง NeledPort ไม่เห็นรหัสผ่าน
 - **App ID อะไรก็ได้:** ค้นหาเซิร์ฟเวอร์อีก 380+ ตัวจากชื่อ ติดตั้ง แล้วเลือกโปรแกรมที่ใช้เปิดครั้งเดียว

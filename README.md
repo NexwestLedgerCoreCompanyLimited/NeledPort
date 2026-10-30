@@ -69,7 +69,7 @@ With the `.deb`, install the new `.deb` from Releases.
 |---|---|---|
 | Palworld | full | install, run, update, players, kick/ban, console, settings file; tested on a real Linux server weekly |
 | Valheim | full | install, run, update, players, bans, BepInEx mods; tested on real Linux and Windows servers weekly |
-| Rust | full | install, run, update, players, kick/ban, WebRCON console, Oxide plugins, server.cfg |
+| Rust | full | install, run, update, players, kick/ban, WebRCON console, Oxide plugins, server.cfg; tested on a real Linux server weekly |
 | Counter-Strike 2 | basic | install, run, RCON console, players, kick, Workshop maps, server.cfg |
 | SCUM | basic | install, run, players (Windows only) |
 | ARK, Team Fortress 2, Satisfactory, Conan Exiles, Squad and 70+ more | basic | install, run, console ([full list](docs/GAMES.md)) |
