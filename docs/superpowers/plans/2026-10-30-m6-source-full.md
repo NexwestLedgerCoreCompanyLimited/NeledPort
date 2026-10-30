@@ -13,15 +13,19 @@ proven on real servers in CI.
 - Windows: `srcds.exe -console -game <mod>`; stop with `quit`; `server.cfg` sets `hostname` and `rcon_password`
   ([WindowsGSM Source engine](https://github.com/WindowsGSM/WindowsGSM/blob/master/WindowsGSM/GameServer/Engine/Source.cs)).
 - Bans: `banid 0 <id> kick` then `writeid` writes `<mod>/cfg/banned_user.cfg`, which must be `exec`'d at start to
-  survive a restart; `removeid <id>` + `writeid` unbans. Kick: `kickid "<id>" <reason>` (engine reassembles or matches
-  the quoted id).
+  survive a restart; `removeid <id>` + `writeid` unbans. **Measured on real CS:S and TF2 servers:** a quoted ID is
+  refused ("Can't ban users with ID"); unquoted `STEAM_0:1:N` and `[U:1:N]` work, and `writeid` stores every ban as
+  `[U:1:N]`. So IDs are normalised to `[U:1:N]`, checked strictly and sent unquoted. Kick uses the `userid` from
+  `status` (`kickid <userid> "<reason>"`).
+- `srcds_run` passes arguments on unquoted, so `+hostname "two words"` breaks: the name and RCON password go into the
+  `+servercfgfile` config instead (also measured on the real servers).
 - SourceForts Classic and Zombie Master: Reborn install only the Source SDK 2013 base (app 244310); LinuxGSM downloads
   the mod itself from its own mirror. They are removed until someone adds that download.
 
 ## Tasks
 
 1. **Mod loaders** (`src/core/mods.ts`, schema, catalog): several archives per loader, `latestFile` pointers,
-   `.tar.gz` via system `tar`, `installTo` mod folder, `sm.alliedmods.net` / `mms.alliedmods.net` allowed.
+   a small `.tar.gz` reader (links refused, paths checked), `installTo` mod folder, `sm.alliedmods.net` / `mms.alliedmods.net` allowed.
 2. **Source admin** (`src/core/admin.ts`): players from `status`, `kickid`, `banid`/`removeid`/`writeid`, bans read
    from `banned_user.cfg` (`source-cfg` format).
 3. **Definitions:** every Source game gets RCON control + `quit`, server name and map settings, `+exec
@@ -34,6 +38,6 @@ proven on real servers in CI.
 
 ## Review focus
 
-- A SteamID3 like `[U:1:123]` must stay one argument (quoted) in `kickid`/`banid`.
+- A SteamID must reach `banid`/`removeid` unquoted, so it must be validated first (anything else could run commands).
 - The 64-bit TF2 server must load the 64-bit Metamod (`metamod_x64.vdf`).
 - A loader download must never leave the server half-installed if the second archive fails.

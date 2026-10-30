@@ -6,6 +6,33 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- **25 Source engine games now have full support**: Team Fortress 2, Counter-Strike: Source, Garry's Mod, Left 4 Dead
+  and Left 4 Dead 2, Insurgency, Day of Defeat: Source, Half-Life 2: Deathmatch, No More Room in Hell, Black Mesa and
+  more. Each gets a safe stop over RCON, the player list with SteamIDs, kick, bans that survive restarts, the console,
+  a server name and start map, Windows support, backups of its `cfg` folder and its config file in the Config tab.
+- **SourceMod** (with Metamod:Source) installs in one click on 23 of them, straight from AlliedModders' latest stable
+  builds. Add `.smx` plugins in the Mods tab. (Garry's Mod uses Lua addons instead.)
+- Mod loaders can now come as several `.tar.gz` or `.zip` archives and unpack into a game's own folder.
+- Team Fortress 2 (64-bit) and Counter-Strike: Source join the weekly real-server test: RCON, real bans, a clean
+  quit and SourceMod loading.
+
+### Changed
+
+- The server name and RCON password of Source games are written to `<mod>/cfg/neledport.cfg` on every start, so a
+  name with spaces works and the password is not on the process command line.
+
+### Removed
+
+- Games that could not work: Counter-Strike: Global Offensive (Valve retired its dedicated server), SourceForts
+  Classic and Zombie Master: Reborn (they need mod files from outside Steam) and Team Fortress 2 Classified (it needs
+  the TF2 server installed next to it). Any Steam App ID still installs them by hand.
+
+### Fixed
+
+- The Overview no longer says to keep the game port local when the remote console shares it (Source games, CS2).
+
 ## [0.7.1] - 2026-10-30
 
 ### Fixed

@@ -2,6 +2,21 @@
 
 Significant choices, why we made them, and what we turned down. Newest first.
 
+## 2026-10-30 · Source engine games: RCON on the game port, name and password in neledport.cfg
+
+- **Decision:** Source games are controlled over RCON on the game port (TCP), as srcds does. NeledPort writes
+  `hostname` and `rcon_password` into `<mod>/cfg/neledport.cfg`, which `+servercfgfile` runs on every map, and keeps
+  every other line. Bans use `banid 0 <id> kick` + `writeid`, loaded again at start with `+exec banned_user.cfg`.
+  SourceMod comes from AlliedModders' build servers (`sm.alliedmods.net`, `mms.alliedmods.net`, now allowed), found
+  through their `-latest-` files.
+- **Why:** `srcds_run` passes arguments on unquoted, so a server name with spaces broke on the command line (seen on
+  real CS:S and TF2 servers); the config file also keeps the password out of the process list. Windows executables
+  come from Valve's app info, not guesses.
+- **Trade-off:** RCON listens wherever the game listens. The password is random (24 characters) and srcds bans
+  addresses after failed attempts; players only need the UDP port forwarded, so keep TCP closed on the router.
+- **Rejected:** a per-game `server.cfg` template (users already edit their own); running the `srcds_linux` binary
+  directly to dodge `srcds_run` (each game sets its own libraries and environment in that script).
+
 ## 2026-10-30 · Config files edited as plain text, only while the server is stopped
 
 - **Decision:** the Config tab edits the server's settings from its game definition as a form, and the game's own
