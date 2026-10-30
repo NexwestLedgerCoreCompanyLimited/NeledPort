@@ -96,6 +96,15 @@ describe('Valheim admin (log + ban file)', () => {
     expect(t.players().map((p) => ({ id: p.id, name: p.name }))).toEqual([{ id: '7656001', name: 'Mira' }])
   })
 
+  // Core Keeper names the player on the join line itself.
+  it('takes the name from the join line when it has one', () => {
+    const t = new LogPlayerTracker({ join: '\\[userid:(?<id>\\d+)\\] player (?<name>.+?) connected', leave: 'Disconnected from userid:(?<id>\\d+)' })
+    t.feed('[userid:42] player Mira Bold connected islocalplayer=False')
+    expect(t.players().map((p) => ({ id: p.id, name: p.name }))).toEqual([{ id: '42', name: 'Mira Bold' }])
+    t.feed('Disconnected from userid:42 with reason Quit')
+    expect(t.players()).toEqual([])
+  })
+
   it('bans and unbans through bannedlist.txt, keeping comments', async () => {
     const d = dir()
     const admin = adminFor({ game: game('valheim'), installDir: d, ports: {}, adminPassword: 'a', tracker: new LogPlayerTracker({}), net: recorder().net })

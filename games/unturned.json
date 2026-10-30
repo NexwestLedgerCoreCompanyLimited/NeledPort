@@ -63,6 +63,15 @@
           "path": "Servers/neledport/WorkshopDownloadConfig.json",
           "format": "json"
         }
+      ],
+      "env": {
+        "LD_LIBRARY_PATH": "{installDir}:{installDir}/Unturned_Headless_Data/Plugins/x86_64"
+      },
+      "steamClient": [
+        {
+          "bits": 64,
+          "to": "."
+        }
       ]
     },
     "windows": {

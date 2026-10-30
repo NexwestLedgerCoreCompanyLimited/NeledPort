@@ -505,6 +505,23 @@
             }
           }
         },
+        "virtualDisplay": {
+          "description": "Linux: run the server under xvfb-run -a, for Unity servers that need an X display (LinuxGSM's preexecutable).",
+          "type": "boolean"
+        },
+        "steamClient": {
+          "description": "Folders inside the install that need SteamCMD's steamclient.so (32- or 64-bit), as LinuxGSM's fix_steamcmd.sh copies it.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["bits", "to"],
+            "properties": {
+              "bits": { "enum": [32, 64] },
+              "to": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
         "steamBranch": {
           "description": "Steam beta branch holding this platform's server, such as HumanitZ's \"linuxbranch\".",
           "type": "string",

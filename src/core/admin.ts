@@ -66,9 +66,10 @@ export class LogPlayerTracker {
   }
 
   feed(line: string): void {
-    const joined = this.join?.exec(line)?.groups?.id
+    const groups = this.join?.exec(line)?.groups
+    const joined = groups?.id
     if (joined) {
-      this.online.set(joined, { id: joined, name: joined, since: Date.now() })
+      this.online.set(joined, { id: joined, name: groups.name ?? joined, since: Date.now() })
       this.lastJoined = joined
       return
     }

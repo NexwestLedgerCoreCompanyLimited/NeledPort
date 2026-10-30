@@ -5,7 +5,7 @@
   "serverAppId": 220070,
   "gameAppId": 219640,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "platforms": {
     "linux": {
       "executable": "Binaries/Linux/UDKGameServer-Linux",
@@ -16,6 +16,38 @@
         "-QueryPort={port:query}",
         "-seekfreeloadingserver",
         "-configsubdir=neledport"
+      ],
+      "env": {
+        "SteamAppId": "219640"
+      },
+      "steamClient": [
+        {
+          "bits": 32,
+          "to": "Binaries/Linux/lib"
+        }
+      ],
+      "configFiles": [
+        {
+          "path": "UDKGame/Config/neledport/PCServer-UDKGame.ini",
+          "format": "ini"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "Binaries/Win32/UDK.exe",
+      "args": [
+        "AOCTD-Frigid_p?steamsockets",
+        "-multihome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-seekfreeloadingserver",
+        "-configsubdir=neledport"
+      ],
+      "configFiles": [
+        {
+          "path": "UDKGame/Config/neledport/PCServer-UDKGame.ini",
+          "format": "ini"
+        }
       ]
     }
   },
@@ -31,6 +63,7 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "UDKGame/Config/neledport",
   "control": {
     "type": "signal"
   },

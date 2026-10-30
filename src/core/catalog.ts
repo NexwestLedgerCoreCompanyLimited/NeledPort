@@ -25,7 +25,12 @@ function definitionPaths(def: GameDefinition): string[] {
   ].filter((p): p is string => !!p)
   for (const platform of Object.values(def.platforms)) {
     if (!platform) continue
-    paths.push(platform.executable, ...(platform.configFiles ?? []).map((c) => c.path), ...(platform.configWrites ?? []).map((w) => w.file))
+    paths.push(
+      platform.executable,
+      ...(platform.configFiles ?? []).map((c) => c.path),
+      ...(platform.configWrites ?? []).map((w) => w.file),
+      ...(platform.steamClient ?? []).map((c) => c.to)
+    )
   }
   return paths
 }

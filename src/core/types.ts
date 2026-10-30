@@ -5,6 +5,10 @@ export interface PlatformDefinition {
   args: string[]
   env?: Record<string, string>
   configFiles?: { path: string; format: 'ini' | 'json' | 'cfg' | 'txt' }[]
+  /** Linux: run under `xvfb-run -a` (Unity servers that need an X display, such as Core Keeper). */
+  virtualDisplay?: boolean
+  /** Folders (inside the install) that need SteamCMD's steamclient.so of that build, such as Tower Unite's binaries. */
+  steamClient?: { bits: 32 | 64; to: string }[]
   /** Steam beta branch holding this platform's server (HumanitZ's Linux build is on "linuxbranch"). */
   steamBranch?: string
   /** Values written into the game's own config on every start (RCON password, ports, name); templates like args. */

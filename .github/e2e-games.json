@@ -74,5 +74,21 @@
  {
   "game": "hurtworld",
   "test": "console"
+ },
+ {
+  "game": "core-keeper",
+  "test": "server"
+ },
+ {
+  "game": "tower-unite",
+  "test": "server"
+ },
+ {
+  "game": "the-front",
+  "test": "server"
+ },
+ {
+  "game": "chivalry-medieval-warfare",
+  "test": "server"
  }
 ]

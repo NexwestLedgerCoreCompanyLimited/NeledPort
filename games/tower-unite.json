@@ -5,7 +5,21 @@
   "serverAppId": 439660,
   "gameAppId": 394690,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Condo"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players (2-64)",
+      "type": "number",
+      "default": 16
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "Tower/Binaries/Linux/TowerServer-Linux-Shipping",
@@ -15,6 +29,32 @@
         "-QueryPort={port:query}",
         "-TowerServerINI=neledport.ini",
         "-log"
+      ],
+      "steamClient": [
+        {
+          "bits": 64,
+          "to": "Tower/Binaries/Linux"
+        }
+      ],
+      "configFiles": [
+        {
+          "path": "Tower/Binaries/Linux/neledport.ini",
+          "format": "ini"
+        },
+        {
+          "path": "Tower/Saved/Config/LinuxServer/TowerBans.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "Tower/Binaries/Linux/neledport.ini",
+          "section": "/Script/TowerNetworking.DedicatedServerOptions",
+          "set": {
+            "ServerTitle": "{setting:serverName}",
+            "MaxPlayers": "{setting:maxPlayers}"
+          }
+        }
       ]
     }
   },
@@ -30,6 +70,7 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "Tower/Condos",
   "control": {
     "type": "signal"
   },

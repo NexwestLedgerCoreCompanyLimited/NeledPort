@@ -641,6 +641,43 @@ describe('Config values on start', () => {
   })
 })
 
+describe('steamclient.so for games that load it from their own folder', () => {
+  // LinuxGSM copies SteamCMD's steamclient.so next to Tower Unite's, Unturned's and Wurm's binaries.
+  it('copies it where the definition says before every start', async () => {
+    const { deps, dataDir } = setup()
+    const valheim = games.find((g) => g.id === 'valheim')!
+    const game: GameDefinition = {
+      ...valheim,
+      id: 'needs-steamclient',
+      platforms: { linux: { ...valheim.platforms.linux!, steamClient: [{ bits: 64, to: 'Tower/Binaries/Linux' }] } }
+    }
+    mkdirSync(join(dataDir, 'steamcmd', 'linux64'), { recursive: true })
+    writeFileSync(join(dataDir, 'steamcmd', 'linux64', 'steamclient.so'), 'new build')
+    const manager = new ServerManager({ ...deps, games: () => [...games, game] })
+    const { id, installDir } = manager.create({ gameId: 'needs-steamclient', name: 'x', settings: { serverName: 'x', world: 'w', password: 'secret1' } })
+    await manager.install(id)
+    mkdirSync(join(installDir, 'Tower/Binaries/Linux'), { recursive: true })
+    writeFileSync(join(installDir, 'Tower/Binaries/Linux/steamclient.so'), 'old')
+    await manager.start(id)
+    expect(readFileSync(join(installDir, 'Tower/Binaries/Linux/steamclient.so'), 'utf8')).toBe('new build')
+  })
+})
+
+describe('Linux servers that need a display', () => {
+  // Core Keeper's Unity server will not start without X; LinuxGSM runs it under "xvfb-run -a".
+  it('runs them under xvfb-run', async () => {
+    const { deps, processes } = setup()
+    const valheim = games.find((g) => g.id === 'valheim')!
+    const game: GameDefinition = { ...valheim, id: 'needs-display', platforms: { linux: { ...valheim.platforms.linux!, virtualDisplay: true } } }
+    const manager = new ServerManager({ ...deps, games: () => [...games, game] })
+    const { id, installDir } = manager.create({ gameId: 'needs-display', name: 'x', settings: { serverName: 'x', world: 'w', password: 'secret1' } })
+    await manager.install(id)
+    await manager.start(id)
+    expect(processes[0].spec!.command).toBe('xvfb-run')
+    expect(processes[0].spec!.args.slice(0, 2)).toEqual(['-a', join(installDir, 'valheim_server.x86_64')])
+  })
+})
+
 describe('Servers made with an older game definition', () => {
   // A game moved to full support gains ports and settings (ARK's RCON port); servers made before must still start.
   it('gain the new ports and settings with their defaults, keeping their own values', async () => {

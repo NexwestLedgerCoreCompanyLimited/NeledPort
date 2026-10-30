@@ -340,7 +340,7 @@ export class ServerManager extends EventEmitter {
     }
 
     const secrets = this.plainSecrets(this.ensureAdminSecret(server))
-    this.provideSteamClient()
+    this.provideSteamClient(server, game)
     if (game.configAdapter === 'palworld') {
       prepareConfig(server.installDir, this.deps.platform, {
         serverName: server.settings.serverName ?? server.name,
@@ -755,7 +755,14 @@ export class ServerManager extends EventEmitter {
   }
 
   // Many Linux servers look for ~/.steam/sdk64/steamclient.so; SteamCMD ships it, so copy it there once.
-  private provideSteamClient(): void {
+  // Some load it from their own folder instead (LinuxGSM's fix_steamcmd.sh list): refreshed there before every start.
+  private provideSteamClient(server: ServerConfig, game: GameDefinition): void {
+    for (const { bits, to } of game.platforms[this.deps.platform]?.steamClient ?? []) {
+      const src = join(this.deps.dataDir, 'steamcmd', `linux${bits}`, 'steamclient.so')
+      if (!existsSync(src)) continue
+      mkdirSync(join(server.installDir, to), { recursive: true })
+      copyFileSync(src, join(server.installDir, to, 'steamclient.so'))
+    }
     const sdk = this.deps.steamSdkDir
     if (this.deps.platform !== 'linux' || !sdk) return
     for (const [from, to] of [['linux64', 'sdk64'], ['linux32', 'sdk32']]) {
@@ -840,9 +847,13 @@ export function buildLaunch(
   if (!def) throw new Error(`${game.name} has no ${platform} server`)
   const ctx = launchContext(server, secrets)
   const env = def.env ?? {}
+  const command = join(server.installDir, def.executable)
+  const args = def.args.map((a) => expand(a, ctx))
+  // Unity servers built with graphics (Core Keeper) need an X display: a virtual one, as LinuxGSM does.
+  const display = platform === 'linux' && game.platforms.linux?.virtualDisplay
   return {
-    command: join(server.installDir, def.executable),
-    args: def.args.map((a) => expand(a, ctx)),
+    command: display ? 'xvfb-run' : command,
+    args: display ? ['-a', command, ...args] : args,
     cwd: server.installDir,
     env: Object.fromEntries(Object.entries({ ...env, ...extraEnv }).map(([k, v]) => [k, expand(v, ctx)]))
   }

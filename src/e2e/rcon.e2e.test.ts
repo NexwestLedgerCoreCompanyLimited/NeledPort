@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync } from 'node:fs'
+import { appendFileSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -35,7 +35,17 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
     console.log(`${probe}:`, await retry(manager, id, () => manager.command(id, probe), 25 * 60_000))
     if (game.players?.command) expect(await manager.players(id)).toEqual([])
 
-    if (manager.get(id).admin.ban) {
+    if (game.bans?.format === 'squad-cfg') {
+      // Squad's AdminBan only finds players who are online; offline bans are lines in Bans.cfg, which NeledPort lists
+      // and unbans by taking the line out and reloading the server config.
+      console.log('AdminBan of an offline ID:', await manager.command(id, `AdminBan ${nobody} 0 e2e`))
+      const file = join(installDir, game.bans.file!)
+      appendFileSync(file, `${nobody}:0 //end-to-end test\n`)
+      expect((await manager.bans(id)).map((b) => b.id)).toContain(nobody)
+      await manager.unban(id, nobody)
+      expect((await manager.bans(id)).map((b) => b.id)).not.toContain(nobody)
+      console.log('AdminReloadServerConfig:', await manager.command(id, 'AdminReloadServerConfig'))
+    } else if (manager.get(id).admin.ban) {
       const banned = gameId === 'insurgency-sandstorm' ? `SteamNWI:${nobody}` : nobody
       await manager.ban(id, { id: banned, name: 'nobody' }, 'end-to-end test')
       // Where the game keeps bans, so a definition can list them: every text file that now holds the ID.

@@ -5,7 +5,7 @@
   "serverAppId": 2334200,
   "gameAppId": 2285150,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -40,7 +40,7 @@
         "-BeaconPort={port:beacon}",
         "-ShutDownServicePort={port:shutdown}",
         "-ConfigServerName=neledport",
-        "-ServerTags=LinuxGSM",
+        "-ServerTags=NeledPort",
         "-UseSteamSocket=0",
         "-UserDir={installDir}/neledport",
         "-ServerName={setting:serverName}",
@@ -63,6 +63,12 @@
         "-ServerAdminAccounts=",
         "-IsShowGmTitle=true",
         "-ServerPassword={setting:password}"
+      ],
+      "configFiles": [
+        {
+          "path": "neledport/TheFrontManager/ServerConfig_neledport.ini",
+          "format": "ini"
+        }
       ]
     }
   },
@@ -88,6 +94,7 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "neledport",
   "control": {
     "type": "signal"
   },

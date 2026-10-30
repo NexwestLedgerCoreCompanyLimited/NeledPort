@@ -58,7 +58,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get install -y lib32gcc-s1 lib32stdc++6 libsdl2-2.0-0:i386 libcurl4-gnutls-dev:i386 libatomic1 libpulse0
+          sudo apt-get install -y lib32gcc-s1 lib32stdc++6 libsdl2-2.0-0:i386 libcurl4-gnutls-dev:i386 libatomic1 libpulse0 xvfb libxi6
       - run: npm ci
       - run: npx vitest run src/e2e/${{ matrix.test }}.e2e.test.ts
         env:
