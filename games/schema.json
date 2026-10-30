@@ -340,11 +340,50 @@
             "type": "string",
             "minLength": 1
           },
+          "setup": {
+            "description": "Files changed after unpacking: set rewrites `key value` lines (liblist.gam), lines writes a whole file.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "file"
+              ],
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "set": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "pattern": "^[^\\r\\n]*$"
+                  },
+                  "propertyNames": {
+                    "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                  }
+                },
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[^\\r\\n]*$"
+                  }
+                }
+              }
+            }
+          },
           "stripTopFolder": {
             "description": "Folder inside the zip whose contents go to the server folder.",
             "type": "string"
           },
           "pluginDir": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pluginList": {
+            "description": "Config listing the plugins to load (AMX Mod X's plugins.ini); kept in step with the plugin folder.",
             "type": "string",
             "minLength": 1
           },

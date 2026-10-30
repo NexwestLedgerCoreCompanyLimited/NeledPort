@@ -114,6 +114,13 @@ describe('loadCatalog', () => {
     expect(loadCatalog(dirWith({ 'example.json': outside })).errors[0].message).toContain('../../home')
   })
 
+  it('checks the files a loader sets up, like any other path', () => {
+    const setup = { ...valid, modLoaders: [{ ...loader, setup: [{ file: '../../.bashrc', lines: ['x'] }] }] }
+    expect(loadCatalog(dirWith({ 'example.json': setup })).errors[0].message).toContain('../../.bashrc')
+    const newline = { ...valid, modLoaders: [{ ...loader, setup: [{ file: 'liblist.gam', set: { gamedll: 'x\nexec evil' } }] }] }
+    expect(loadCatalog(dirWith({ 'example.json': newline })).errors).toHaveLength(1)
+  })
+
   it('rejects a plugin folder outside the install folder', () => {
     const def = { ...valid, modLoaders: [{ ...loader, pluginDir: '../plugins' }] }
     expect(loadCatalog(dirWith({ 'example.json': def })).errors[0].message).toContain('../plugins')

@@ -18,7 +18,11 @@ function isUnsafePath(p: string): boolean {
 }
 
 function definitionPaths(def: GameDefinition): string[] {
-  const paths = [def.saveDir, def.bans?.file, ...(def.modLoaders ?? []).flatMap((l) => [l.pluginDir, l.installTo])].filter((p): p is string => !!p)
+  const paths = [
+    def.saveDir,
+    def.bans?.file,
+    ...(def.modLoaders ?? []).flatMap((l) => [l.pluginDir, l.installTo, l.pluginList, ...(l.setup ?? []).map((s) => s.file)])
+  ].filter((p): p is string => !!p)
   for (const platform of Object.values(def.platforms)) {
     if (!platform) continue
     paths.push(platform.executable, ...(platform.configFiles ?? []).map((c) => c.path))
@@ -27,7 +31,7 @@ function definitionPaths(def: GameDefinition): string[] {
 }
 
 // Loader archives run code inside the game server, so they may only come from these hosts.
-const DOWNLOAD_HOSTS = new Set(['github.com', 'thunderstore.io', 'sm.alliedmods.net', 'mms.alliedmods.net'])
+const DOWNLOAD_HOSTS = new Set(['github.com', 'thunderstore.io', 'sm.alliedmods.net', 'mms.alliedmods.net', 'www.amxmodx.org'])
 
 export function isAllowedDownload(url: string): boolean {
   try {

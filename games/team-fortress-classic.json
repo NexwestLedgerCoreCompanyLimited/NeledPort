@@ -112,5 +112,47 @@
     "method": "rcon",
     "file": "tfc/banned.cfg",
     "format": "source-cfg"
-  }
+  },
+  "modLoaders": [
+    {
+      "id": "amxmodx",
+      "name": "AMX Mod X",
+      "download": {
+        "windows": [
+          "https://www.amxmodx.org/release/metamod-1.21.1-am.zip",
+          "https://www.amxmodx.org/amxxdrop/1.10/amxmodx-latest-base-windows",
+          "https://www.amxmodx.org/amxxdrop/1.10/amxmodx-latest-tfc-windows"
+        ],
+        "linux": [
+          "https://www.amxmodx.org/release/metamod-1.21.1-am.zip",
+          "https://www.amxmodx.org/amxxdrop/1.10/amxmodx-latest-base-linux",
+          "https://www.amxmodx.org/amxxdrop/1.10/amxmodx-latest-tfc-linux"
+        ]
+      },
+      "latestFile": true,
+      "installTo": "tfc",
+      "setup": [
+        {
+          "file": "tfc/liblist.gam",
+          "set": {
+            "gamedll_linux": "\"addons/metamod/dlls/metamod.so\"",
+            "gamedll": "\"addons\\metamod\\dlls\\metamod.dll\""
+          }
+        },
+        {
+          "file": "tfc/addons/metamod/plugins.ini",
+          "lines": [
+            "linux addons/amxmodx/dlls/amxmodx_mm_i386.so",
+            "win32 addons\\amxmodx\\dlls\\amxmodx_mm.dll"
+          ]
+        }
+      ],
+      "pluginDir": "tfc/addons/amxmodx/plugins",
+      "pluginList": "tfc/addons/amxmodx/configs/plugins.ini",
+      "pluginExtensions": [
+        ".amxx"
+      ],
+      "reapplyAfterUpdate": true
+    }
+  ]
 }

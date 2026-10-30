@@ -1,5 +1,5 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { basename, extname, join, posix } from 'node:path'
+import { basename, dirname, extname, join, posix } from 'node:path'
 import type { ModLoaderDefinition, Platform, PluginInfo } from './types'
 import { extractArchive, readArchive } from './unzip'
 
@@ -24,7 +24,7 @@ export function allowedDownloadHost(url: string): boolean {
     const { protocol, hostname } = new URL(url)
     return (
       protocol === 'https:' &&
-      (['github.com', 'thunderstore.io', 'sm.alliedmods.net', 'mms.alliedmods.net'].includes(hostname) ||
+      (['github.com', 'thunderstore.io', 'sm.alliedmods.net', 'mms.alliedmods.net', 'www.amxmodx.org'].includes(hostname) ||
         hostname.endsWith('.githubusercontent.com') ||
         hostname.endsWith('.thunderstore.io'))
     )
@@ -60,7 +60,8 @@ export async function installLoader(
   if (!urls.length) throw new Error(`${loader.name} has no ${platform} build`)
   // Download and read everything before touching the server, so a failure leaves it as it was.
   const archives: Buffer[] = []
-  for (const url of urls) archives.push(await download(loader.latestFile ? await latestBuild(url, download) : url))
+  // With latestFile, a URL without an archive extension is a "-latest-" file naming the build; others are archives.
+  for (const url of urls) archives.push(await download(loader.latestFile && !ARCHIVE.test(url) ? await latestBuild(url, download) : url))
   const prefix = loader.stripTopFolder ? `${loader.stripTopFolder}/` : ''
   const target = loader.installTo ? join(installDir, loader.installTo) : installDir
   const paths = archives.flatMap((buf) =>
@@ -69,11 +70,13 @@ export async function installLoader(
       .filter((p) => p.startsWith(prefix))
       .map((p) => posix.join(loader.installTo ?? '', p.slice(prefix.length)))
   )
+  paths.push(...(loader.setup ?? []).map((s) => s.file))
   const previous = loaderState(installDir, loader.id)
   const ownFiles = new Set(previous?.added ?? [])
   const replaced = paths.filter((p) => !ownFiles.has(p) && existsSync(join(installDir, p)))
   const added = paths.filter((p) => !replaced.includes(p))
   for (const buf of archives) extractArchive(buf, target, { stripTopFolder: loader.stripTopFolder })
+  for (const step of loader.setup ?? []) applySetup(join(installDir, step.file), step)
   const state: LoaderState = {
     id: loader.id,
     installedAt: new Date().toISOString(),
@@ -83,6 +86,25 @@ export async function installLoader(
   mkdirSync(stateDir(installDir), { recursive: true })
   writeFileSync(stateFile(installDir, loader.id), JSON.stringify(state, null, 2))
   return state
+}
+
+const ARCHIVE = /\.(?:zip|tar\.gz)$/
+
+/** Rewrites `key value` lines (keeping the file's line endings and other lines) or writes the whole file. */
+function applySetup(file: string, step: NonNullable<ModLoaderDefinition['setup']>[number]): void {
+  if (step.lines) {
+    mkdirSync(dirname(file), { recursive: true })
+    writeFileSync(file, step.lines.join('\n') + '\n')
+  }
+  if (step.set) {
+    let text = existsSync(file) ? readFileSync(file, 'utf8') : ''
+    const eol = text.includes('\r\n') ? '\r\n' : '\n'
+    for (const [key, value] of Object.entries(step.set)) {
+      const line = new RegExp(`^[ \\t]*${key.replace(/[^\w]/g, '\\$&')}[ \\t].*$`, 'm')
+      text = line.test(text) ? text.replace(line, `${key} ${value}`) : `${text}${text && !text.endsWith(eol) ? eol : ''}${key} ${value}${eol}`
+    }
+    writeFileSync(file, text)
+  }
 }
 
 /** AlliedModders' "-latest-" file holds only the archive name; it must stay a plain name in the same folder. */
@@ -128,6 +150,22 @@ export function setPluginEnabled(installDir: string, loader: ModLoaderDefinition
   if (!existsSync(join(from, name))) return
   mkdirSync(to, { recursive: true })
   renameSync(join(from, name), join(to, name))
+  listPlugin(installDir, loader, name, enabled ? 'on' : 'off')
+}
+
+/** AMX Mod X loads only the plugins named in its plugins.ini: list, comment out (;name) or drop the plugin's line. */
+function listPlugin(installDir: string, loader: ModLoaderDefinition, name: string, state: 'on' | 'off' | 'gone'): void {
+  if (!loader.pluginList) return
+  const file = join(installDir, loader.pluginList)
+  const lines = existsSync(file) ? readFileSync(file, 'utf8').replace(/\r?\n$/, '').split(/\r?\n/) : []
+  const at = lines.findIndex((l) => l.trim().replace(/^;\s*/, '').split(/\s/)[0] === name)
+  const line = state === 'on' ? name : `;${name}`
+  if (state === 'gone') {
+    if (at >= 0) lines.splice(at, 1)
+  } else if (at >= 0) lines[at] = line
+  else lines.push(line)
+  mkdirSync(dirname(file), { recursive: true })
+  writeFileSync(file, lines.join('\n') + '\n')
 }
 
 export function addPlugin(installDir: string, loader: ModLoaderDefinition, source: string): void {
@@ -136,10 +174,12 @@ export function addPlugin(installDir: string, loader: ModLoaderDefinition, sourc
   const dir = join(installDir, loader.pluginDir)
   mkdirSync(dir, { recursive: true })
   copyFileSync(source, join(dir, name))
+  listPlugin(installDir, loader, name, 'on')
 }
 
 export function removePlugin(installDir: string, loader: ModLoaderDefinition, name: string): void {
   checkName(loader, name)
   rmSync(join(installDir, loader.pluginDir, name), { force: true })
   rmSync(join(disabledDir(installDir, loader), name), { force: true })
+  listPlugin(installDir, loader, name, 'gone')
 }
