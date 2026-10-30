@@ -8,6 +8,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- **Every game in the catalog now has full support**: no game is left at "basic". For each one NeledPort does what the
+  game's own dedicated server offers, checked against its official docs, its source code or LinuxGSM: a stop that
+  saves the world, the player list, kick and bans, a console, config files in the Config tab, backups of its saves
+  and a mod loader, where the game has them. `docs/GAMES.md` lists what each game has.
+- Remote control for the games that have one, switched on for you with the server's generated password:
+  - RCON in the game's own config file for ARK, Conan Exiles, Squad, Squad 44, Insurgency: Sandstorm, MORDHAU,
+    Operation: Harsh Doorstop and HumanitZ; the Console tab, player lists and bans follow each game's own commands.
+  - Satisfactory's server API: stopping saves the running game and shuts down with the admin password you set when
+    claiming the server.
+  - The server's own console for SCP: Secret Laboratory, Unturned and Hurtworld; Soulmask's telnet console; Warfork's
+    Quake-style RCON; Pavlov VR's RCON; The Isle's RCON; Natural Selection 2's web admin.
+  - BattlEye RCon for DayZ and Arma 3 (players, kick, bans).
+- **Metamod:Source** in one click for Counter-Strike 2, with AlliedModders' gameinfo.gi step applied again after each
+  game update. **Oxide** in one click for Hurtworld.
+- Windows launchers from Valve's own app data for 25 more games.
+- Games that only run on Linux under a virtual display (Core Keeper, Wurm Unlimited) are started under `xvfb-run`, and
+  servers that need a system package name it in the console when they stop unexpectedly.
+- Servers created before their game went full keep working: new ports and settings are added with their defaults.
+- The weekly real-server test now covers REAL_SERVER_COUNT games, and `docs/GAMES.md` says which ones.
+
 - **9 GoldSrc (Half-Life 1) games now have full support**: Counter-Strike 1.6, Condition Zero, Day of Defeat, Team
   Fortress Classic, Half-Life Deathmatch, Opposing Force, Ricochet, Deathmatch Classic and Base Defense. Each gets
   the right game downloaded (HLDS serves several), RCON over UDP with a clean quit, the player list, kick, bans that
@@ -17,14 +37,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Counter-Strike 1.6 and Day of Defeat join the weekly real-server test: the right game installed, RCON, real bans, a
   clean quit and AMX Mod X loading.
 
+### Changed
+
+- RCON replies end once the server goes quiet instead of waiting for an echoed empty packet, which Unreal Engine
+  servers' RCON plugins never send back.
+- Double Action: Boogaloo runs on Windows only: Steam's Linux files lack the game's server library.
+
 ### Removed
 
 - Games that install from outside Steam, which NeledPort cannot do yet: Action Half-Life, BrainBread, Natural
   Selection, The Specialists and Vampire Slayer. Any Steam App ID still installs Half-Life servers by hand.
+- Jedi Knight II, Jedi Academy and Quake 4: their Steam apps are the games, and their Linux servers come from outside
+  Steam.
 
 ### Security
 
 - The RCON password never appears in the console or `server.log`, even though HLDS prints it with every command.
+- Natural Selection 2 and NS2: Combat no longer open their web admin on every network interface with the password
+  `CHANGE_ME`; it listens on this machine only, with the server's generated password.
+- Counter-Strike 2 and Insurgency: Sandstorm no longer take the RCON password on the command line, where any user of
+  the machine could read it.
 
 ## [0.8.0] - 2026-10-30
 
