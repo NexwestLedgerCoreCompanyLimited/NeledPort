@@ -110,5 +110,9 @@
  {
   "game": "stickybots",
   "test": "server"
+ },
+ {
+  "game": "satisfactory",
+  "test": "satisfactory"
  }
 ]

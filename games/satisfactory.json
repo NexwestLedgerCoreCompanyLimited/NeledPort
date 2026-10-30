@@ -5,7 +5,15 @@
   "serverAppId": 1690800,
   "gameAppId": 526870,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverAdminPassword",
+      "label": "Admin password (the one you set when you claimed the server in the game)",
+      "type": "password",
+      "secret": true
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "Engine/Binaries/Linux/FactoryServer-Linux-Shipping",
@@ -14,6 +22,35 @@
         "-Port={port:game}",
         "-ReliablePort={port:reliable}",
         "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "FactoryGame/Saved/Config/LinuxServer/Engine.ini",
+          "format": "ini"
+        },
+        {
+          "path": "FactoryGame/Saved/Config/LinuxServer/Game.ini",
+          "format": "ini"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "FactoryServer.exe",
+      "args": [
+        "-Port={port:game}",
+        "-ReliablePort={port:reliable}",
+        "-log",
+        "-unattended"
+      ],
+      "configFiles": [
+        {
+          "path": "FactoryGame/Saved/Config/WindowsServer/Engine.ini",
+          "format": "ini"
+        },
+        {
+          "path": "FactoryGame/Saved/Config/WindowsServer/Game.ini",
+          "format": "ini"
+        }
       ]
     }
   },
@@ -26,10 +63,12 @@
     {
       "name": "reliable",
       "default": 8888,
-      "protocol": "udp"
+      "protocol": "tcp"
     }
   ],
   "control": {
-    "type": "signal"
+    "type": "satisfactory",
+    "port": "game",
+    "passwordSetting": "serverAdminPassword"
   }
 }

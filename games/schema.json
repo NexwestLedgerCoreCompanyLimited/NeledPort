@@ -170,7 +170,8 @@
             "goldsrc",
             "rest",
             "stdin",
-            "signal"
+            "signal",
+            "satisfactory"
           ]
         },
         "save": {
@@ -178,6 +179,11 @@
         },
         "shutdown": {
           "type": "string"
+        },
+        "passwordSetting": {
+          "description": "Secret setting holding the remote password when the player chooses it (Satisfactory's claim password).",
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
         },
         "rest": {
           "type": "object",

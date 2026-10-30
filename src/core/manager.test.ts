@@ -700,6 +700,26 @@ describe('Servers made with an older game definition', () => {
   })
 })
 
+describe('Satisfactory', () => {
+  // Players claim the server in game with their own admin password; NeledPort logs in with it to save and quit.
+  it('saves and shuts down through the server API with the claim password', async () => {
+    const { deps, log } = setup()
+    const calls: string[] = []
+    const net = { ...deps.net, satisfactory: (o: { port: number; password?: string }) => ({
+      saveAndShutdown: async () => void calls.push(`save+shutdown ${o.port} ${o.password}`),
+      command: async (text: string) => (calls.push(`run ${text}`), 'ok')
+    }) }
+    const manager = new ServerManager({ ...deps, net })
+    const { id } = manager.create({ gameId: 'satisfactory', name: 'x', settings: { serverAdminPassword: 'claimed1' } })
+    await manager.install(id)
+    await manager.start(id)
+    expect(await manager.command(id, 'FG.AutosaveInterval')).toBe('ok')
+    await manager.stop(id)
+    expect(calls).toEqual(['run FG.AutosaveInterval', 'save+shutdown 7777 claimed1'])
+    expect(log).not.toContain('interrupt')
+  })
+})
+
 describe('Console-controlled games', () => {
   // SCP:SL and Unturned take admin commands on their own console and answer there.
   const consoleGame = (): GameDefinition => ({

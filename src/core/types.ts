@@ -40,7 +40,9 @@ export interface GameDefinition {
   configAdapter?: 'palworld' | 'source'
   saveDir?: string
   control?: {
-    type: 'rcon' | 'webrcon' | 'goldsrc' | 'rest' | 'stdin' | 'signal'
+    type: 'rcon' | 'webrcon' | 'goldsrc' | 'rest' | 'satisfactory' | 'stdin' | 'signal'
+    /** Secret setting holding the remote password when the player chooses it (Satisfactory's claim password). */
+    passwordSetting?: string
     save?: string
     shutdown?: string
     rest?: { port: string; basePath: string; username: string }

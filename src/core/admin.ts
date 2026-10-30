@@ -4,6 +4,7 @@ import { queryPlayers } from './a2s'
 import { goldsrcRconExec } from './goldsrc'
 import { palworldRest } from './palworld'
 import { rconExec } from './rcon'
+import { satisfactoryApi } from './satisfactory'
 import type { AdminCapabilities, BanEntry, GameDefinition, PlayerInfo } from './types'
 import { webRconExec } from './webrcon'
 
@@ -31,6 +32,7 @@ export interface AdminNet {
     announce(message: string): Promise<unknown>
     save(): Promise<unknown>
   }
+  satisfactory?: typeof satisfactoryApi
 }
 
 export interface AdminContext {
@@ -229,7 +231,8 @@ export function adminFor(ctx: AdminContext): Admin {
     webrcon: ctx.net?.webrcon ?? webRconExec,
     goldsrc: ctx.net?.goldsrc ?? goldsrcRconExec,
     a2s: ctx.net?.a2s ?? ((port: number) => queryPlayers(port)),
-    rest: ctx.net?.rest ?? palworldRest
+    rest: ctx.net?.rest ?? palworldRest,
+    satisfactory: ctx.net?.satisfactory ?? satisfactoryApi
   }
   const file = banFile(installDir, game)
   const admin: Admin = { players: async () => Promise.reject(new Error('A player list is not available for this game yet')) }
@@ -243,9 +246,11 @@ export function adminFor(ctx: AdminContext): Admin {
         ? (cmd) => net.rcon({ port: remotePort, password: adminPassword }, cmd)
         : control?.type === 'goldsrc' && remotePort
           ? (cmd) => net.goldsrc({ port: remotePort, password: adminPassword }, cmd)
-          : control?.type === 'stdin'
-            ? ctx.console
-            : undefined
+          : control?.type === 'satisfactory' && remotePort
+            ? (cmd) => net.satisfactory({ port: remotePort, password: adminPassword || undefined }).command(cmd)
+            : control?.type === 'stdin'
+              ? ctx.console
+              : undefined
 
   if (control?.type === 'rest' && control.rest) {
     const api = net.rest({ port: ports[control.rest.port], basePath: control.rest.basePath, username: control.rest.username, password: adminPassword })

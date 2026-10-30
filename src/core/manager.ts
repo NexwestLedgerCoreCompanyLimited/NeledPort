@@ -8,6 +8,7 @@ import { createBackup, listBackups, pruneBackups, restoreBackup } from './backup
 import { addPlugin, downloadZip, installLoader, listPlugins, loaderState, removePlugin, setPluginEnabled, uninstallLoader } from './mods'
 import { appInfoArgs, installedBuild, parseLatestBuild } from './build'
 import { palworldRest, prepareConfig } from './palworld'
+import { satisfactoryApi } from './satisfactory'
 import { writeSourceConfig } from './sourcecfg'
 import { writeConfigValues } from './configwrite'
 import { isPortFree } from './ports'
@@ -411,6 +412,16 @@ export class ServerManager extends EventEmitter {
         await rest.save()
         await rest.shutdown(1, 'Server is shutting down')
       }
+    } else if (control?.type === 'satisfactory' && control.port) {
+      const api = (this.deps.net?.satisfactory ?? satisfactoryApi)({ port: server.ports[control.port], password: this.plainSecrets(server)[control.passwordSetting ?? ''] || undefined })
+      graceful = async () => {
+        try {
+          await api.saveAndShutdown()
+        } catch (e) {
+          this.addLine(id, `[NeledPort] ${(e as Error).message}; sending Ctrl+C instead`)
+          proc.interrupt()
+        }
+      }
     } else if (control?.type === 'stdin') {
       graceful = () => {
         if (control.save) proc.write(control.save)
@@ -657,7 +668,8 @@ export class ServerManager extends EventEmitter {
       progress: rt.progress,
       message: rt.message,
       // Windows has no Ctrl+C for a background server: graceful only where the game can be told to quit.
-      gracefulStop: this.deps.platform !== 'windows' || game.control?.type === 'rest' || game.control?.type === 'stdin' || !!game.control?.shutdown,
+      gracefulStop:
+        this.deps.platform !== 'windows' || ['rest', 'satisfactory', 'stdin'].includes(game.control?.type ?? '') || !!game.control?.shutdown,
       admin: capabilities(game, this.admin(server)),
       build: this.buildInfo(server, game, rt),
       needsLaunchSetup: this.needsLaunchSetup(server),
@@ -713,7 +725,7 @@ export class ServerManager extends EventEmitter {
       game: this.game(server),
       installDir: server.installDir,
       ports: server.ports,
-      adminPassword: this.plainSecrets(server)[ADMIN_SECRET] ?? '',
+      adminPassword: this.plainSecrets(server)[this.game(server).control?.passwordSetting ?? ADMIN_SECRET] ?? '',
       tracker: this.rt(server.id).tracker,
       net: this.deps.net,
       console: (command) => this.consoleReply(server.id, command)
