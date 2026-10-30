@@ -4,10 +4,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { loadCatalog } from '../core/catalog'
-import { e2e, e2eManager, platform, retry, waitForStatus, withGameLogs } from './harness'
+import { e2e, e2eManager, platform, retry, withGameLogs } from './harness'
 
 // Real end-to-end run of a game NeledPort drives through its own console (stdin), chosen by NELEDPORT_E2E_GAME:
-// SCP: Secret Laboratory, Unturned or Hurtworld. See .github/workflows/e2e.yml.
+// SCP: Secret Laboratory. See .github/workflows/e2e.yml.
 const gameId = process.env.NELEDPORT_E2E_GAME ?? 'unturned'
 const game = loadCatalog(join(__dirname, '../../games')).games.find((g) => g.id === gameId)!
 // What the player-list command prints once the server reads its console (any other output may be start-up logging).
@@ -37,10 +37,6 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
         )
         console.log(`${command}:`, reply)
         expect(await manager.players(id)).toEqual([])
-      } else if (game.logPatterns?.ready) {
-        // Unturned answers the Steam query only with a login token CI does not have; its ready line says it is up.
-        await waitForStatus(manager, id, 'running', 20 * 60_000)
-        console.log('Players:', await manager.command(id, 'Players'))
       } else {
         // The Steam query answering is the sign the server finished loading.
         expect(await retry(manager, id, () => manager.players(id), 20 * 60_000)).toEqual([])

@@ -69,11 +69,11 @@
  },
  {
   "game": "unturned",
-  "test": "console"
+  "test": "server"
  },
  {
   "game": "hurtworld",
-  "test": "console"
+  "test": "server"
  },
  {
   "game": "core-keeper",

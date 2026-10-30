@@ -25,11 +25,12 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
     await withGameLogs(installDir, async () => {
       await manager.start(id)
 
-      if (game.players?.source === 'a2s') {
+      if (game.logPatterns?.ready) {
+        // A ready line first: Unturned answers the Steam query only with a login token CI does not have.
+        await waitForStatus(manager, id, 'running', 20 * 60_000)
+      } else if (game.players?.source === 'a2s') {
         // The Steam query answering is the sign the server finished loading.
         expect(await retry(manager, id, () => manager.players(id), 20 * 60_000)).toEqual([])
-      } else if (game.logPatterns?.ready) {
-        await waitForStatus(manager, id, 'running', 20 * 60_000)
       } else {
         // Nothing to ask: it has to still be up after three minutes.
         await new Promise((r) => setTimeout(r, 3 * 60_000))

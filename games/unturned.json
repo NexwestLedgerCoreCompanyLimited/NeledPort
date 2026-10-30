@@ -111,14 +111,11 @@
   ],
   "saveDir": "Servers/neledport",
   "control": {
-    "type": "stdin",
-    "save": "Save",
-    "shutdown": "Shutdown"
+    "type": "signal"
   },
   "players": {
     "source": "a2s",
-    "port": "query",
-    "kick": "Kick {id}/{reason}"
+    "port": "query"
   },
   "logPatterns": {
     "ready": "Loading level: 100%"

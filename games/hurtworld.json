@@ -74,9 +74,7 @@
     }
   ],
   "control": {
-    "type": "stdin",
-    "save": "saveserver",
-    "shutdown": "quit"
+    "type": "signal"
   },
   "players": {
     "source": "a2s",
