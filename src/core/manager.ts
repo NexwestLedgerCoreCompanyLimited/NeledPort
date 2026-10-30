@@ -96,6 +96,29 @@ export class ServerManager extends EventEmitter {
     const { servers, error } = loadServers(this.storeFile)
     this.servers = servers
     this.loadError = error
+    this.addNewDefaults()
+  }
+
+  /** Servers made before their game gained a port or setting (moving to full support) get its default, so they still start. */
+  private addNewDefaults(): void {
+    const games = this.deps.games()
+    let changed = false
+    for (const server of this.servers) {
+      const game = server.custom ? undefined : games.find((g) => g.id === server.gameId)
+      for (const p of game?.ports ?? []) {
+        if (p.name in server.ports) continue
+        server.ports[p.name] = p.default
+        changed = true
+      }
+      for (const s of game?.settings ?? []) {
+        const store = s.secret ? server.secrets : server.settings
+        if (s.key in store) continue
+        const value = s.default !== undefined ? String(s.default) : ''
+        store[s.key] = s.secret ? this.deps.secrets.encrypt(value) : value
+        changed = true
+      }
+    }
+    if (changed) this.persist()
   }
 
   private get storeFile(): string {
@@ -394,7 +417,9 @@ export class ServerManager extends EventEmitter {
       graceful = async () => {
         try {
           if (control.save) await admin.command?.(control.save)
-          await admin.command?.(control.shutdown ?? 'quit')
+          // No quit command (Conan, Squad): the game stops cleanly on Ctrl+C.
+          if (control.shutdown) await admin.command?.(control.shutdown)
+          else proc.interrupt()
         } catch (e) {
           // Remote console unreachable: fall back to Ctrl+C where the OS allows it.
           this.addLine(id, `[NeledPort] ${(e as Error).message}; sending Ctrl+C instead`)
@@ -630,7 +655,8 @@ export class ServerManager extends EventEmitter {
       status,
       progress: rt.progress,
       message: rt.message,
-      gracefulStop: !(game.control?.type === 'signal' && this.deps.platform === 'windows'),
+      // Windows has no Ctrl+C for a background server: graceful only where the game can be told to quit.
+      gracefulStop: this.deps.platform !== 'windows' || game.control?.type === 'rest' || game.control?.type === 'stdin' || !!game.control?.shutdown,
       admin: capabilities(game, this.admin(server)),
       build: this.buildInfo(server, game, rt),
       needsLaunchSetup: this.needsLaunchSetup(server),

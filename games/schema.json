@@ -237,9 +237,9 @@
           "minLength": 1
         },
         "kick": {
-          "description": "RCON command to kick a player: {id} and optional {reason}.",
+          "description": "RCON command to kick a player: {id}, or \"{name}\" in quotes where the game only knows names, and optional {reason}.",
           "type": "string",
-          "pattern": "^[^\\r\\n]*\\{id\\}[^\\r\\n]*$"
+          "pattern": "^[^\\r\\n]*(\\{id\\}|\"\\{name\\}\")[^\\r\\n]*$"
         }
       }
     },

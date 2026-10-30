@@ -17,14 +17,20 @@ in CI (Steam login, too big for a runner) are marked "not tested on a real serve
 - LinuxGSM `lgsm/config-default/config-lgsm/<x>server/_default.cfg`: start parameters and `stopmode`
   (2 = Ctrl+C, 3 = `quit` on the console, 7 = `exit`, 9 = GoldSrc quit, 13 = Soulmask telnet, 16 = Conan routine).
 
+## Building blocks added for these games
+
+- `configWrites` (per platform): values written into the game's own config on every start.
+- `players.command` / `players.pattern` / `players.kick`, `bans.ban` / `bans.unban` / `bans.save`: RCON commands named
+  by the definition.
+
 ## Ledger
 
 Status: todo → done (tested on a real server: yes / no + why).
 
 | Game | LinuxGSM stop | Windows exe (Valve) | Plan | Status |
 |---|---|---|---|---|
-| sven-co-op | 9 | svends.exe | GoldSrc family (UDP RCON) | converted, real test pending |
-| double-action-boogaloo | 3 | srcds.exe (-game dab) | Source family (RCON, SourceMod?) | converted, real test pending |
+| sven-co-op | 9 | svends.exe | GoldSrc family (UDP RCON) | done (real server: yes; no AMX Mod X, Sven has its own AngelScript plugins) |
+| double-action-boogaloo | 3 | srcds.exe (-game dab) | Source family (RCON, SourceMod) | done, Windows only (real server: no). Ruling: Steam's Linux depot has no dab/bin/*.so; gdb shows srcds crashing in CModAppSystemGroup::Create on a null call (probe run 41083505889), so Linux is dropped — cost if wrong: Linux users lose a game that never ran |
 | cs2 | 9 | game/bin/win64/cs2.exe | Source RCON: status players, kick; bans if CS2 has them | todo |
 | ark-survival-evolved | 2 | ShooterGame/Binaries/Win64/ShooterGameServer.exe | Source RCON (SaveWorld, DoExit, ListPlayers, Ban/Unban) | todo |
 | conan-exiles | 16 | ConanSandboxServer.exe | Source RCON (Game.ini RconPlugin) | todo |
@@ -61,3 +67,43 @@ Status: todo → done (tested on a real server: yes / no + why).
 | jedi-knight-ii-jedi-outcast | 3 | — | **removed**: Steam app is the game, Linux server comes from outside Steam | done (removed) |
 | jedi-knight-jedi-academy | 3 | — | **removed**: as above | done (removed) |
 | quake-4 | 3 | — | **removed**: as above | done (removed) |
+
+## Research findings (four research passes, 2026-10-30) and rulings
+
+Primary sources: LinuxGSM configs, Game-Server-Configs templates, official docs (NWI admin guide, Unturned-Docs,
+Tower Unite guides, conanexiles.com, LocalAdmin-V2 source), well-used tools (SquadJS, arkmanager, ark_rcon, Pterodactyl
+eggs, AMP templates). "unconfirmed" = no primary source; those parts are verified on a real server in CI or left out.
+
+- Ruling: kick for a2s-listed players uses an explicit `players.kick` template with `{name}` (quoted), not a hidden
+  default — a non-Source game must never get Source's `kick "name"` by accident. Cost if wrong: one template per game.
+- Ruling: one generic real-server E2E (`rcon.e2e.test.ts`) for UE RCON games: install, start, RCON answers, player
+  list parses, ban/unban round trip, graceful stop, backup. Cost if wrong: CI minutes only (public repo).
+
+| Game | Control | Players / kick | Bans | Saves / configs |
+|---|---|---|---|---|
+| ARK | RCON: GameUserSettings.ini [ServerSettings] RCONEnabled, RCONPort, ServerAdminPassword; SaveWorld + DoExit | `ListPlayers` `^\d+\. name, steam64$`; `KickPlayer {id}` | `BanPlayer`/`UnbanPlayer {id}`; file unconfirmed | ShooterGame/Saved; GameUserSettings.ini, Game.ini |
+| Conan | RCON: Game.ini [RconPlugin] RconEnabled/RconPassword/RconPort; stop Ctrl+C (LinuxGSM 16) | a2s (listplayers format unconfirmed) | `banplayer`; unban = remove line from ConanSandbox/Saved/blacklist.txt | ConanSandbox/Saved (game.db); ServerSettings/Game/Engine.ini |
+| Squad | RCON: SquadGame/ServerConfig/Rcon.cfg Port/Password; stop Ctrl+C | `ListPlayers` SquadJS regex, steam id in Online IDs; `AdminKick "{id}" {reason}` | `AdminBan "{id}" 0 {reason}`; Bans.cfg `id:ts //Reason` | no saves; ServerConfig/*.cfg |
+| Squad 44 | as Squad under PostScriptum/ | as Squad (format unconfirmed) | as Squad | as Squad |
+| Sandstorm | RCON: Game.ini [Rcon] bEnabled/Password/ListenPort | `listplayers` ids `SteamNWI:\d+` | `ban`/`unban {id}`; Bans.json unconfirmed | no saves; Game.ini, Engine.ini, Admins.txt, MapCycle.txt |
+| Mordhau | RCON: Game.ini [/Script/Mordhau.MordhauGameSession] RconPort/RconPassword; `shutdown`? | `playerlist` PlayFab ids (format unconfirmed) | `ban {id} 0`/`unban {id}` | no saves; Game.ini, Engine.ini |
+| OHD | RCON plugin Game.ini [/Script/RCON.RCONServerSystem] bEnabled/ListenPort/Password | `status` (unconfirmed) | Bans.cfg `id:0` + RELOADSERVERCONFIG | no saves |
+| CS2 | Source RCON on game port, `quit` | `status` (format unconfirmed) / a2s | none built in (banid is dev-only) | game/csgo/cfg |
+| HumanitZ | Source RCON: GameServerSettings.ini [Host Settings] RCONEnabled/RConPort/RCONPass; `save`, `shutdown` | `Players`; `kick {id}` | `ban`/`unban {id}` | Linux build on beta `linuxbranch` |
+| SCP:SL | stdin of LocalAdmin; `exit` | `players` `- Nick: id@steam [n]` | `/ban n 0` kicks; `/oban id dur reason`, `/unban id <id>`; config/<port>/UserIdBans.txt | no saves; ~/.config/SCP Secret Laboratory/config/<port>/ |
+| Unturned | stdin; `Save` then `Shutdown` | `Players` (format unconfirmed); `Kick <id>/<reason>` | `Ban <id>/<reason>/<secs>`, `Unban <id>` | Servers/<ID>/ (Commands.dat, Config.txt) |
+| Core Keeper | Ctrl+C; no console | log lines `[userid:<id>] player <name> connected` | none | -datapath dir; ServerConfig.json |
+| Hurtworld | stdin; `saveserver`, `quit` | a2s | unconfirmed | autoexec.cfg |
+| Wurm | GUI/RMI only | a2s | none | <World>/ |
+| Chivalry | binary SHA1 RCON (push events) | a2s | RCON packets | PCServer-UDKGame.ini |
+| Tower Unite | none; pkill | a2s | TowerBans.ini (in game only) | Tower/Condos; TowerServer.ini |
+| The Front | stdin (unconfirmed); autosave | log lines `account=STEAM:<id>` | unconfirmed | TheFrontManager/ServerConfig_*.ini |
+| Satisfactory | HTTPS API (Bearer): SaveGame, Shutdown | none | none | ~/.config/Epic/FactoryGame/Saved/SaveGames/server |
+| Soulmask | telnet -EchoPort: `saveworld 1`, `quit 1` | — | — | WS/Saved/Worlds/Dedicated |
+| Pavlov | TCP RCON, MD5 auth (RconSettings.txt) | RefreshList | Ban/Unban | Linux only |
+| Warfork | Quake UDP rcon; `status` has SteamID64 | status | ban/removeban, listip.cfg | — |
+| The Isle | custom binary RCON (Game.ini) | — | — | — |
+| KF2, NS2, NS2 Combat | WebAdmin (HTML) only | a2s | — | — |
+| No RCON: Day of Dragons, Dragonwilds, Battalion, Hypercharge, StickyBots | Ctrl+C | a2s | — | launcher, settings, backups, configs only |
+| DayZ, Arma 3 | BattlEye UDP RCON; Steam login needed (no CI) | — | — | — |
+| SCUM | Windows only, no RCON | a2s | — | SCUM/Saved/SaveFiles |

@@ -165,9 +165,10 @@ const steamId2 = (id: string) => {
 const steamId3 = (id: string) => `[U:1:${accountId(id)}]`
 
 // IDs go into commands unquoted, so only characters a player ID can have (SteamID64, STEAM_, [U:1:], EOS ids).
-function fill(template: string, id: string, reason = ''): string {
-  if (!/^[A-Za-z0-9_:\-[\].]{1,64}$/.test(id)) throw new Error(`"${id}" is not a valid player ID`)
-  return template.replaceAll('{id}', id).replaceAll('{reason}', q(reason))
+// Names can be anything, so a template puts {name} inside quotes and the quotes are taken out of the name.
+function fill(template: string, p: { id: string; name?: string }, reason = ''): string {
+  if (template.includes('{id}') && !/^[A-Za-z0-9_:\-[\].]{1,64}$/.test(p.id)) throw new Error(`"${p.id}" is not a valid player ID`)
+  return template.replaceAll('{id}', p.id).replaceAll('{name}', q(p.name ?? p.id)).replaceAll('{reason}', q(reason))
 }
 
 /** Commands and player-row pattern named by the definition (games that speak RCON their own way, like ARK or Squad). */
@@ -185,17 +186,17 @@ function fromDefinition(game: GameDefinition, remote: (cmd: string) => Promise<s
   }
   if (players?.kick) {
     const kick = players.kick
-    admin.kick = async (p, reason) => void (await remote(fill(kick, p.id, reason)))
+    admin.kick = async (p, reason) => void (await remote(fill(kick, p, reason)))
   }
   const bans = game.bans
   if (bans?.ban && bans.unban) {
     const { ban, unban, save } = bans
     admin.ban = async (p, reason) => {
-      await remote(fill(ban, p.id, reason))
+      await remote(fill(ban, p, reason))
       if (save) await remote(save)
     }
     admin.unban = async (id) => {
-      await remote(fill(unban, id))
+      await remote(fill(unban, { id }))
       if (save) await remote(save)
     }
     admin.bans = async () => readBans(file, bans.format)
@@ -264,12 +265,7 @@ export function adminFor(ctx: AdminContext): Admin {
           seconds: p.ConnectedSeconds
         }))
     }
-    admin.kick = async (p, reason) =>
-      void (await remote(
-        control?.type === 'webrcon'
-          ? `kick "${q(p.id)}" "${q(reason)}"`
-          : `kick "${q(p.name)}"`
-      ))
+    if (control?.type === 'webrcon') admin.kick = async (p, reason) => void (await remote(`kick "${q(p.id)}" "${q(reason)}"`))
     // kickid with the userid from status: the standard form, with no SteamID parsing involved.
     if (sourceIds) {
       admin.kick = async (p, reason) => {

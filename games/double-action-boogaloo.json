@@ -28,37 +28,6 @@
   ],
   "configAdapter": "source",
   "platforms": {
-    "linux": {
-      "executable": "dabds.sh",
-      "args": [
-        "-usercon",
-        "-nobreakpad",
-        "-strictportbind",
-        "-ip",
-        "0.0.0.0",
-        "-port",
-        "{port:game}",
-        "+clientport",
-        "{port:client}",
-        "+tv_port",
-        "{port:sourcetv}",
-        "+map",
-        "{setting:map}",
-        "+servercfgfile",
-        "neledport.cfg",
-        "-maxplayers",
-        "{setting:maxPlayers}",
-        "-norestart",
-        "+exec",
-        "banned_user.cfg"
-      ],
-      "configFiles": [
-        {
-          "path": "dab/cfg/neledport.cfg",
-          "format": "cfg"
-        }
-      ]
-    },
     "windows": {
       "executable": "srcds.exe",
       "args": [
@@ -131,10 +100,6 @@
         "windows": [
           "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-windows",
           "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-windows"
-        ],
-        "linux": [
-          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-linux",
-          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-linux"
         ]
       },
       "latestFile": true,

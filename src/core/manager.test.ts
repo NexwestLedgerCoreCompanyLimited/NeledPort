@@ -7,7 +7,7 @@ import { loadCatalog, validateDefinition } from './catalog'
 import { makeZip } from './testing/zip'
 import { ServerManager, type ManagerDeps, type ProcessLike } from './manager'
 import type { LaunchSpec, ProcessState } from './process'
-import type { Platform } from './types'
+import type { GameDefinition, Platform } from './types'
 
 const games = loadCatalog(join(__dirname, '../../games')).games
 
@@ -635,6 +635,61 @@ describe('Config values on start', () => {
     expect(cfg).toMatch(/^Name=My Squad$/m)
     expect(/^Password=(.+)$/m.exec(cfg)![1].length).toBeGreaterThanOrEqual(16)
     expect(processes).toHaveLength(1)
+  })
+})
+
+describe('Servers made with an older game definition', () => {
+  // A game moved to full support gains ports and settings (ARK's RCON port); servers made before must still start.
+  it('gain the new ports and settings with their defaults, keeping their own values', async () => {
+    const { deps, processes } = setup()
+    const valheim = games.find((g) => g.id === 'valheim')!
+    const before = new ServerManager(deps)
+    const { id } = before.create({ gameId: 'valheim', name: 'old', settings: { serverName: 'Old', world: 'w', password: 'secret1' }, ports: { game: 2500 } })
+    const grown: GameDefinition = {
+      ...valheim,
+      ports: [...valheim.ports, { name: 'rcon', default: 25575, protocol: 'tcp' }],
+      settings: [...valheim.settings!, { key: 'map', label: 'Map', type: 'text', default: 'TheIsland' }],
+      platforms: { linux: { ...valheim.platforms.linux!, args: [...valheim.platforms.linux!.args, '-rcon', '{port:rcon}', '{setting:map}'] } }
+    }
+    const after = new ServerManager({ ...deps, games: () => games.map((g) => (g.id === 'valheim' ? grown : g)) })
+    expect(after.get(id).ports).toMatchObject({ game: 2500, rcon: 25575 })
+    expect(after.get(id).settings).toMatchObject({ serverName: 'Old', map: 'TheIsland' })
+    await after.install(id)
+    await after.start(id)
+    expect(processes[0].spec!.args).toEqual(expect.arrayContaining(['-rcon', '25575', 'TheIsland']))
+  })
+})
+
+describe('RCON games that stop on Ctrl+C', () => {
+  // Conan and Squad have RCON but no quit command: save over RCON where the game has a save, then Ctrl+C.
+  const ctrlC = (platform: Platform) => {
+    const { deps, restCalls, log } = setup(platform)
+    const valheim = games.find((g) => g.id === 'valheim')!
+    const game: GameDefinition = {
+      ...valheim,
+      id: 'rcon-ctrl-c',
+      platforms: { linux: valheim.platforms.linux!, windows: valheim.platforms.windows! },
+      ports: [...valheim.ports, { name: 'rcon', default: 25575, protocol: 'tcp' }],
+      control: { type: 'rcon', port: 'rcon', save: 'SaveWorld' }
+    }
+    return { manager: new ServerManager({ ...deps, games: () => [...games, game] }), restCalls, log }
+  }
+
+  it('saves over RCON, then sends Ctrl+C', async () => {
+    const { manager, restCalls, log } = ctrlC('linux')
+    const { id } = manager.create({ gameId: 'rcon-ctrl-c', name: 'x', settings: { serverName: 'x', world: 'w', password: 'secret1' } })
+    await manager.install(id)
+    await manager.start(id)
+    expect(manager.get(id).gracefulStop).toBe(true)
+    await manager.stop(id)
+    expect(restCalls).toEqual(['rcon:SaveWorld'])
+    expect(log).toContain('interrupt')
+  })
+
+  it('is not a graceful stop on Windows, which has no Ctrl+C for a background server', async () => {
+    const { manager } = ctrlC('windows')
+    const { id } = manager.create({ gameId: 'rcon-ctrl-c', name: 'x', settings: { serverName: 'x', world: 'w', password: 'secret1' } })
+    expect(manager.get(id).gracefulStop).toBe(false)
   })
 })
 

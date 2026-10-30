@@ -90,7 +90,8 @@
   },
   "players": {
     "source": "a2s",
-    "port": "game"
+    "port": "game",
+    "kick": "kick \"{name}\""
   },
   "workshop": {
     "command": "host_workshop_map {id}"

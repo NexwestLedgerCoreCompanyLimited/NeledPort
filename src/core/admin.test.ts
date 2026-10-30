@@ -289,6 +289,21 @@ describe('admin from data (RCON commands named by the definition)', () => {
     expect(calls).toEqual(['rcon:27020:KickPlayer 76561198000000001', 'rcon:27020:BanPlayer 76561198000000001', 'rcon:27020:UnbanPlayer 76561198000000001'])
     await expect(admin.ban!({ id: '7656 ; DoExit', name: 'x' }, '')).rejects.toThrow(/player ID/)
   })
+
+  it('kicks by quoted name where the game lists players by query', async () => {
+    const calls: string[] = []
+    const net: AdminNet = { rcon: async (o, cmd) => (calls.push(cmd), ''), a2s: async () => [{ name: 'Rook Bold', score: 0, seconds: 5 }] }
+    const byName: GameDefinition = { ...dataGame, players: { source: 'a2s', port: 'query', kick: 'kick "{name}" {reason}' } }
+    const admin = adminFor({ game: byName, installDir: dir(), ports: { rcon: 27020, query: 27015 }, adminPassword: 'pw', net })
+    await admin.kick!({ id: 'Rook Bold', name: 'Rook "Bold' }, 'afk')
+    expect(calls).toEqual(['kick "Rook Bold" afk'])
+  })
+
+  it('offers no kick when the definition names no kick command', async () => {
+    const noKick: GameDefinition = { ...dataGame, players: { source: 'a2s', port: 'query' } }
+    const admin = adminFor({ game: noKick, installDir: dir(), ports: { rcon: 27020, query: 27015 }, adminPassword: 'pw', net: recorder().net })
+    expect(admin.kick).toBeUndefined()
+  })
 })
 
 describe('Counter-Strike 2 admin (RCON + A2S)', () => {

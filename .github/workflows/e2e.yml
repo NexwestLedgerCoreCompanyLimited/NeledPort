@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        game: [valheim, palworld, rust, counter-strike-source, team-fortress-2, counter-strike-1-6, day-of-defeat, sven-co-op, double-action-boogaloo]
+        game: [valheim, palworld, rust, counter-strike-source, team-fortress-2, counter-strike-1-6, day-of-defeat, sven-co-op]
         include:
           # Source and GoldSrc games share one test file per engine; NELEDPORT_E2E_GAME picks the game.
           - { game: valheim, test: valheim }
@@ -32,7 +32,6 @@ jobs:
           - { game: counter-strike-1-6, test: goldsrc }
           - { game: day-of-defeat, test: goldsrc }
           - { game: sven-co-op, test: goldsrc }
-          - { game: double-action-boogaloo, test: source }
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
