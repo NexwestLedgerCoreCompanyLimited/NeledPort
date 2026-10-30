@@ -5,7 +5,7 @@
   "serverAppId": 402370,
   "gameAppId": 366220,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -44,6 +44,72 @@
         "servername={setting:serverName}",
         "serverpassword={setting:password}",
         "ip=0.0.0.0"
+      ],
+      "virtualDisplay": true,
+      "steamClient": [
+        {
+          "bits": 64,
+          "to": "nativelibs"
+        }
+      ],
+      "copyIfMissing": [
+        {
+          "from": "dist/Creative",
+          "to": "Creative"
+        },
+        {
+          "from": "dist/Adventure",
+          "to": "Adventure"
+        }
+      ],
+      "configFiles": [
+        {
+          "path": "LaunchConfig.ini",
+          "format": "ini"
+        },
+        {
+          "path": "Creative/wurm.ini",
+          "format": "ini"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "WurmServerLauncher.exe",
+      "args": [
+        "start=Creative",
+        "adminpwd={adminPassword}",
+        "epicsettings=false",
+        "externalport={port:game}",
+        "homeserver=true",
+        "homekingdom=4",
+        "loginserver=true",
+        "maxplayers={setting:maxPlayers}",
+        "queryport={port:query}",
+        "rmiport={port:rmi}",
+        "rmiregport={port:rmireg}",
+        "servername={setting:serverName}",
+        "serverpassword={setting:password}",
+        "ip=0.0.0.0"
+      ],
+      "copyIfMissing": [
+        {
+          "from": "dist/Creative",
+          "to": "Creative"
+        },
+        {
+          "from": "dist/Adventure",
+          "to": "Adventure"
+        }
+      ],
+      "configFiles": [
+        {
+          "path": "LaunchConfig.ini",
+          "format": "ini"
+        },
+        {
+          "path": "Creative/wurm.ini",
+          "format": "ini"
+        }
       ]
     }
   },
@@ -69,6 +135,7 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "Creative",
   "control": {
     "type": "signal"
   },

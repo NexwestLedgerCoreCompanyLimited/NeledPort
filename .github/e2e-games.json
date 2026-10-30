@@ -142,5 +142,9 @@
  {
   "game": "killing-floor-2",
   "test": "server"
+ },
+ {
+  "game": "wurm-unlimited",
+  "test": "server"
  }
 ]

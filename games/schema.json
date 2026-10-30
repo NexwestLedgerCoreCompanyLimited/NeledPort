@@ -523,6 +523,16 @@
             }
           }
         },
+        "copyIfMissing": {
+          "description": "Starting worlds the server ships, copied into place before a start when missing (LinuxGSM's fix_wurm).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to"],
+            "properties": { "from": { "type": "string", "minLength": 1 }, "to": { "type": "string", "minLength": 1 } }
+          }
+        },
         "virtualDisplay": {
           "description": "Linux: run the server under xvfb-run -a, for Unity servers that need an X display (LinuxGSM's preexecutable).",
           "type": "boolean"

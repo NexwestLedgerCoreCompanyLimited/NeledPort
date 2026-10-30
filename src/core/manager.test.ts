@@ -663,6 +663,26 @@ describe('steamclient.so for games that load it from their own folder', () => {
   })
 })
 
+describe('Starting worlds shipped in the install', () => {
+  // LinuxGSM's fix_wurm: Wurm runs its world from Creative/, first copied from dist/Creative (which Steam overwrites).
+  it('copies them into place once, never over a world that exists', async () => {
+    const { deps } = setup()
+    const valheim = games.find((g) => g.id === 'valheim')!
+    const game: GameDefinition = { ...valheim, id: 'ships-world', platforms: { linux: { ...valheim.platforms.linux!, copyIfMissing: [{ from: 'dist/Creative', to: 'Creative' }] } } }
+    const manager = new ServerManager({ ...deps, games: () => [...games, game] })
+    const { id, installDir } = manager.create({ gameId: 'ships-world', name: 'x', settings: { serverName: 'x', world: 'w', password: 'secret1' } })
+    await manager.install(id)
+    mkdirSync(join(installDir, 'dist/Creative/sqlite'), { recursive: true })
+    writeFileSync(join(installDir, 'dist/Creative/sqlite/wurmzones.db'), 'fresh world')
+    await manager.start(id)
+    expect(readFileSync(join(installDir, 'Creative/sqlite/wurmzones.db'), 'utf8')).toBe('fresh world')
+    await manager.stop(id)
+    writeFileSync(join(installDir, 'Creative/sqlite/wurmzones.db'), 'played world')
+    await manager.start(id)
+    expect(readFileSync(join(installDir, 'Creative/sqlite/wurmzones.db'), 'utf8')).toBe('played world')
+  })
+})
+
 describe('Linux servers that need a display', () => {
   // Core Keeper's Unity server will not start without X; LinuxGSM runs it under "xvfb-run -a".
   it('runs them under xvfb-run', async () => {

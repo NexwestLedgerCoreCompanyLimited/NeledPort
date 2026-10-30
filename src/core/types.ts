@@ -5,6 +5,8 @@ export interface PlatformDefinition {
   args: string[]
   env?: Record<string, string>
   configFiles?: { path: string; format: 'ini' | 'json' | 'cfg' | 'txt' }[]
+  /** Starting worlds the server ships: copied into place before a start when missing (Wurm's dist/Creative). */
+  copyIfMissing?: { from: string; to: string }[]
   /** Linux: run under `xvfb-run -a` (Unity servers that need an X display, such as Core Keeper). */
   virtualDisplay?: boolean
   /** Folders (inside the install) that need SteamCMD's steamclient.so of that build, such as Tower Unite's binaries. */

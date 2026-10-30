@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 import { EventEmitter } from 'node:events'
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { splitArgs } from './args'
 import { adminFor, capabilities, LogPlayerTracker, type Admin, type AdminNet } from './admin'
@@ -343,6 +343,10 @@ export class ServerManager extends EventEmitter {
 
     const secrets = this.plainSecrets(this.ensureAdminSecret(server))
     this.provideSteamClient(server, game)
+    for (const { from, to } of game.platforms[this.deps.platform]?.copyIfMissing ?? []) {
+      const src = join(server.installDir, from)
+      if (existsSync(src) && !existsSync(join(server.installDir, to))) cpSync(src, join(server.installDir, to), { recursive: true })
+    }
     if (game.configAdapter === 'palworld') {
       prepareConfig(server.installDir, this.deps.platform, {
         serverName: server.settings.serverName ?? server.name,
