@@ -5,7 +5,7 @@
   "serverAppId": 405100,
   "gameAppId": 393420,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -18,6 +18,12 @@
       "label": "Max players",
       "type": "number",
       "default": 20
+    },
+    {
+      "key": "map",
+      "label": "Map",
+      "type": "text",
+      "default": "diemensland"
     }
   ],
   "platforms": {
@@ -25,7 +31,33 @@
       "executable": "Hurtworld.x86_64",
       "args": [
         "-batchmode",
-        "-nographics"
+        "-nographics",
+        "-exec",
+        "host {port:game} {setting:map};queryport {port:query};maxplayers {setting:maxPlayers};servername {setting:serverName}"
+      ],
+      "env": {
+        "LD_LIBRARY_PATH": "{installDir}:{installDir}/Hurtworld_Data/Plugins/x86_64"
+      },
+      "configFiles": [
+        {
+          "path": "autoexec.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "Hurtworld.exe",
+      "args": [
+        "-batchmode",
+        "-nographics",
+        "-exec",
+        "host {port:game} {setting:map};queryport {port:query};maxplayers {setting:maxPlayers};servername {setting:serverName}"
+      ],
+      "configFiles": [
+        {
+          "path": "autoexec.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -42,10 +74,27 @@
     }
   ],
   "control": {
-    "type": "signal"
+    "type": "stdin",
+    "save": "saveserver",
+    "shutdown": "quit"
   },
   "players": {
     "source": "a2s",
     "port": "query"
-  }
+  },
+  "modLoaders": [
+    {
+      "id": "oxide",
+      "name": "Oxide (uMod)",
+      "download": {
+        "windows": "https://github.com/OxideMod/Oxide.Hurtworld/releases/latest/download/Oxide.Hurtworld.zip",
+        "linux": "https://github.com/OxideMod/Oxide.Hurtworld/releases/latest/download/Oxide.Hurtworld-linux.zip"
+      },
+      "pluginDir": "oxide/plugins",
+      "pluginExtensions": [
+        ".cs"
+      ],
+      "reapplyAfterUpdate": true
+    }
+  ]
 }
