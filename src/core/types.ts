@@ -27,7 +27,7 @@ export interface GameDefinition {
   platforms: Partial<Record<Platform, PlatformDefinition>>
   ports: { name: string; default: number; protocol: 'udp' | 'tcp' }[]
   settings?: SettingDefinition[]
-  configAdapter?: 'palworld'
+  configAdapter?: 'palworld' | 'source'
   saveDir?: string
   control?: {
     type: 'rcon' | 'webrcon' | 'rest' | 'stdin' | 'signal'

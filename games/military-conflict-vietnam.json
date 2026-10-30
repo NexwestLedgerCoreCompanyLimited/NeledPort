@@ -26,6 +26,7 @@
       "default": 32
     }
   ],
+  "configAdapter": "source",
   "platforms": {
     "linux": {
       "executable": "srcds_run_x64",
@@ -56,10 +57,6 @@
         "0",
         "-nobreakpad",
         "-norestart",
-        "+hostname",
-        "{setting:serverName}",
-        "+rcon_password",
-        "{adminPassword}",
         "+exec",
         "banned_user.cfg"
       ],
@@ -99,10 +96,6 @@
         "+game_mode",
         "0",
         "-nobreakpad",
-        "+hostname",
-        "{setting:serverName}",
-        "+rcon_password",
-        "{adminPassword}",
         "+exec",
         "banned_user.cfg"
       ],

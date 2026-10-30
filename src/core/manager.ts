@@ -8,6 +8,7 @@ import { createBackup, listBackups, pruneBackups, restoreBackup } from './backup
 import { addPlugin, downloadZip, installLoader, listPlugins, loaderState, removePlugin, setPluginEnabled, uninstallLoader } from './mods'
 import { appInfoArgs, installedBuild, parseLatestBuild } from './build'
 import { palworldRest, prepareConfig } from './palworld'
+import { writeSourceConfig } from './sourcecfg'
 import { isPortFree } from './ports'
 import { ServerProcess, type LaunchSpec } from './process'
 import { appUpdateArgs, captureSteamCmd, ensureSteamCmd, isSteamUser, parseSignedIn, parseSteamCmdLine, runSteamCmd } from './steamcmd'
@@ -324,6 +325,10 @@ export class ServerManager extends EventEmitter {
         gamePort: server.ports.game,
         restPort: server.ports.rest
       })
+    }
+    const sourceCfg = game.platforms[this.deps.platform]?.configFiles?.[0]?.path
+    if (game.configAdapter === 'source' && sourceCfg) {
+      writeSourceConfig(join(server.installDir, sourceCfg), { hostname: server.settings.serverName ?? server.name, rconPassword: secrets[ADMIN_SECRET] })
     }
 
     const make = this.deps.createProcess ?? ((o) => new ServerProcess({ ...o, maxLines: MAX_LINES }))

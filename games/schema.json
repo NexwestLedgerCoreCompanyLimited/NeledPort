@@ -141,7 +141,8 @@
     "configAdapter": {
       "description": "Built-in code that writes the game's own config file from the settings.",
       "enum": [
-        "palworld"
+        "palworld",
+        "source"
       ]
     },
     "saveDir": {

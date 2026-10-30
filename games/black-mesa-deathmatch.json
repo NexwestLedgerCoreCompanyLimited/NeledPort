@@ -31,6 +31,7 @@
       "secret": true
     }
   ],
+  "configAdapter": "source",
   "platforms": {
     "linux": {
       "executable": "srcds_run",
@@ -56,10 +57,6 @@
         "-maxplayers",
         "{setting:maxPlayers}",
         "-norestart",
-        "+hostname",
-        "{setting:serverName}",
-        "+rcon_password",
-        "{adminPassword}",
         "+exec",
         "banned_user.cfg"
       ],
@@ -94,10 +91,6 @@
         "neledport.cfg",
         "-maxplayers",
         "{setting:maxPlayers}",
-        "+hostname",
-        "{setting:serverName}",
-        "+rcon_password",
-        "{adminPassword}",
         "+exec",
         "banned_user.cfg"
       ],

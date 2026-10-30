@@ -31,6 +31,7 @@
       "secret": true
     }
   ],
+  "configAdapter": "source",
   "platforms": {
     "linux": {
       "executable": "srcds_run",
@@ -61,10 +62,6 @@
         "{setting:maxPlayers}",
         "-disableluarefresh",
         "-norestart",
-        "+hostname",
-        "{setting:serverName}",
-        "+rcon_password",
-        "{adminPassword}",
         "+exec",
         "banned_user.cfg"
       ],
@@ -104,10 +101,6 @@
         "-maxplayers",
         "{setting:maxPlayers}",
         "-disableluarefresh",
-        "+hostname",
-        "{setting:serverName}",
-        "+rcon_password",
-        "{adminPassword}",
         "+exec",
         "banned_user.cfg"
       ],

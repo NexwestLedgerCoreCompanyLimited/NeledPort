@@ -565,6 +565,22 @@ describe('Settings and config files', () => {
   })
 })
 
+describe('Source engine servers', () => {
+  // srcds_run splits a name with spaces on the command line, so the name and RCON password go into the server config.
+  it('writes the server name and RCON password to its config, not the command line', async () => {
+    const { manager, processes } = setup()
+    const { id, installDir } = manager.create({ gameId: 'team-fortress-2', name: 'Payload Night', settings: { serverName: 'Payload Night EU', maxPlayers: '24' } })
+    await manager.install(id)
+    await manager.start(id)
+    const cfg = readFileSync(join(installDir, 'tf/cfg/neledport.cfg'), 'utf8')
+    expect(cfg).toMatch(/^hostname "Payload Night EU"$/m)
+    const password = /^rcon_password "([^"]+)"$/m.exec(cfg)![1]
+    expect(password.length).toBeGreaterThanOrEqual(16)
+    expect(processes[0].spec!.args).not.toContain(password)
+    expect(processes[0].spec!.args).toEqual(expect.arrayContaining(['+servercfgfile', 'neledport.cfg', '+map', 'cp_badlands']))
+  })
+})
+
 describe('Quitting', () => {
   it('stops a running install instead of leaving SteamCMD behind', async () => {
     const { manager } = setup('linux', { hang: true })
