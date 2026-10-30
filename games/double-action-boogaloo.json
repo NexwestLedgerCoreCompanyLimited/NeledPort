@@ -32,6 +32,7 @@
       "executable": "dabds.sh",
       "args": [
         "-usercon",
+        "-nobreakpad",
         "-strictportbind",
         "-ip",
         "0.0.0.0",
