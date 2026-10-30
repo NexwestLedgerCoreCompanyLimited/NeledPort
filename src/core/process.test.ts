@@ -70,8 +70,9 @@ describe('ServerProcess', () => {
     p.start(spec('stubborn'))
     await waitFor(p, 'running')
     expect(await p.stop({ timeoutMs: 0 })).toEqual({ forced: true })
+    // Not "last line": on Windows the program's own output can arrive after NeledPort's message.
     expect(p.lines().join('\n')).not.toMatch(/did not stop in time/)
-    expect(p.lines().at(-1)).toMatch(/Closing the server now/)
+    expect(p.lines().join('\n')).toMatch(/Closing the server now/)
   })
 
   it('reports a crash', async () => {
