@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest'
 import { e2e, e2eManager, platform, retry } from './harness'
 
 // Real end-to-end run of one GoldSrc (HLDS, app 90) game on Linux, chosen by NELEDPORT_E2E_GAME:
-// counter-strike-1-6 (the default mod) or day-of-defeat (picked with app_set_config). See .github/workflows/e2e.yml.
+// counter-strike-1-6 (the default mod), day-of-defeat (picked with app_set_config) or sven-co-op (its own app).
+// See .github/workflows/e2e.yml.
 const gameId = process.env.NELEDPORT_E2E_GAME ?? 'counter-strike-1-6'
 
 describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, () => {
@@ -40,7 +41,8 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
     expect(forced).toBe(false)
     expect(manager.get(id).status).toBe('stopped')
 
-    // Real Metamod + AMX Mod X: liblist.gam points at Metamod, which loads AMX Mod X.
+    // Real Metamod + AMX Mod X: liblist.gam points at Metamod, which loads AMX Mod X. (Sven Co-op has its own plugins.)
+    if (!manager.get(id).loaders.some((l) => l.id === 'amxmodx')) return
     await manager.installLoader(id, 'amxmodx')
     expect(readFileSync(join(installDir, mod, 'liblist.gam'), 'utf8')).toMatch(/gamedll_linux "addons\/metamod\/dlls\/metamod.so"/)
     await manager.start(id)

@@ -5,8 +5,20 @@
   "serverAppId": 276060,
   "gameAppId": 225840,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Sven Co-op"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "svencoop1"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -14,6 +26,7 @@
       "default": 16
     }
   ],
+  "configAdapter": "source",
   "platforms": {
     "linux": {
       "executable": "svends_run",
@@ -28,11 +41,49 @@
         "+clientport",
         "{port:client}",
         "+map",
-        "svencoop1",
+        "{setting:map}",
         "+servercfgfile",
         "neledport.cfg",
         "+maxplayers",
-        "{setting:maxPlayers}"
+        "{setting:maxPlayers}",
+        "-norestart",
+        "+exec",
+        "banned.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "svencoop/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "svends.exe",
+      "args": [
+        "-console",
+        "-game",
+        "svencoop",
+        "-strictportbind",
+        "+ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+map",
+        "{setting:map}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "+maxplayers",
+        "{setting:maxPlayers}",
+        "+exec",
+        "banned.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "svencoop/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -49,6 +100,16 @@
     }
   ],
   "control": {
-    "type": "signal"
+    "type": "goldsrc",
+    "port": "game",
+    "shutdown": "quit"
+  },
+  "players": {
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "svencoop/banned.cfg",
+    "format": "source-cfg"
   }
 }

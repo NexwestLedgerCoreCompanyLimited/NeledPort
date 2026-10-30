@@ -5,8 +5,20 @@
   "serverAppId": 317800,
   "gameAppId": 317360,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Double Action: Boogaloo"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "da_rooftops"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -14,10 +26,12 @@
       "default": 10
     }
   ],
+  "configAdapter": "source",
   "platforms": {
     "linux": {
       "executable": "dabds.sh",
       "args": [
+        "-usercon",
         "-strictportbind",
         "-ip",
         "0.0.0.0",
@@ -28,11 +42,52 @@
         "+tv_port",
         "{port:sourcetv}",
         "+map",
-        "da_rooftops",
+        "{setting:map}",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers",
-        "{setting:maxPlayers}"
+        "{setting:maxPlayers}",
+        "-norestart",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "dab/cfg/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "srcds.exe",
+      "args": [
+        "-console",
+        "-game",
+        "dab",
+        "-usercon",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "+map",
+        "{setting:map}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "dab/cfg/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -53,7 +108,40 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "dab/cfg",
   "control": {
-    "type": "signal"
-  }
+    "type": "rcon",
+    "port": "game",
+    "shutdown": "quit"
+  },
+  "players": {
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "dab/cfg/banned_user.cfg",
+    "format": "source-cfg"
+  },
+  "modLoaders": [
+    {
+      "id": "sourcemod",
+      "name": "SourceMod",
+      "download": {
+        "windows": [
+          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-windows",
+          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-windows"
+        ],
+        "linux": [
+          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-linux",
+          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-linux"
+        ]
+      },
+      "latestFile": true,
+      "installTo": "dab",
+      "pluginDir": "dab/addons/sourcemod/plugins",
+      "pluginExtensions": [
+        ".smx"
+      ]
+    }
+  ]
 }
