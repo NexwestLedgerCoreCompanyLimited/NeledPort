@@ -1,7 +1,7 @@
 {
   "name": "neledport",
   "productName": "NeledPort",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Host Steam dedicated game servers from one modern desktop app.",
   "license": "MIT",
   "author": "NEXWEST-LEDGER-CORE contributors",

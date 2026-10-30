@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-30
+
 ### Fixed
 
 - **Rust:** Players, bans and console commands could fail at random with "WebRCON is not reachable". Rust drops new
@@ -144,7 +146,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - CI on Linux and Windows (typecheck, tests, build) and a tag-driven release workflow.
 - Community files: MIT license, contributing guide, code of conduct, security policy.
 
-[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.4.0...v0.5.0
