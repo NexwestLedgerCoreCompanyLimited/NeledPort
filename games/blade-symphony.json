@@ -5,8 +5,20 @@
   "serverAppId": 228780,
   "gameAppId": 225600,
   "anonymous": false,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Blade Symphony"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "duel_winter"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -26,7 +38,7 @@
       "args": [
         "-game",
         "{installDir}/berimbau",
-        "-autoupdate",
+        "-usercon",
         "-strictportbind",
         "-ip",
         "0.0.0.0",
@@ -39,11 +51,62 @@
         "+sv_setsteamaccount",
         "{setting:gslt}",
         "+map",
-        "duel_winter",
+        "{setting:map}",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers",
-        "{setting:maxPlayers}"
+        "{setting:maxPlayers}",
+        "-norestart",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "berimbau/cfg/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "bin/win32/srcds.exe",
+      "args": [
+        "-console",
+        "-game",
+        "{installDir}/berimbau",
+        "-usercon",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "+sv_setsteamaccount",
+        "{setting:gslt}",
+        "+map",
+        "{setting:map}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "berimbau/cfg/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -64,11 +127,40 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "berimbau/cfg",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "game",
+    "shutdown": "quit"
   },
   "players": {
-    "source": "a2s",
-    "port": "game"
-  }
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "berimbau/cfg/banned_user.cfg",
+    "format": "source-cfg"
+  },
+  "modLoaders": [
+    {
+      "id": "sourcemod",
+      "name": "SourceMod",
+      "download": {
+        "windows": [
+          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-windows",
+          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-windows"
+        ],
+        "linux": [
+          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-linux",
+          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-linux"
+        ]
+      },
+      "latestFile": true,
+      "installTo": "berimbau",
+      "pluginDir": "berimbau/addons/sourcemod/plugins",
+      "pluginExtensions": [
+        ".smx"
+      ]
+    }
+  ]
 }

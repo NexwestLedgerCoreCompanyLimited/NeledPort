@@ -4,8 +4,20 @@
   "name": "Garrys Mod",
   "serverAppId": 4020,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Garrys Mod"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "gm_construct"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -25,6 +37,7 @@
       "args": [
         "-game",
         "garrysmod",
+        "-usercon",
         "-strictportbind",
         "-ip",
         "0.0.0.0",
@@ -32,7 +45,6 @@
         "{port:game}",
         "-tickrate",
         "66",
-        "+host_workshop_collection",
         "+clientport",
         "{port:client}",
         "+tv_port",
@@ -40,14 +52,70 @@
         "+gamemode",
         "sandbox",
         "+map",
-        "gm_construct",
+        "{setting:map}",
         "+sv_setsteamaccount",
         "{setting:gslt}",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers",
         "{setting:maxPlayers}",
-        "-disableluarefresh"
+        "-disableluarefresh",
+        "-norestart",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "garrysmod/cfg/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "srcds.exe",
+      "args": [
+        "-console",
+        "-game",
+        "garrysmod",
+        "-usercon",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "-tickrate",
+        "66",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "+gamemode",
+        "sandbox",
+        "+map",
+        "{setting:map}",
+        "+sv_setsteamaccount",
+        "{setting:gslt}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "-disableluarefresh",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "garrysmod/cfg/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -68,11 +136,18 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "garrysmod/cfg",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "game",
+    "shutdown": "quit"
   },
   "players": {
-    "source": "a2s",
-    "port": "game"
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "garrysmod/cfg/banned_user.cfg",
+    "format": "source-cfg"
   }
 }

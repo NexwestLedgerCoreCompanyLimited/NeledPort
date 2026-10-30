@@ -5,8 +5,20 @@
   "serverAppId": 237410,
   "gameAppId": 222880,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Insurgency"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "embassy_coop"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -26,6 +38,7 @@
       "args": [
         "-game",
         "insurgency",
+        "-usercon",
         "-strictportbind",
         "-ip",
         "0.0.0.0",
@@ -40,14 +53,68 @@
         "+sv_setsteamaccount",
         "{setting:gslt}",
         "+map",
-        "embassy_coop",
+        "{setting:map}",
         "checkpoint",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers",
         "{setting:maxPlayers}",
         "-workshop",
-        "-norestart"
+        "-norestart",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "insurgency/cfg/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "srcds.exe",
+      "args": [
+        "-console",
+        "-game",
+        "insurgency",
+        "-usercon",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "-tickrate",
+        "64",
+        "+sv_setsteamaccount",
+        "{setting:gslt}",
+        "+map",
+        "{setting:map}",
+        "checkpoint",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "-workshop",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "insurgency/cfg/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -68,11 +135,40 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "insurgency/cfg",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "game",
+    "shutdown": "quit"
   },
   "players": {
-    "source": "a2s",
-    "port": "game"
-  }
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "insurgency/cfg/banned_user.cfg",
+    "format": "source-cfg"
+  },
+  "modLoaders": [
+    {
+      "id": "sourcemod",
+      "name": "SourceMod",
+      "download": {
+        "windows": [
+          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-windows",
+          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-windows"
+        ],
+        "linux": [
+          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-linux",
+          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-linux"
+        ]
+      },
+      "latestFile": true,
+      "installTo": "insurgency",
+      "pluginDir": "insurgency/addons/sourcemod/plugins",
+      "pluginExtensions": [
+        ".smx"
+      ]
+    }
+  ]
 }

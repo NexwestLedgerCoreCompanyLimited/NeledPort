@@ -5,8 +5,20 @@
   "serverAppId": 1136190,
   "gameAppId": 1012110,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Military Conflict: Vietnam"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "mcv_siege"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -33,7 +45,7 @@
         "-tickrate",
         "64",
         "+map",
-        "mcv_siege",
+        "{setting:map}",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers_override",
@@ -42,7 +54,63 @@
         "0",
         "+game_mode",
         "0",
-        "-nobreakpad"
+        "-nobreakpad",
+        "-norestart",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "vietnam/cfg/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "srcds_x64.exe",
+      "args": [
+        "-console",
+        "-game",
+        "vietnam",
+        "-usercon",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "-tickrate",
+        "64",
+        "+map",
+        "{setting:map}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers_override",
+        "{setting:maxPlayers}",
+        "+game_type",
+        "0",
+        "+game_mode",
+        "0",
+        "-nobreakpad",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "vietnam/cfg/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -63,11 +131,40 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "vietnam/cfg",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "game",
+    "shutdown": "quit"
   },
   "players": {
-    "source": "a2s",
-    "port": "game"
-  }
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "vietnam/cfg/banned_user.cfg",
+    "format": "source-cfg"
+  },
+  "modLoaders": [
+    {
+      "id": "sourcemod",
+      "name": "SourceMod",
+      "download": {
+        "windows": [
+          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-windows",
+          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-windows"
+        ],
+        "linux": [
+          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-linux",
+          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-linux"
+        ]
+      },
+      "latestFile": true,
+      "installTo": "vietnam",
+      "pluginDir": "vietnam/addons/sourcemod/plugins",
+      "pluginExtensions": [
+        ".smx"
+      ]
+    }
+  ]
 }

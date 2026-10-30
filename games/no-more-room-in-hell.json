@@ -5,8 +5,20 @@
   "serverAppId": 317670,
   "gameAppId": 224260,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort No More Room in Hell"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "nmo_broadway"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -26,6 +38,7 @@
       "args": [
         "-game",
         "nmrih",
+        "-usercon",
         "-strictportbind",
         "-ip",
         "0.0.0.0",
@@ -36,13 +49,64 @@
         "+tv_port",
         "{port:sourcetv}",
         "+map",
-        "nmo_broadway",
+        "{setting:map}",
         "+sv_setsteamaccount",
         "{setting:gslt}",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers",
-        "{setting:maxPlayers}"
+        "{setting:maxPlayers}",
+        "-norestart",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "nmrih/cfg/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "srcds.exe",
+      "args": [
+        "-console",
+        "-game",
+        "nmrih",
+        "-usercon",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "+map",
+        "{setting:map}",
+        "+sv_setsteamaccount",
+        "{setting:gslt}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "nmrih/cfg/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -63,11 +127,40 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "nmrih/cfg",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "game",
+    "shutdown": "quit"
   },
   "players": {
-    "source": "a2s",
-    "port": "game"
-  }
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "nmrih/cfg/banned_user.cfg",
+    "format": "source-cfg"
+  },
+  "modLoaders": [
+    {
+      "id": "sourcemod",
+      "name": "SourceMod",
+      "download": {
+        "windows": [
+          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-windows",
+          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-windows"
+        ],
+        "linux": [
+          "https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-linux",
+          "https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-linux"
+        ]
+      },
+      "latestFile": true,
+      "installTo": "nmrih",
+      "pluginDir": "nmrih/addons/sourcemod/plugins",
+      "pluginExtensions": [
+        ".smx"
+      ]
+    }
+  ]
 }

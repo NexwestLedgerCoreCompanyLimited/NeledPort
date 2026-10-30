@@ -5,8 +5,20 @@
   "serverAppId": 869800,
   "gameAppId": 869480,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Jabroni Brawl: Episode 3"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "crossfire"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -20,6 +32,7 @@
       "args": [
         "-game",
         "jbep3",
+        "-usercon",
         "-strictportbind",
         "-ip",
         "0.0.0.0",
@@ -30,11 +43,60 @@
         "+tv_port",
         "{port:sourcetv}",
         "+map",
-        "crossfire",
+        "{setting:map}",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers",
-        "{setting:maxPlayers}"
+        "{setting:maxPlayers}",
+        "-norestart",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "jbep3/cfg/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "bin/win64/jbep3.exe",
+      "args": [
+        "-console",
+        "-game",
+        "jbep3",
+        "-usercon",
+        "-strictportbind",
+        "-ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+tv_port",
+        "{port:sourcetv}",
+        "+map",
+        "{setting:map}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "+hostname",
+        "{setting:serverName}",
+        "+rcon_password",
+        "{adminPassword}",
+        "+exec",
+        "banned_user.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "jbep3/cfg/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -55,11 +117,18 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "jbep3/cfg",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "game",
+    "shutdown": "quit"
   },
   "players": {
-    "source": "a2s",
-    "port": "game"
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "jbep3/cfg/banned_user.cfg",
+    "format": "source-cfg"
   }
 }
