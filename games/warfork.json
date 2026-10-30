@@ -5,11 +5,28 @@
   "serverAppId": 1136510,
   "gameAppId": 671610,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Warfork"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 16
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "wf_server.x86_64",
       "args": [
+        "+set",
+        "fs_usehomedir",
+        "0",
         "+exec",
         "neledport.cfg",
         "+sv_http_ip",
@@ -21,6 +38,67 @@
         "0.0.0.0",
         "+sv_port",
         "{port:game}"
+      ],
+      "configFiles": [
+        {
+          "path": "basewf/neledport.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "basewf/listip.cfg",
+          "format": "cfg"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "basewf/neledport.cfg",
+          "style": "space",
+          "set": {
+            "rcon_password": "\"{adminPassword}\"",
+            "sv_hostname": "\"{setting:serverName}\"",
+            "sv_maxclients": "{setting:maxPlayers}"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "wf_server_x64.exe",
+      "args": [
+        "+set",
+        "fs_usehomedir",
+        "0",
+        "+exec",
+        "neledport.cfg",
+        "+sv_http_ip",
+        "0.0.0.0",
+        "+set",
+        "sv_http_port",
+        "{port:http}",
+        "+sv_ip",
+        "0.0.0.0",
+        "+sv_port",
+        "{port:game}"
+      ],
+      "configFiles": [
+        {
+          "path": "basewf/neledport.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "basewf/listip.cfg",
+          "format": "cfg"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "basewf/neledport.cfg",
+          "style": "space",
+          "set": {
+            "rcon_password": "\"{adminPassword}\"",
+            "sv_hostname": "\"{setting:serverName}\"",
+            "sv_maxclients": "{setting:maxPlayers}"
+          }
+        }
       ]
     }
   },
@@ -36,7 +114,23 @@
       "protocol": "tcp"
     }
   ],
+  "saveDir": "basewf",
   "control": {
-    "type": "signal"
+    "type": "quake",
+    "port": "game",
+    "shutdown": "quit"
+  },
+  "players": {
+    "source": "rcon",
+    "command": "status",
+    "pattern": "^\\s*\\d+\\s+-?\\d+\\s+(?:(?<ping>\\d+)|CNCT|ZMBI|AWAI) (?<name>.*?)\\s*(?<id>[1-9]\\d{16}) ",
+    "kick": "kick \"{name}\""
+  },
+  "bans": {
+    "method": "rcon",
+    "ban": "ban {id}",
+    "unban": "removeban {id}",
+    "file": "basewf/listip.cfg",
+    "format": "listip"
   }
 }

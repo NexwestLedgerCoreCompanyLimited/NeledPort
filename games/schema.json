@@ -172,7 +172,8 @@
             "stdin",
             "signal",
             "satisfactory",
-            "telnet"
+            "telnet",
+            "quake"
           ]
         },
         "save": {
@@ -280,7 +281,8 @@
             "lines",
             "rust-cfg",
             "source-cfg",
-            "squad-cfg"
+            "squad-cfg",
+            "listip"
           ]
         },
         "ban": {

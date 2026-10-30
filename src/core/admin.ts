@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import { queryPlayers } from './a2s'
 import { goldsrcRconExec } from './goldsrc'
 import { palworldRest } from './palworld'
+import { quakeRconExec } from './quake'
 import { rconExec } from './rcon'
 import { satisfactoryApi } from './satisfactory'
 import { telnetExec } from './telnet'
@@ -35,6 +36,7 @@ export interface AdminNet {
   }
   satisfactory?: typeof satisfactoryApi
   telnet?: typeof telnetExec
+  quake?: Remote
 }
 
 export interface AdminContext {
@@ -114,6 +116,11 @@ function banLine(line: string, format: BanFormat = 'lines'): BanEntry | undefine
   if (format === 'rust-cfg') {
     const m = /^banid\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"/.exec(l)
     return m ? { id: m[1], name: m[2], reason: m[3] } : undefined
+  }
+  if (format === 'listip') {
+    // Quake-engine listip.cfg as Warfork's writeip leaves it: "ban <steamid64> [minutes]".
+    const id = /^ban\s+(\d{17})\b/.exec(l)?.[1]
+    return id ? { id } : undefined
   }
   if (format === 'squad-cfg') {
     // "<id>:<unban time> //reason", or the same after "Admin [SteamID x] Banned:" when the server wrote it.
@@ -235,7 +242,8 @@ export function adminFor(ctx: AdminContext): Admin {
     a2s: ctx.net?.a2s ?? ((port: number) => queryPlayers(port)),
     rest: ctx.net?.rest ?? palworldRest,
     satisfactory: ctx.net?.satisfactory ?? satisfactoryApi,
-    telnet: ctx.net?.telnet ?? telnetExec
+    telnet: ctx.net?.telnet ?? telnetExec,
+    quake: ctx.net?.quake ?? quakeRconExec
   }
   const file = banFile(installDir, game)
   const admin: Admin = { players: async () => Promise.reject(new Error('A player list is not available for this game yet')) }
@@ -249,7 +257,9 @@ export function adminFor(ctx: AdminContext): Admin {
         ? (cmd) => net.rcon({ port: remotePort, password: adminPassword }, cmd)
         : control?.type === 'goldsrc' && remotePort
           ? (cmd) => net.goldsrc({ port: remotePort, password: adminPassword }, cmd)
-          : control?.type === 'telnet' && remotePort
+          : control?.type === 'quake' && remotePort
+            ? (cmd) => net.quake({ port: remotePort, password: adminPassword }, cmd)
+            : control?.type === 'telnet' && remotePort
             ? (cmd) => net.telnet({ port: remotePort }, cmd)
             : control?.type === 'satisfactory' && remotePort
             ? (cmd) => net.satisfactory({ port: remotePort, password: adminPassword || undefined }).command(cmd)

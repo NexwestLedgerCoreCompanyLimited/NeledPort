@@ -118,5 +118,9 @@
  {
   "game": "soulmask",
   "test": "rcon"
+ },
+ {
+  "game": "warfork",
+  "test": "rcon"
  }
 ]

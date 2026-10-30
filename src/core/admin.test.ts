@@ -330,6 +330,14 @@ describe('admin from data (RCON commands named by the definition)', () => {
     expect(calls).toEqual(['AdminReloadServerConfig'])
   })
 
+  it("reads Warfork's listip.cfg as writeip leaves it", async () => {
+    const installDir = dir()
+    mkdirSync(join(installDir, 'basewf'))
+    writeFileSync(join(installDir, 'basewf/listip.cfg'), 'set filterban 1\r\nban 76561198000000001 \r\nban 76561198000000002 30.00\r\naddip 1.2.3.4 30.00\r\n')
+    const admin = adminFor({ game: game('warfork'), installDir, ports: { game: 44400 }, adminPassword: 'pw', net: { quake: async () => '' } })
+    expect(await admin.bans!()).toEqual([{ id: '76561198000000001' }, { id: '76561198000000002' }])
+  })
+
   it('offers no kick when the definition names no kick command', async () => {
     const noKick: GameDefinition = { ...dataGame, players: { source: 'a2s', port: 'query' } }
     const admin = adminFor({ game: noKick, installDir: dir(), ports: { rcon: 27020, query: 27015 }, adminPassword: 'pw', net: recorder().net })
@@ -340,7 +348,7 @@ describe('admin from data (RCON commands named by the definition)', () => {
 describe('player lists as each game prints them', () => {
   // Sample replies from the sources the definitions were built from (ark_rcon, SquadJS, NWI's admin guide, humanitzbot).
   const listed = (gameId: string, reply: string) =>
-    adminFor({ game: game(gameId), installDir: dir(), ports: { rcon: 1, query: 2 }, adminPassword: 'pw', net: { rcon: async () => reply } }).players()
+    adminFor({ game: game(gameId), installDir: dir(), ports: { rcon: 1, query: 2, game: 3 }, adminPassword: 'pw', net: { rcon: async () => reply, quake: async () => reply } }).players()
 
   it('ARK: ListPlayers', async () => {
     expect(await listed('ark-survival-evolved', '\n0. Mira, 76561198000000001\n1. Rook Bold, 76561198000000002 \n')).toEqual([
@@ -369,6 +377,23 @@ describe('player lists as each game prints them', () => {
   it('Insurgency: Sandstorm: listplayers, skipping bots', async () => {
     const reply = 'ID\t | Name\t\t | NetID\t\t | IP\t | Score\t | \n=====\n0\t | \t | None:INVALID\t | \t | 0\t |\n256\t | Mira\t\t | SteamNWI:76561198000000001\t | 127.0.0.1\t | 0\t |\n'
     expect(await listed('insurgency-sandstorm', reply)).toEqual([{ id: 'SteamNWI:76561198000000001', name: 'Mira' }])
+  })
+
+  it('Warfork: status, skipping bots, with names that fill their column', async () => {
+    const reply = [
+      'map              : wfca1',
+      'num score ping name            steamid           lastmsg address               port   rate  ',
+      '--- ----- ---- --------------- ----------------- ------- --------------------- ------ ------',
+      '  0     3   42 Mira            76561198000000001      50 1.2.3.4:44400         44400  25000',
+      '  1     0 CNCT Rook Bold       76561198000000002       0 5.6.7.8:44400         44400  25000',
+      '  2    -1   12 SixteenCharsName76561198000000003      10 9.9.9.9:44400         44400  25000',
+      '  3     0    0 [BOT] Bob                       0       0 loopback              0      BOT'
+    ].join('\n')
+    expect(await listed('warfork', reply)).toEqual([
+      { id: '76561198000000001', name: 'Mira', ping: 42 },
+      { id: '76561198000000002', name: 'Rook Bold' },
+      { id: '76561198000000003', name: 'SixteenCharsName', ping: 12 }
+    ])
   })
 
   it('HumanitZ: Players', async () => {
