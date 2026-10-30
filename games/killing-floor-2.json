@@ -37,7 +37,8 @@
           "path": "KFGame/Config/neledport/LinuxServer-KFEngine.ini",
           "format": "ini"
         }
-      ]
+      ],
+      "workingDir": "Binaries/Win64"
     },
     "windows": {
       "executable": "Binaries/Win64/KFServer.exe",
@@ -55,7 +56,8 @@
           "path": "KFGame/Config/neledport/PCServer-KFEngine.ini",
           "format": "ini"
         }
-      ]
+      ],
+      "workingDir": "Binaries/Win64"
     }
   },
   "ports": [

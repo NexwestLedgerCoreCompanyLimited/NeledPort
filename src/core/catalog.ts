@@ -30,7 +30,8 @@ function definitionPaths(def: GameDefinition): string[] {
       ...(platform.configFiles ?? []).map((c) => c.path),
       ...(platform.configWrites ?? []).map((w) => w.file),
       ...(platform.steamClient ?? []).map((c) => c.to),
-      ...(platform.copyIfMissing ?? []).flatMap((c) => [c.from, c.to])
+      ...(platform.copyIfMissing ?? []).flatMap((c) => [c.from, c.to]),
+      ...(platform.workingDir ? [platform.workingDir] : [])
     )
   }
   return paths

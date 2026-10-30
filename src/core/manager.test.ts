@@ -698,6 +698,21 @@ describe('Linux packages a game needs', () => {
   })
 })
 
+describe('Servers that run from their binary folder', () => {
+  // Unreal Engine 3 servers (Chivalry, Killing Floor 2) find the game from the working directory; LinuxGSM starts
+  // them from their executabledir, and Chivalry crashed on a real server when started from the install folder.
+  it('start in the folder the definition names', async () => {
+    const { deps, processes } = setup()
+    const valheim = games.find((g) => g.id === 'valheim')!
+    const game: GameDefinition = { ...valheim, id: 'from-binary-dir', platforms: { linux: { ...valheim.platforms.linux!, workingDir: 'Binaries/Linux' } } }
+    const manager = new ServerManager({ ...deps, games: () => [...games, game] })
+    const { id, installDir } = manager.create({ gameId: 'from-binary-dir', name: 'x', settings: { serverName: 'x', world: 'w', password: 'secret1' } })
+    await manager.install(id)
+    await manager.start(id)
+    expect(processes[0].spec!.cwd).toBe(join(installDir, 'Binaries/Linux'))
+  })
+})
+
 describe('Linux servers that need a display', () => {
   // Core Keeper's Unity server will not start without X; LinuxGSM runs it under "xvfb-run -a".
   it('runs them under xvfb-run', async () => {

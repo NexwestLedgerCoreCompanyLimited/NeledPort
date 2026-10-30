@@ -888,7 +888,8 @@ export function buildLaunch(
   return {
     command: display ? 'xvfb-run' : command,
     args: display ? ['-a', command, ...args] : args,
-    cwd: server.installDir,
+    // Unreal Engine 3 servers find the game from the working directory (LinuxGSM's executabledir).
+    cwd: join(server.installDir, (server.launch ? undefined : game.platforms[platform]?.workingDir) ?? ''),
     env: Object.fromEntries(Object.entries({ ...env, ...extraEnv }).map(([k, v]) => [k, expand(v, ctx)]))
   }
 }

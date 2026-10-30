@@ -5,6 +5,8 @@ export interface PlatformDefinition {
   args: string[]
   env?: Record<string, string>
   configFiles?: { path: string; format: 'ini' | 'json' | 'cfg' | 'txt' }[]
+  /** Folder (inside the install) to start the server in, when the game finds its files from there (UE3 games). */
+  workingDir?: string
   /** Starting worlds the server ships: copied into place before a start when missing (Wurm's dist/Creative). */
   copyIfMissing?: { from: string; to: string }[]
   /** Linux: run under `xvfb-run -a` (Unity servers that need an X display, such as Core Keeper). */

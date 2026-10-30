@@ -540,6 +540,11 @@
             }
           }
         },
+        "workingDir": {
+          "description": "Folder inside the install to start the server in, when it finds its files from there (Unreal Engine 3; LinuxGSM's executabledir).",
+          "type": "string",
+          "minLength": 1
+        },
         "copyIfMissing": {
           "description": "Starting worlds the server ships, copied into place before a start when missing (LinuxGSM's fix_wurm).",
           "type": "array",
