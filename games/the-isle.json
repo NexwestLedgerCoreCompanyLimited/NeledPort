@@ -5,7 +5,21 @@
   "serverAppId": 412680,
   "gameAppId": 376210,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Isle"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 100
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "TheIsle/Binaries/Linux/TheIsleServer-Linux-Shipping",
@@ -15,6 +29,62 @@
         "-log",
         "-ini:Engine:[EpicOnlineServices]:DedicatedServerClientId=xyza7891gk5PRo3J7G9puCJGFJjmEguW",
         "-ini:Engine:[EpicOnlineServices]:DedicatedServerClientSecret=pKWl6t5i9NJK8gTpVlAxzENZ65P8hYzodV8Dqe5Rlc8"
+      ],
+      "configFiles": [
+        {
+          "path": "TheIsle/Saved/Config/LinuxServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "TheIsle/Saved/Config/LinuxServer/Engine.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "TheIsle/Saved/Config/LinuxServer/Game.ini",
+          "section": "/Script/TheIsle.TIGameSession",
+          "set": {
+            "bRconEnabled": "true",
+            "RconPassword": "{adminPassword}",
+            "RconPort": "{port:rcon}",
+            "ServerName": "{setting:serverName}",
+            "MaxPlayerCount": "{setting:maxPlayers}"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "TheIsleServer.exe",
+      "args": [
+        "/Game/TheIsle/Maps/Game/Gateway/Gateway",
+        "-Port={port:game}",
+        "-log",
+        "-ini:Engine:[EpicOnlineServices]:DedicatedServerClientId=xyza7891gk5PRo3J7G9puCJGFJjmEguW",
+        "-ini:Engine:[EpicOnlineServices]:DedicatedServerClientSecret=pKWl6t5i9NJK8gTpVlAxzENZ65P8hYzodV8Dqe5Rlc8"
+      ],
+      "configFiles": [
+        {
+          "path": "TheIsle/Saved/Config/WindowsServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "TheIsle/Saved/Config/WindowsServer/Engine.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "TheIsle/Saved/Config/WindowsServer/Game.ini",
+          "section": "/Script/TheIsle.TIGameSession",
+          "set": {
+            "bRconEnabled": "true",
+            "RconPassword": "{adminPassword}",
+            "RconPort": "{port:rcon}",
+            "ServerName": "{setting:serverName}",
+            "MaxPlayerCount": "{setting:maxPlayers}"
+          }
+        }
       ]
     }
   },
@@ -23,9 +93,23 @@
       "name": "game",
       "default": 7777,
       "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 9999,
+      "protocol": "tcp"
     }
   ],
+  "saveDir": "TheIsle/Saved",
   "control": {
-    "type": "signal"
+    "type": "isle",
+    "port": "rcon",
+    "save": "save"
+  },
+  "players": {
+    "source": "rcon",
+    "command": "players",
+    "pattern": "^(?<id>\\d{17}) (?<name>.+)$",
+    "kick": "kick {id},{reason}"
   }
 }

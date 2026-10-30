@@ -441,7 +441,7 @@ export class ServerManager extends EventEmitter {
         if (control.save) proc.write(control.save)
         proc.write(control.shutdown ?? 'quit')
       }
-    } else if (control?.type === 'rcon' || control?.type === 'webrcon' || control?.type === 'goldsrc' || control?.type === 'quake' || control?.type === 'pavlov') {
+    } else if (control?.type === 'rcon' || control?.type === 'webrcon' || control?.type === 'goldsrc' || control?.type === 'quake' || control?.type === 'pavlov' || control?.type === 'isle') {
       const admin = this.admin(server)
       graceful = async () => {
         try {

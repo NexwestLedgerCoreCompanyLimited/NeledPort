@@ -126,5 +126,9 @@
  {
   "game": "pavlov-vr",
   "test": "rcon"
+ },
+ {
+  "game": "the-isle",
+  "test": "rcon"
  }
 ]
