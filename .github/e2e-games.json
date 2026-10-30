@@ -138,5 +138,9 @@
  {
   "game": "ns2-combat",
   "test": "rcon"
+ },
+ {
+  "game": "killing-floor-2",
+  "test": "server"
  }
 ]

@@ -5,22 +5,72 @@
   "serverAppId": 232130,
   "gameAppId": 232090,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "map",
+      "label": "Map",
+      "type": "text",
+      "default": "KF-BioticsLab"
+    },
+    {
+      "key": "gameMode",
+      "label": "Game mode (KFGameContent.KFGameInfo_Survival, _Endless, _WeeklySurvival, _VersusSurvival)",
+      "type": "text",
+      "default": "KFGameContent.KFGameInfo_VersusSurvival"
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "Binaries/Win64/KFGameSteamServer.bin.x86_64",
       "args": [
-        "KF-BioticsLab?Game=KFGameContent.KFGameInfo_VersusSurvival?ConfigSubDir=neledport -QueryPort={port:query}"
+        "{setting:map}?Game={setting:gameMode}?ConfigSubDir=neledport",
+        "-Port={port:game}",
+        "-QueryPort={port:query}"
+      ],
+      "configFiles": [
+        {
+          "path": "KFGame/Config/neledport/LinuxServer-KFGame.ini",
+          "format": "ini"
+        },
+        {
+          "path": "KFGame/Config/neledport/LinuxServer-KFEngine.ini",
+          "format": "ini"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "Binaries/Win64/KFServer.exe",
+      "args": [
+        "{setting:map}?Game={setting:gameMode}?ConfigSubDir=neledport",
+        "-Port={port:game}",
+        "-QueryPort={port:query}"
+      ],
+      "configFiles": [
+        {
+          "path": "KFGame/Config/neledport/PCServer-KFGame.ini",
+          "format": "ini"
+        },
+        {
+          "path": "KFGame/Config/neledport/PCServer-KFEngine.ini",
+          "format": "ini"
+        }
       ]
     }
   },
   "ports": [
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
     {
       "name": "query",
       "default": 27015,
       "protocol": "udp"
     }
   ],
+  "saveDir": "KFGame/Config/neledport",
   "control": {
     "type": "signal"
   },
