@@ -52,7 +52,7 @@ export interface ManagerDeps {
     run(exe: string, args: string[], onLine: (line: string) => void, signal?: AbortSignal): Promise<{ ok: boolean; error?: string }>
     capture?(exe: string, args: string[], timeoutMs?: number): Promise<string>
   }
-  createProcess?: (o: { logFile: string; readyPattern?: RegExp }) => ProcessLike
+  createProcess?: (o: { logFile: string; readyPattern?: RegExp; hide?: string[] }) => ProcessLike
   portFree?: (port: number, protocol: 'udp' | 'tcp') => Promise<boolean>
   rest?: (o: { port: number; basePath: string; username: string; password: string }) => {
     save(): Promise<unknown>
@@ -334,7 +334,8 @@ export class ServerManager extends EventEmitter {
     const make = this.deps.createProcess ?? ((o) => new ServerProcess({ ...o, maxLines: MAX_LINES }))
     const proc = make({
       logFile: join(this.deps.dataDir, 'logs', id, 'server.log'),
-      readyPattern: game.logPatterns?.ready ? new RegExp(game.logPatterns.ready) : undefined
+      readyPattern: game.logPatterns?.ready ? new RegExp(game.logPatterns.ready) : undefined,
+      hide: [secrets[ADMIN_SECRET]]
     })
     rt.tracker = new LogPlayerTracker(game.logPatterns ?? {})
     proc.on('line', (line: string) => {

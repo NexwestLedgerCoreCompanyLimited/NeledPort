@@ -15,6 +15,7 @@ class FakeProcess extends EventEmitter implements ProcessLike {
   state: ProcessState = 'stopped'
   lastExitCode: number | null = null
   spec?: LaunchSpec
+  opts?: { hide?: string[] }
   written: string[] = []
   constructor(private log: string[]) {
     super()
@@ -83,8 +84,9 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
         return { ok: true }
       }
     },
-    createProcess: () => {
+    createProcess: (o) => {
       const p = new FakeProcess(log)
+      p.opts = o
       processes.push(p)
       return p
     },
@@ -594,6 +596,19 @@ describe('GoldSrc servers', () => {
     await manager.stop(id)
     expect(restCalls).toEqual(['gold:quit'])
     expect(log).not.toContain('interrupt')
+  })
+})
+
+describe('Console', () => {
+  // HLDS echoes every RCON command with its password; GoldSrc RCON listens on the public game port.
+  it('never shows the RCON password, even when the server prints it', async () => {
+    const { manager, processes, dataDir } = setup()
+    const { id, installDir } = manager.create({ gameId: 'day-of-defeat', name: 'DoD', settings: { serverName: 'DoD', maxPlayers: '16' } })
+    await manager.install(id)
+    await manager.start(id)
+    const password = /^rcon_password "([^"]+)"$/m.exec(readFileSync(join(installDir, 'dod/neledport.cfg'), 'utf8'))![1]
+    expect(processes[0].opts?.hide).toEqual([password])
+    expect(dataDir).toBeTruthy()
   })
 })
 

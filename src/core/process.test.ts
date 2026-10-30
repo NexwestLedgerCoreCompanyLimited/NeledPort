@@ -75,6 +75,15 @@ describe('ServerProcess', () => {
     expect(p.lines().join('\n')).toMatch(/Closing the server now/)
   })
 
+  it('hides secrets in its lines and in the log file', async () => {
+    const logFile = join(mkdtempSync(join(tmpdir(), 'proc-')), 'server.log')
+    const p = make({ logFile, hide: ['s3cret-pass'] })
+    p.start({ command: process.execPath, args: ['-e', 'console.log(\'rcon 1 "s3cret-pass" status\')'], cwd: tmpdir() })
+    await waitFor(p, 'stopped')
+    expect(p.lines()).toContain('rcon 1 "********" status')
+    expect(readFileSync(logFile, 'utf8')).not.toContain('s3cret-pass')
+  })
+
   it('reports a crash', async () => {
     const p = make()
     p.start(spec('crash'))

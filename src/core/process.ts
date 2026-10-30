@@ -26,7 +26,8 @@ export class ServerProcess extends EventEmitter {
   private buffer: string[] = []
   private exited?: Promise<void>
 
-  constructor(private opts: { logFile?: string; maxLines?: number; readyPattern?: RegExp } = {}) {
+  /** `hide`: secrets (the RCON password) that must never reach the console or the log file. HLDS echoes RCON commands. */
+  constructor(private opts: { logFile?: string; maxLines?: number; readyPattern?: RegExp; hide?: string[] } = {}) {
     super()
   }
 
@@ -120,7 +121,8 @@ export class ServerProcess extends EventEmitter {
     }
   }
 
-  private addLine(line: string): void {
+  private addLine(raw: string): void {
+    const line = (this.opts.hide ?? []).filter(Boolean).reduce((text, secret) => text.split(secret).join('********'), raw)
     this.buffer.push(line)
     const max = this.opts.maxLines ?? 2000
     if (this.buffer.length > max) this.buffer.splice(0, this.buffer.length - max)
