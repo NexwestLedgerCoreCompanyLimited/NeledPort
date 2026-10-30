@@ -6,6 +6,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-30
+
+### Added
+
+- **Backups tab:** every backup with when, why and how big, **Back up now**, and **Restore**. Restoring needs the server
+  stopped, and the current world is moved aside, never deleted.
+- **Config tab:** change a server's settings after creating it (they apply on the next start; **Save and restart**
+  while it runs), and edit the game's own config file for Palworld, Rust and Counter-Strike 2 while the server is
+  stopped. The previous file is kept as `.neledport.bak`.
+- A short tour GIF and up-to-date screenshots in the README.
+
+### Fixed
+
+- Quitting NeledPort during an install now stops SteamCMD instead of leaving it running in the background.
+
+### Notes
+
+- An empty password box in Config keeps the current password. Removing a password is not possible there yet.
+
 ## [0.6.0] - 2026-10-30
 
 ### Added
@@ -110,7 +129,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - CI on Linux and Windows (typecheck, tests, build) and a tag-driven release workflow.
 - Community files: MIT license, contributing guide, code of conduct, security policy.
 
-[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.3.0...v0.4.0
