@@ -68,7 +68,8 @@
           "path": "neledport/MapCycle.json",
           "format": "json"
         }
-      ]
+      ],
+      "workingDir": "x64"
     },
     "windows": {
       "executable": "x64/Server.exe",
@@ -117,7 +118,8 @@
           "path": "neledport/MapCycle.json",
           "format": "json"
         }
-      ]
+      ],
+      "workingDir": "x64"
     }
   },
   "ports": [

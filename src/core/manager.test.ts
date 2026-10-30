@@ -713,6 +713,36 @@ describe('Servers that run from their binary folder', () => {
   })
 })
 
+describe('Files a server needs beside its own', () => {
+  const start = async (platform: GameDefinition['platforms']['linux'], deps = setup().deps) => {
+    const valheim = games.find((g) => g.id === 'valheim')!
+    const game: GameDefinition = { ...valheim, id: 'needs-files', platforms: { linux: { ...valheim.platforms.linux!, ...platform } } }
+    const manager = new ServerManager({ ...deps, games: () => [...games, game] })
+    const { id, installDir } = manager.create({ gameId: 'needs-files', name: 'x', settings: { serverName: 'x', world: 'w', password: 'secret1' } })
+    await manager.install(id)
+    await manager.start(id)
+    return installDir
+  }
+
+  // LinuxGSM's fix_cmw writes steam_appid.txt beside Chivalry's binary.
+  it('writes the small files the definition names', async () => {
+    const installDir = await start({ executable: 'valheim_server.x86_64', args: [], writeFiles: [{ path: 'Binaries/Linux/steam_appid.txt', text: '219640' }] })
+    expect(readFileSync(join(installDir, 'Binaries/Linux/steam_appid.txt'), 'utf8')).toBe('219640\n')
+  })
+
+  // LinuxGSM's fix_pvr: Pavlov asks for libc++.so, so the system's libc++.so.1 is copied in under that name.
+  it("copies a system library in under the name the server asks for, when the system has it", async () => {
+    const libDir = mkdtempSync(join(tmpdir(), 'lib-'))
+    writeFileSync(join(libDir, 'libc++.so.1'), 'elf')
+    const { deps } = setup()
+    const installDir = await start(
+      { executable: 'valheim_server.x86_64', args: [], systemLibraries: [{ file: 'libc++.so.1', as: 'linux64/libc++.so' }] },
+      { ...deps, systemLibraryDirs: [join(libDir, 'missing'), libDir] }
+    )
+    expect(readFileSync(join(installDir, 'linux64/libc++.so'), 'utf8')).toBe('elf')
+  })
+})
+
 describe('Linux servers that need a display', () => {
   // Core Keeper's Unity server will not start without X; LinuxGSM runs it under "xvfb-run -a".
   it('runs them under xvfb-run', async () => {

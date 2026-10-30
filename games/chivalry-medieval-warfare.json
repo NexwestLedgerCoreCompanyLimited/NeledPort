@@ -17,9 +17,6 @@
         "-seekfreeloadingserver",
         "-configsubdir=neledport"
       ],
-      "env": {
-        "SteamAppId": "219640"
-      },
       "steamClient": [
         {
           "bits": 32,
@@ -32,7 +29,13 @@
           "format": "ini"
         }
       ],
-      "workingDir": "Binaries/Linux"
+      "workingDir": "Binaries/Linux",
+      "writeFiles": [
+        {
+          "path": "Binaries/Linux/steam_appid.txt",
+          "text": "219640"
+        }
+      ]
     },
     "windows": {
       "executable": "Binaries/Win32/UDK.exe",

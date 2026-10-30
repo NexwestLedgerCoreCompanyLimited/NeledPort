@@ -64,7 +64,8 @@
           "path": "neledport/MapCycle.json",
           "format": "json"
         }
-      ]
+      ],
+      "workingDir": "ia32"
     },
     "windows": {
       "executable": "ns2combatserver.exe",

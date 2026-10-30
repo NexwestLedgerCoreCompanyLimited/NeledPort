@@ -7,6 +7,10 @@ export interface PlatformDefinition {
   configFiles?: { path: string; format: 'ini' | 'json' | 'cfg' | 'txt' }[]
   /** Folder (inside the install) to start the server in, when the game finds its files from there (UE3 games). */
   workingDir?: string
+  /** Small fixed files the server needs (Chivalry's steam_appid.txt), written before every start. */
+  writeFiles?: { path: string; text: string }[]
+  /** Linux: a system library copied into the install under the name the server asks for (Pavlov's libc++.so). */
+  systemLibraries?: { file: string; as: string }[]
   /** Starting worlds the server ships: copied into place before a start when missing (Wurm's dist/Creative). */
   copyIfMissing?: { from: string; to: string }[]
   /** Linux: run under `xvfb-run -a` (Unity servers that need an X display, such as Core Keeper). */

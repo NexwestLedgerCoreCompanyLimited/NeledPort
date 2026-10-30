@@ -67,6 +67,8 @@ export interface ManagerDeps {
   download?: (url: string) => Promise<Buffer>
   /** Linux: ~/.steam, where many servers look for steamclient.so. Skipped when omitted. */
   steamSdkDir?: string
+  /** Where system libraries are looked for (definitions' systemLibraries); tests point it elsewhere. */
+  systemLibraryDirs?: string[]
 }
 
 interface Runtime {
@@ -343,7 +345,21 @@ export class ServerManager extends EventEmitter {
 
     const secrets = this.plainSecrets(this.ensureAdminSecret(server))
     this.provideSteamClient(server, game)
-    for (const { from, to } of game.platforms[this.deps.platform]?.copyIfMissing ?? []) {
+    const platform = game.platforms[this.deps.platform]
+    for (const { path, text } of platform?.writeFiles ?? []) {
+      mkdirSync(dirname(join(server.installDir, path)), { recursive: true })
+      writeFileSync(join(server.installDir, path), `${text}\n`)
+    }
+    // LinuxGSM's fix_pvr: a server linked against an unversioned library name gets the system's copy under that name.
+    for (const { file, as } of platform?.systemLibraries ?? []) {
+      const dirs = this.deps.systemLibraryDirs ?? ['/usr/lib/x86_64-linux-gnu', '/usr/lib64', '/lib/x86_64-linux-gnu', '/usr/lib']
+      const src = dirs.map((d) => join(d, file)).find((p) => existsSync(p))
+      if (src && !existsSync(join(server.installDir, as))) {
+        mkdirSync(dirname(join(server.installDir, as)), { recursive: true })
+        copyFileSync(src, join(server.installDir, as))
+      }
+    }
+    for (const { from, to } of platform?.copyIfMissing ?? []) {
       const src = join(server.installDir, from)
       if (existsSync(src) && !existsSync(join(server.installDir, to))) cpSync(src, join(server.installDir, to), { recursive: true })
     }

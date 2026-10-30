@@ -72,6 +72,15 @@
             "bCustomServer": "true"
           }
         }
+      ],
+      "env": {
+        "LD_LIBRARY_PATH": "{installDir}:{installDir}/linux64"
+      },
+      "systemLibraries": [
+        {
+          "file": "libc++.so.1",
+          "as": "linux64/libc++.so"
+        }
       ]
     }
   },

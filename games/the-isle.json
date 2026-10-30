@@ -22,7 +22,7 @@
   ],
   "platforms": {
     "linux": {
-      "executable": "TheIsleServer.sh",
+      "executable": "TheIsle/Binaries/Linux/TheIsleServer-Linux-Shipping",
       "args": [
         "/Game/TheIsle/Maps/Game/Gateway/Gateway",
         "-Port={port:game}",
@@ -52,7 +52,8 @@
             "MaxPlayerCount": "{setting:maxPlayers}"
           }
         }
-      ]
+      ],
+      "steamBranch": "evrima"
     },
     "windows": {
       "executable": "TheIsleServer.exe",
@@ -85,7 +86,8 @@
             "MaxPlayerCount": "{setting:maxPlayers}"
           }
         }
-      ]
+      ],
+      "steamBranch": "evrima"
     }
   },
   "ports": [

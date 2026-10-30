@@ -18,36 +18,14 @@
       "label": "Max players",
       "type": "number",
       "default": 20
-    },
-    {
-      "key": "gslt",
-      "label": "Steam game server token (optional)",
-      "type": "password",
-      "secret": true
     }
   ],
   "platforms": {
     "linux": {
       "executable": "Unturned_Headless.x86_64",
       "args": [
-        "-nographics",
         "-batchmode",
-        "-bind",
-        "0.0.0.0",
-        "-port",
-        "{port:game}",
-        "-maxplayers",
-        "{setting:maxPlayers}",
-        "-perspective",
-        "first",
-        "-mode",
-        "normal",
-        "-name",
-        "{setting:serverName}",
-        "-map",
-        "PEI",
-        "-gslt",
-        "{setting:gslt}",
+        "-nographics",
         "+InternetServer/neledport"
       ],
       "configFiles": [
@@ -72,29 +50,24 @@
           "bits": 64,
           "to": "."
         }
+      ],
+      "configWrites": [
+        {
+          "file": "Servers/neledport/Server/Commands.dat",
+          "style": "space",
+          "set": {
+            "Name": "{setting:serverName}",
+            "Port": "{port:game}",
+            "MaxPlayers": "{setting:maxPlayers}"
+          }
+        }
       ]
     },
     "windows": {
       "executable": "Unturned.exe",
       "args": [
-        "-nographics",
         "-batchmode",
-        "-bind",
-        "0.0.0.0",
-        "-port",
-        "{port:game}",
-        "-maxplayers",
-        "{setting:maxPlayers}",
-        "-perspective",
-        "first",
-        "-mode",
-        "normal",
-        "-name",
-        "{setting:serverName}",
-        "-map",
-        "PEI",
-        "-gslt",
-        "{setting:gslt}",
+        "-nographics",
         "+InternetServer/neledport"
       ],
       "configFiles": [
@@ -109,6 +82,17 @@
         {
           "path": "Servers/neledport/WorkshopDownloadConfig.json",
           "format": "json"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "Servers/neledport/Server/Commands.dat",
+          "style": "space",
+          "set": {
+            "Name": "{setting:serverName}",
+            "Port": "{port:game}",
+            "MaxPlayers": "{setting:maxPlayers}"
+          }
         }
       ]
     }

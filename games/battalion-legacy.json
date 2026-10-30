@@ -44,7 +44,7 @@
     },
     {
       "name": "query",
-      "default": 7780,
+      "default": 27015,
       "protocol": "udp"
     }
   ],

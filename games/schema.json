@@ -546,6 +546,26 @@
             }
           }
         },
+        "writeFiles": {
+          "description": "Small fixed files the server needs (Chivalry's steam_appid.txt), written before every start.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "text"],
+            "properties": { "path": { "type": "string", "minLength": 1 }, "text": { "type": "string", "pattern": "^[^\\r\\n]*$" } }
+          }
+        },
+        "systemLibraries": {
+          "description": "Linux: a system library (file name only) copied into the install under the name the server asks for (LinuxGSM's fix_pvr).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["file", "as"],
+            "properties": { "file": { "type": "string", "pattern": "^[A-Za-z0-9_.+-]+$" }, "as": { "type": "string", "minLength": 1 } }
+          }
+        },
         "workingDir": {
           "description": "Folder inside the install to start the server in, when it finds its files from there (Unreal Engine 3; LinuxGSM's executabledir).",
           "type": "string",
