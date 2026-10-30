@@ -5,8 +5,21 @@
   "serverAppId": 90,
   "gameAppId": 40,
   "anonymous": true,
-  "tier": "basic",
+  "steamMod": "dmc",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Deathmatch Classic"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "dcdm5"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -14,6 +27,7 @@
       "default": 16
     }
   ],
+  "configAdapter": "source",
   "platforms": {
     "linux": {
       "executable": "hlds_run",
@@ -28,11 +42,49 @@
         "+clientport",
         "{port:client}",
         "+map",
-        "dcdm5",
+        "{setting:map}",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers",
-        "{setting:maxPlayers}"
+        "{setting:maxPlayers}",
+        "-norestart",
+        "+exec",
+        "banned.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "dmc/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "hlds.exe",
+      "args": [
+        "-console",
+        "-game",
+        "dmc",
+        "-strictportbind",
+        "+ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+map",
+        "{setting:map}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "+exec",
+        "banned.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "dmc/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -49,10 +101,16 @@
     }
   ],
   "control": {
-    "type": "signal"
+    "type": "goldsrc",
+    "port": "game",
+    "shutdown": "quit"
   },
   "players": {
-    "source": "a2s",
-    "port": "game"
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "dmc/banned.cfg",
+    "format": "source-cfg"
   }
 }

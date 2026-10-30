@@ -5,8 +5,20 @@
   "serverAppId": 817300,
   "gameAppId": 632730,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Base Defense"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "pve_tomb"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -14,6 +26,7 @@
       "default": 3
     }
   ],
+  "configAdapter": "source",
   "platforms": {
     "linux": {
       "executable": "hlds_run",
@@ -28,11 +41,20 @@
         "+clientport",
         "{port:client}",
         "+map",
-        "pve_tomb",
+        "{setting:map}",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers",
-        "{setting:maxPlayers}"
+        "{setting:maxPlayers}",
+        "-norestart",
+        "+exec",
+        "banned.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "bdef/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -49,10 +71,16 @@
     }
   ],
   "control": {
-    "type": "signal"
+    "type": "goldsrc",
+    "port": "game",
+    "shutdown": "quit"
   },
   "players": {
-    "source": "a2s",
-    "port": "game"
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "bdef/banned.cfg",
+    "format": "source-cfg"
   }
 }

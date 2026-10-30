@@ -4,8 +4,21 @@
   "name": "Opposing Force",
   "serverAppId": 90,
   "anonymous": true,
-  "tier": "basic",
+  "steamMod": "gearbox",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Opposing Force"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "op4_bootcamp"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -13,6 +26,7 @@
       "default": 16
     }
   ],
+  "configAdapter": "source",
   "platforms": {
     "linux": {
       "executable": "hlds_run",
@@ -27,11 +41,49 @@
         "+clientport",
         "{port:client}",
         "+map",
-        "op4_bootcamp",
+        "{setting:map}",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers",
-        "{setting:maxPlayers}"
+        "{setting:maxPlayers}",
+        "-norestart",
+        "+exec",
+        "banned.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "gearbox/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "hlds.exe",
+      "args": [
+        "-console",
+        "-game",
+        "gearbox",
+        "-strictportbind",
+        "+ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+map",
+        "{setting:map}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "+exec",
+        "banned.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "gearbox/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -48,10 +100,16 @@
     }
   ],
   "control": {
-    "type": "signal"
+    "type": "goldsrc",
+    "port": "game",
+    "shutdown": "quit"
   },
   "players": {
-    "source": "a2s",
-    "port": "game"
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "gearbox/banned.cfg",
+    "format": "source-cfg"
   }
 }

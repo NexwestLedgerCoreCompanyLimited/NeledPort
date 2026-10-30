@@ -4,8 +4,20 @@
   "name": "Half-Life: Deathmatch",
   "serverAppId": 90,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Half-Life: Deathmatch"
+    },
+    {
+      "key": "map",
+      "label": "Start map",
+      "type": "text",
+      "default": "crossfire"
+    },
     {
       "key": "maxPlayers",
       "label": "Max players",
@@ -13,6 +25,7 @@
       "default": 16
     }
   ],
+  "configAdapter": "source",
   "platforms": {
     "linux": {
       "executable": "hlds_run",
@@ -27,11 +40,49 @@
         "+clientport",
         "{port:client}",
         "+map",
-        "crossfire",
+        "{setting:map}",
         "+servercfgfile",
         "neledport.cfg",
         "-maxplayers",
-        "{setting:maxPlayers}"
+        "{setting:maxPlayers}",
+        "-norestart",
+        "+exec",
+        "banned.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "valve/neledport.cfg",
+          "format": "cfg"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "hlds.exe",
+      "args": [
+        "-console",
+        "-game",
+        "valve",
+        "-strictportbind",
+        "+ip",
+        "0.0.0.0",
+        "-port",
+        "{port:game}",
+        "+clientport",
+        "{port:client}",
+        "+map",
+        "{setting:map}",
+        "+servercfgfile",
+        "neledport.cfg",
+        "-maxplayers",
+        "{setting:maxPlayers}",
+        "+exec",
+        "banned.cfg"
+      ],
+      "configFiles": [
+        {
+          "path": "valve/neledport.cfg",
+          "format": "cfg"
+        }
       ]
     }
   },
@@ -48,10 +99,16 @@
     }
   ],
   "control": {
-    "type": "signal"
+    "type": "goldsrc",
+    "port": "game",
+    "shutdown": "quit"
   },
   "players": {
-    "source": "a2s",
-    "port": "game"
+    "source": "rcon"
+  },
+  "bans": {
+    "method": "rcon",
+    "file": "valve/banned.cfg",
+    "format": "source-cfg"
   }
 }
