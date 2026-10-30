@@ -382,7 +382,11 @@ export class ServerManager extends EventEmitter {
       this.addLine(id, line)
     })
     proc.on('state', (state: ProcessState) => {
-      if (state === 'crashed') rt.message = `Server stopped unexpectedly (exit code ${proc.lastExitCode})`
+      if (state === 'crashed') {
+        rt.message = `Server stopped unexpectedly (exit code ${proc.lastExitCode})`
+        const packages = this.deps.platform === 'linux' ? game.linuxPackages : undefined
+        if (packages?.length) this.addLine(id, `[NeledPort] This server needs these Linux packages: ${packages.join(', ')} (Debian/Ubuntu: sudo apt install ${packages.join(' ')})`)
+      }
       if (state === 'stopped' || state === 'crashed') rt.proc = undefined
       this.changed(id)
     })

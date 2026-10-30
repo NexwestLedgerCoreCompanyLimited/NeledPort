@@ -104,5 +104,8 @@
     "unban": "Unban {id}",
     "file": "Pavlov/Saved/Config/blacklist.txt",
     "format": "lines"
-  }
+  },
+  "linuxPackages": [
+    "libc++1"
+  ]
 }

@@ -75,7 +75,7 @@
     "port": "telnet",
     "save": "saveworld 1",
     "saveDone": "world is saved",
-    "shutdown": "quit 1"
+    "shutdown": "close 1"
   },
   "saveDir": "WS/Saved/Worlds",
   "players": {

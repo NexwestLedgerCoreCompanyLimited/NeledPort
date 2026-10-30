@@ -347,6 +347,11 @@
         }
       }
     },
+    "linuxPackages": {
+      "description": "System packages the Linux server needs (Debian/Ubuntu names, from LinuxGSM's dependency lists).",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9+.:-]*$" }
+    },
     "modLoaders": {
       "description": "Server-side mod loaders NeledPort can install with one click.",
       "type": "array",

@@ -82,7 +82,7 @@
       "protocol": "udp"
     }
   ],
-  "saveDir": "RSDragonwilds/Saved/Savegames",
+  "saveDir": "RSDragonwilds/Saved/SaveGames",
   "control": {
     "type": "signal"
   }

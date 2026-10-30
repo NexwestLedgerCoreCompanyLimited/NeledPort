@@ -142,5 +142,8 @@
   "players": {
     "source": "a2s",
     "port": "query"
-  }
+  },
+  "linuxPackages": [
+    "xvfb"
+  ]
 }

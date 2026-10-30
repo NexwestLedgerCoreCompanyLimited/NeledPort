@@ -59,6 +59,8 @@ export interface GameDefinition {
   logPatterns?: { ready?: string; join?: string; leave?: string; character?: string }
   workshop?: { command: string } | null
   modLoaders?: ModLoaderDefinition[]
+  /** System packages the Linux server needs (Debian/Ubuntu names, from LinuxGSM's dependency lists). */
+  linuxPackages?: string[]
 }
 
 export interface ModLoaderDefinition {

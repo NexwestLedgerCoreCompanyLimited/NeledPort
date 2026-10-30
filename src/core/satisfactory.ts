@@ -17,7 +17,8 @@ function httpsPost(port: number): ApiPost {
           method: 'POST',
           // The server signs its own certificate; this only ever talks to the server on this machine.
           rejectUnauthorized: false,
-          timeout: 5000,
+          // The API answers on the game thread, which can be busy for seconds while a level loads or a save runs.
+          timeout: 30_000,
           headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body), ...(token ? { Authorization: `Bearer ${token}` } : {}) }
         },
         (res) => {

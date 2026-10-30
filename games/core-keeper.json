@@ -36,7 +36,7 @@
         "-maxplayers",
         "{setting:maxPlayers}",
         "-logfile",
-        "/dev/stdout"
+        "-"
       ],
       "virtualDisplay": true,
       "configFiles": [
@@ -94,5 +94,9 @@
   "logPatterns": {
     "join": "\\[userid:(?<id>\\d+)\\] player (?<name>.+?) connected",
     "leave": "Disconnected from userid:(?<id>\\d+)"
-  }
+  },
+  "linuxPackages": [
+    "xvfb",
+    "libxi6"
+  ]
 }

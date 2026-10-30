@@ -683,6 +683,21 @@ describe('Starting worlds shipped in the install', () => {
   })
 })
 
+describe('Linux packages a game needs', () => {
+  // Pavlov's server needs libc++1 (LinuxGSM's dependency list); NeledPort cannot install system packages itself.
+  it('names them when the server stops unexpectedly', async () => {
+    const { deps, processes } = setup()
+    const valheim = games.find((g) => g.id === 'valheim')!
+    const game: GameDefinition = { ...valheim, id: 'needs-packages', linuxPackages: ['libc++1'] }
+    const manager = new ServerManager({ ...deps, games: () => [...games, game] })
+    const { id } = manager.create({ gameId: 'needs-packages', name: 'x', settings: { serverName: 'x', world: 'w', password: 'secret1' } })
+    await manager.install(id)
+    await manager.start(id)
+    processes[0].crash(127)
+    expect(manager.lines(id).at(-1)).toMatch(/needs these Linux packages: libc\+\+1/)
+  })
+})
+
 describe('Linux servers that need a display', () => {
   // Core Keeper's Unity server will not start without X; LinuxGSM runs it under "xvfb-run -a".
   it('runs them under xvfb-run', async () => {
@@ -721,8 +736,9 @@ describe('Servers made with an older game definition', () => {
 })
 
 describe('Soulmask (telnet console)', () => {
-  // LinuxGSM's fn_stop_graceful_sm_telnet: saveworld 1, wait for "world is saved", then quit 1.
-  it('saves, waits for the save to finish, then quits', async () => {
+  // saveworld 1, wait for "world is saved", then "close 1" (save and exit after 1 s). The server's own help shows
+  // "quit" only closes the console connection, so LinuxGSM's "quit 1" left it running on a real server.
+  it('saves, waits for the save to finish, then closes the server', async () => {
     const { deps, log } = setup()
     const calls: string[] = []
     const net = { ...deps.net, telnet: async (o: { port: number; until?: RegExp }, cmd: string) => (calls.push(`${o.port} ${cmd}${o.until ? ` until ${o.until.source}` : ''}`), '') }
@@ -731,7 +747,7 @@ describe('Soulmask (telnet console)', () => {
     await manager.install(id)
     await manager.start(id)
     await manager.stop(id)
-    expect(calls).toEqual(['18888 saveworld 1 until world is saved', '18888 quit 1'])
+    expect(calls).toEqual(['18888 saveworld 1 until world is saved', '18888 close 1'])
     expect(log).not.toContain('interrupt')
   })
 })

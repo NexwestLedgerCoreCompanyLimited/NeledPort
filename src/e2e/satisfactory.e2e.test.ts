@@ -12,7 +12,7 @@ function api(port: number, fn: string, data: object, token?: string): Promise<{ 
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({ function: fn, data })
     const req = request(
-      { host: '127.0.0.1', port, path: '/api/v1', method: 'POST', rejectUnauthorized: false, timeout: 5000,
+      { host: '127.0.0.1', port, path: '/api/v1', method: 'POST', rejectUnauthorized: false, timeout: 30_000,
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } },
       (res) => {
         let text = ''

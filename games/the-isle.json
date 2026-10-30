@@ -22,7 +22,7 @@
   ],
   "platforms": {
     "linux": {
-      "executable": "TheIsle/Binaries/Linux/TheIsleServer-Linux-Shipping",
+      "executable": "TheIsleServer.sh",
       "args": [
         "/Game/TheIsle/Maps/Game/Gateway/Gateway",
         "-Port={port:game}",
