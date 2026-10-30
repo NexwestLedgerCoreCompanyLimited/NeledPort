@@ -5,7 +5,7 @@
   "serverAppId": 805140,
   "gameAppId": 489940,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "platforms": {
     "linux": {
       "executable": "Battalion/Binaries/Linux/BattalionServer-Linux-Shipping",
@@ -13,6 +13,26 @@
         "-Port={port:game}",
         "-QueryPort={port:query}",
         "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "Battalion/Saved/Config/LinuxServer/Game.ini",
+          "format": "ini"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "BattalionServer.exe",
+      "args": [
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "Battalion/Saved/Config/WindowsServer/Game.ini",
+          "format": "ini"
+        }
       ]
     }
   },
@@ -28,6 +48,7 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "Battalion/Saved/Config",
   "control": {
     "type": "signal"
   },

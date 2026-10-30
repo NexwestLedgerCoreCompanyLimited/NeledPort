@@ -90,5 +90,25 @@
  {
   "game": "chivalry-medieval-warfare",
   "test": "server"
+ },
+ {
+  "game": "day-of-dragons",
+  "test": "server"
+ },
+ {
+  "game": "runescape-dragonwilds",
+  "test": "server"
+ },
+ {
+  "game": "battalion-legacy",
+  "test": "server"
+ },
+ {
+  "game": "hypercharge-unboxed",
+  "test": "server"
+ },
+ {
+  "game": "stickybots",
+  "test": "server"
  }
 ]

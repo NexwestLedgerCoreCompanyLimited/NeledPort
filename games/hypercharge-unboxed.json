@@ -5,7 +5,7 @@
   "serverAppId": 1045940,
   "gameAppId": 523660,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -27,7 +27,31 @@
         "KidsBedroom?MaxPlayers={setting:maxPlayers}",
         "-ServerName={setting:serverName}",
         "-Port={port:game}",
-        "-QueryPort={port:query}"
+        "-QueryPort={port:query}",
+        "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "Unboxed/Saved/Config/LinuxServer/GameUserSettings.ini",
+          "format": "ini"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "Unboxed/Binaries/Win64/UnboxedServer-Win64-Shipping.exe",
+      "args": [
+        "Unboxed",
+        "KidsBedroom?MaxPlayers={setting:maxPlayers}",
+        "-ServerName={setting:serverName}",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "Unboxed/Saved/Config/WindowsServer/GameUserSettings.ini",
+          "format": "ini"
+        }
       ]
     }
   },
@@ -43,11 +67,8 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "Unboxed/Saved/Config",
   "control": {
     "type": "signal"
-  },
-  "players": {
-    "source": "a2s",
-    "port": "query"
   }
 }

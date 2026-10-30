@@ -5,7 +5,7 @@
   "serverAppId": 974130,
   "gameAppId": 889400,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -17,6 +17,18 @@
   "platforms": {
     "linux": {
       "executable": "blank1/Binaries/Linux/blank1Server-Linux-Shipping",
+      "args": [
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-startup_map",
+        "StationKappa",
+        "-server_name",
+        "{setting:serverName}"
+      ]
+    },
+    "windows": {
+      "executable": "blank1/Binaries/Win64/blank1Server-Win64-Shipping.exe",
       "args": [
         "-MultiHome=0.0.0.0",
         "-Port={port:game}",

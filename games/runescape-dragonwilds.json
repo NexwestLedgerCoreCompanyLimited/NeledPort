@@ -4,13 +4,74 @@
   "name": "RuneScape: Dragonwilds",
   "serverAppId": 4019830,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Dragonwilds"
+    },
+    {
+      "key": "ownerId",
+      "label": "Owner ID (your player ID, from the game settings)",
+      "type": "text",
+      "minLength": 1
+    },
+    {
+      "key": "worldName",
+      "label": "World name (matches the save file name)",
+      "type": "text",
+      "default": "NeledPort"
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "RSDragonwilds/Binaries/Linux/RSDragonwildsServer-Linux-Shipping",
       "args": [
         "-Port={port:game}",
         "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini",
+          "section": "/Script/Dominion.DedicatedServerSettings",
+          "set": {
+            "ServerName": "{setting:serverName}",
+            "OwnerId": "{setting:ownerId}",
+            "DefaultWorldName": "{setting:worldName}"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "RSDragonwildsServer.exe",
+      "args": [
+        "-Port={port:game}",
+        "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "RSDragonwilds/Saved/Config/WindowsServer/DedicatedServer.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "RSDragonwilds/Saved/Config/WindowsServer/DedicatedServer.ini",
+          "section": "/Script/Dominion.DedicatedServerSettings",
+          "set": {
+            "ServerName": "{setting:serverName}",
+            "OwnerId": "{setting:ownerId}",
+            "DefaultWorldName": "{setting:worldName}"
+          }
+        }
       ]
     }
   },
@@ -21,6 +82,7 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "RSDragonwilds/Saved/Savegames",
   "control": {
     "type": "signal"
   }

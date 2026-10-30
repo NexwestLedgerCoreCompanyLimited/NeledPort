@@ -10,11 +10,13 @@ import { e2e, e2eManager, platform, retry, waitForStatus } from './harness'
 // (Core Keeper, Tower Unite, The Front, Chivalry...). See .github/e2e-games.json.
 const gameId = process.env.NELEDPORT_E2E_GAME ?? 'core-keeper'
 const game = loadCatalog(join(__dirname, '../../games')).games.find((g) => g.id === gameId)!
+// Settings a game will not start without.
+const SETTINGS: Record<string, Record<string, string>> = { 'runescape-dragonwilds': { ownerId: '0123456789abcdef0123456789abcdef' } }
 
 describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, () => {
   it('installs, comes up, and stops cleanly on Ctrl+C', { timeout: 60 * 60_000 }, async () => {
     const manager = e2eManager(mkdtempSync(join(tmpdir(), 'neledport-e2e-')))
-    const { id, installDir } = manager.create({ gameId, name: 'NeledPort E2E', settings: {} })
+    const { id, installDir } = manager.create({ gameId, name: 'NeledPort E2E', settings: SETTINGS[gameId] ?? {} })
     await manager.install(id)
     const marker = join(installDir, '.neledport-e2e-start')
     writeFileSync(marker, '')
@@ -29,7 +31,7 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
       // Nothing to ask: it has to still be up after three minutes.
       await new Promise((r) => setTimeout(r, 3 * 60_000))
       expect(manager.get(id).status).toBe('running')
-      expect(await manager.players(id)).toEqual([])
+      if (game.players) expect(await manager.players(id)).toEqual([])
     }
 
     const { forced } = await manager.stop(id)

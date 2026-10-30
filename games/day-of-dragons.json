@@ -5,13 +5,19 @@
   "serverAppId": 1088320,
   "gameAppId": 1088090,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
       "label": "Server name",
       "type": "text",
       "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 50
     }
   ],
   "platforms": {
@@ -23,6 +29,46 @@
         "-QueryPort={port:query}",
         "-SteamServerName={setting:serverName}",
         "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "Dragons/Saved/Config/LinuxServer/Game.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "Dragons/Saved/Config/LinuxServer/Game.ini",
+          "section": "/Game/_Dev/Runtime/Classes/DragonsGI.DragonsGI_C",
+          "set": {
+            "iMaxPlayers": "{setting:maxPlayers}"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "DragonsServer.exe",
+      "args": [
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-SteamServerName={setting:serverName}",
+        "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "Dragons/Saved/Config/WindowsServer/Game.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "Dragons/Saved/Config/WindowsServer/Game.ini",
+          "section": "/Game/_Dev/Runtime/Classes/DragonsGI.DragonsGI_C",
+          "set": {
+            "iMaxPlayers": "{setting:maxPlayers}"
+          }
+        }
       ]
     }
   },
@@ -38,6 +84,7 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "Dragons/Saved",
   "control": {
     "type": "signal"
   },
