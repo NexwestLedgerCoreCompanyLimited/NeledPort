@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { loadCatalog } from '../core/catalog'
@@ -48,5 +49,16 @@ export async function retry<T>(manager: ServerManager, id: string, fn: () => Pro
       if (Date.now() > until) throw new Error(`${(e as Error).message}; last lines:\n${tail(manager, id)}`)
       await new Promise((r) => setTimeout(r, 5_000))
     }
+  }
+}
+
+/** On failure: the end of every log file the game wrote under its folder (many Unreal servers log only to files). */
+export async function withGameLogs<T>(installDir: string, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run()
+  } catch (e) {
+    const files = execFileSync('find', [installDir, '-name', '*.log', '-size', '-50M', '-not', '-path', '*/steamapps/*'], { encoding: 'utf8' }).trim()
+    for (const file of files ? files.split('\n') : []) console.log(`--- ${file}\n${execFileSync('tail', ['-n', '60', file], { encoding: 'utf8' })}`)
+    throw e
   }
 }

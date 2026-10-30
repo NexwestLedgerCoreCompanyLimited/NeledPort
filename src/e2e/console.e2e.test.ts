@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { loadCatalog } from '../core/catalog'
-import { e2e, e2eManager, platform, retry } from './harness'
+import { e2e, e2eManager, platform, retry, withGameLogs } from './harness'
 
 // Real end-to-end run of a game NeledPort drives through its own console (stdin), chosen by NELEDPORT_E2E_GAME:
 // SCP: Secret Laboratory, Unturned or Hurtworld. See .github/workflows/e2e.yml.
@@ -20,32 +20,34 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
     await manager.install(id)
     const marker = join(installDir, '.neledport-e2e-start')
     writeFileSync(marker, '')
-    await manager.start(id)
+    await withGameLogs(installDir, async () => {
+      await manager.start(id)
 
-    if (game.players?.source === 'console') {
-      const command = game.players.command!
-      const reply = await retry(
-        manager,
-        id,
-        async () => {
-          const out = await manager.command(id, command)
-          if (!READY[gameId].test(out)) throw new Error(`${command} answered: ${out}`)
-          return out
-        },
-        20 * 60_000
-      )
-      console.log(`${command}:`, reply)
-      expect(await manager.players(id)).toEqual([])
-    } else {
-      // The Steam query answering is the sign the server finished loading.
-      expect(await retry(manager, id, () => manager.players(id), 20 * 60_000)).toEqual([])
-    }
+      if (game.players?.source === 'console') {
+        const command = game.players.command!
+        const reply = await retry(
+          manager,
+          id,
+          async () => {
+            const out = await manager.command(id, command)
+            if (!READY[gameId].test(out)) throw new Error(`${command} answered: ${out}`)
+            return out
+          },
+          20 * 60_000
+        )
+        console.log(`${command}:`, reply)
+        expect(await manager.players(id)).toEqual([])
+      } else {
+        // The Steam query answering is the sign the server finished loading.
+        expect(await retry(manager, id, () => manager.players(id), 20 * 60_000)).toEqual([])
+      }
 
-    const { forced } = await manager.stop(id)
-    // Where the game wrote while it ran (its saves and configs), for the definition's backup folder.
-    console.log('written while running:\n' + execFileSync('find', [installDir, '-newer', marker, '-type', 'f', '-not', '-path', '*/steamapps/*'], { encoding: 'utf8' }))
-    expect(forced).toBe(false)
-    expect(manager.get(id).status).toBe('stopped')
-    if (game.saveDir) expect(await manager.backup(id)).not.toBeNull()
+      const { forced } = await manager.stop(id)
+      // Where the game wrote while it ran (its saves and configs), for the definition's backup folder.
+      console.log('written while running:\n' + execFileSync('find', [installDir, '-newer', marker, '-type', 'f', '-not', '-path', '*/steamapps/*'], { encoding: 'utf8' }))
+      expect(forced).toBe(false)
+      expect(manager.get(id).status).toBe('stopped')
+      if (game.saveDir) expect(await manager.backup(id)).not.toBeNull()
+    })
   })
 })

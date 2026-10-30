@@ -12,7 +12,7 @@ function packet(id: number, type: number, body: string): Buffer {
   return buf
 }
 
-// Behaves like srcds: auth reply, output possibly in several packets, mirrors the empty terminator packet.
+// Behaves like srcds: auth reply (after an empty response packet), output possibly in several packets.
 function fakeServer(password: string, output: string[]): Promise<{ server: Server; port: number }> {
   const server = createServer((socket) => {
     let buf = Buffer.alloc(0)
@@ -29,8 +29,6 @@ function fakeServer(password: string, output: string[]): Promise<{ server: Serve
           socket.write(packet(body === password ? id : -1, 2, ''))
         } else if (type === 2) {
           for (const part of output) socket.write(packet(id, 0, part))
-        } else if (type === 0) {
-          socket.write(packet(id, 0, ''))
         }
       }
     })
@@ -52,6 +50,13 @@ describe('rconExec', () => {
     const s = await fakeServer('pw', ['line 1\n', 'line 2\n', 'line 3'])
     server = s.server
     expect(await rconExec({ port: s.port, password: 'pw' }, 'status')).toBe('line 1\nline 2\nline 3')
+  })
+
+  // HumanitZ prints nothing for some commands: once the command is in, silence is not an error.
+  it('accepts a command the server does not answer', async () => {
+    const s = await fakeServer('pw', [])
+    server = s.server
+    expect(await rconExec({ port: s.port, password: 'pw', timeoutMs: 800 }, 'unknowncommand')).toBe('')
   })
 
   it('rejects a wrong password', async () => {
