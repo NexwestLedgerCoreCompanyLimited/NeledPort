@@ -14,7 +14,7 @@ Install, run, watch, moderate and mod your server: no terminal required.
 
 English · [ภาษาไทย](README.th.md)
 
-<img src="docs/images/screenshot.png" alt="NeledPort game catalog" width="800" />
+<img src="docs/images/tour.gif" alt="A tour of NeledPort: game catalog, add a server, server overview, console, players, mods, config and backups" width="800" />
 
 </div>
 
@@ -25,16 +25,32 @@ English · [ภาษาไทย](README.th.md)
 Running a dedicated server today means SteamCMD commands, hand-edited config files and a terminal you can't close.
 NeledPort wraps all of that in a desktop app for Windows and Linux.
 
-## Features (planned for v1.0)
+## Features
 
 - **One-click install.** NeledPort downloads SteamCMD for you, then installs, updates and validates servers.
 - **Start, stop, restart** with graceful shutdown, so worlds are saved first.
 - **Live console** with search and a command box (RCON / stdin).
-- **Status:** uptime, CPU, RAM and players online.
 - **Players and bans:** kick, ban and unban through each game's own mechanism.
 - **Mods:** one-click server-side mod loaders (BepInEx for Valheim, Oxide for Rust), a plugin manager, and Steam Workshop maps for CS2.
-- **Automatic backups** before every update.
+- **Config:** change a server's settings after creating it, and edit the game's own config file (Palworld, Rust, CS2).
+  The previous file is kept.
+- **Backups:** made automatically before every update, or with **Back up now**. Restore one in a click; the current
+  world is moved aside, never deleted.
 - **Speaks your language:** English and Thai today, and [adding yours](CONTRIBUTING.md#translate-neledport) is one file.
+
+Planned: uptime and CPU/RAM graphs, a command palette, a light theme.
+
+<details>
+<summary>Screenshots (sample servers)</summary>
+
+| | |
+|---|---|
+| ![Game catalog](docs/images/screens/catalog.png) | ![Add a server](docs/images/screens/add-server.png) |
+| ![Server overview](docs/images/screens/overview.png) | ![Live console](docs/images/screens/console.png) |
+| ![Players and bans](docs/images/screens/players.png) | ![Mods](docs/images/screens/mods.png) |
+| ![Config](docs/images/screens/config.png) | ![Backups](docs/images/screens/backups.png) |
+
+</details>
 
 ## Download
 
@@ -51,10 +67,10 @@ With the `.deb`, install the new `.deb` from Releases.
 
 | Game | Support | Status |
 |---|---|---|
-| Palworld | full | install, run, update, players, kick/ban, console |
+| Palworld | full | install, run, update, players, kick/ban, console, settings file |
 | Valheim | full | install, run, update, players, bans, BepInEx mods; tested on real Linux servers weekly |
-| Rust | full | install, run, update, players, kick/ban, WebRCON console, Oxide plugins |
-| Counter-Strike 2 | basic | install, run, RCON console, players, kick, Workshop maps |
+| Rust | full | install, run, update, players, kick/ban, WebRCON console, Oxide plugins, server.cfg |
+| Counter-Strike 2 | basic | install, run, RCON console, players, kick, Workshop maps, server.cfg |
 | SCUM | basic | install, run, players (Windows only) |
 | ARK, Team Fortress 2, Satisfactory, Conan Exiles, Squad and 70+ more | basic | install, run, console ([full list](docs/GAMES.md)) |
 | ARMA 3, DayZ and 6 more that need a Steam account | basic | sign in once in SteamCMD's own window; NeledPort never sees your password |
