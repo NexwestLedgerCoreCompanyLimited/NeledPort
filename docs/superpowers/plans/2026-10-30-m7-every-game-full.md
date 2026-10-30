@@ -31,39 +31,39 @@ Status: todo → done (tested on a real server: yes / no + why).
 |---|---|---|---|---|
 | sven-co-op | 9 | svends.exe | GoldSrc family (UDP RCON) | done (real server: yes; no AMX Mod X, Sven has its own AngelScript plugins) |
 | double-action-boogaloo | 3 | srcds.exe (-game dab) | Source family (RCON, SourceMod) | done, Windows only (real server: no). Ruling: Steam's Linux depot has no dab/bin/*.so; gdb shows srcds crashing in CModAppSystemGroup::Create on a null call (probe run 41083505889), so Linux is dropped — cost if wrong: Linux users lose a game that never ran |
-| cs2 | 9 | game/bin/win64/cs2.exe | Source RCON: status players, kick; bans if CS2 has them | todo |
-| ark-survival-evolved | 2 | ShooterGame/Binaries/Win64/ShooterGameServer.exe | Source RCON (SaveWorld, DoExit, ListPlayers, Ban/Unban) | todo |
-| conan-exiles | 16 | ConanSandboxServer.exe | Source RCON (Game.ini RconPlugin) | todo |
-| squad | 2 | SquadServer.exe | Source RCON (Rcon.cfg), Bans.cfg | todo |
-| squad-44 | 2 | PostScriptumServer.exe | as Squad | todo |
-| insurgency-sandstorm | 2 | InsurgencyServer.exe | Source RCON (-Rcon), Bans.json | todo |
-| mordhau | 2 | MordhauServer.exe | Source RCON (Game.ini) | todo |
-| operation-harsh-doorstop | 2 | HarshDoorstopServer.bat | RCON port in LinuxGSM; check protocol | todo |
-| satisfactory | 2 | FactoryServer.exe | HTTPS server API (save, shutdown) | todo |
-| killing-floor-2 | 2 | Binaries/Win64/KFServer.exe | WebAdmin | todo |
-| natural-selection-2 | 2 | x64/Server.exe | WebAdmin (-webadmin) | todo |
-| ns2-combat | 2 | ns2combatserver.exe | WebAdmin (-webadmin) | todo |
-| soulmask | 13 | (Linux app; Windows is a separate app) | telnet (-EchoPort) | todo |
-| scp-secret-laboratory | 7 | LocalAdmin.exe | console `exit` | todo |
-| unturned | 2 | ServerHelper.bat | console commands | todo |
-| core-keeper | 2 | Launch.bat | Ctrl+C, world backups | todo |
-| hurtworld | 2 | hurtworld.exe | check console | todo |
-| the-isle | 2 | TheIsleServer.exe | check RCON | todo |
-| pavlov-vr | 2 | (Linux listed) | Pavlov RCON | todo |
-| warfork | 3 | wf_server_x64.exe | Quake-style RCON / console quit | todo |
-| wurm-unlimited | 2 | WurmServerLauncher.exe | check | todo |
-| chivalry-medieval-warfare | 2 | Binaries/Win32/UDK.exe | check | todo |
-| day-of-dragons | 2 | DragonsServer.exe | check | todo |
-| humanitz | 2 | (TSSGameServer.sh) | check | todo |
-| hypercharge-unboxed | 2 | Unboxed/Binaries/Win64/UnboxedServer-Win64-Shipping.exe | check | todo |
-| battalion-legacy | 2 | BattalionServer.exe | check | todo |
-| stickybots | 2 | blank1/Binaries/Win64/blank1Server-Win64-Shipping.exe | check | todo |
-| the-front | 2 | (Linux listed) | check | todo |
-| tower-unite | 2 | (StartTowerServerUI.bat) | check | todo |
-| runescape-dragonwilds | 2 | RSDragonwildsServer.exe | check | todo |
-| dayz | 2 | DayZServer_x64.exe | BattlEye RCON; needs Steam login (no CI) | todo |
-| arma-3 | 2 | (readme only) | BattlEye RCON; needs Steam login (no CI) | todo |
-| scum | — | SCUM/Binaries/Win64/SCUMServer.exe | Windows only | todo |
+| cs2 | 9 | game/bin/win64/cs2.exe | Source RCON: status players, kick; bans if CS2 has them | done; real server: run pending (CI 41128xxx) |
+| ark-survival-evolved | 2 | ShooterGame/Binaries/Win64/ShooterGameServer.exe | Source RCON (SaveWorld, DoExit, ListPlayers, Ban/Unban) | done; real server: pending (RCON never answered in run 1; URL switches added) |
+| conan-exiles | 16 | ConanSandboxServer.exe | Source RCON (Game.ini RconPlugin) | done (real server: yes) |
+| squad | 2 | SquadServer.exe | Source RCON (Rcon.cfg), Bans.cfg | done (real server: yes) |
+| squad-44 | 2 | PostScriptumServer.exe | as Squad | done (real server: yes) |
+| insurgency-sandstorm | 2 | InsurgencyServer.exe | Source RCON (-Rcon), Bans.json | done (real server: yes) |
+| mordhau | 2 | MordhauServer.exe | Source RCON (Game.ini) | done (real server: yes) |
+| operation-harsh-doorstop | 2 | HarshDoorstopServer.bat | RCON port in LinuxGSM; check protocol | done (real server: yes) |
+| satisfactory | 2 | FactoryServer.exe | HTTPS server API (save, shutdown) | done (real server: yes, claim + save + shutdown) |
+| killing-floor-2 | 2 | Binaries/Win64/KFServer.exe | WebAdmin | done (real server: yes) |
+| natural-selection-2 | 2 | x64/Server.exe | WebAdmin (-webadmin) | done; real server: pending (workingDir x64) |
+| ns2-combat | 2 | ns2combatserver.exe | WebAdmin (-webadmin) | done; real server: pending (workingDir ia32) |
+| soulmask | 13 | (Linux app; Windows is a separate app) | telnet (-EchoPort) | done (real server: yes; stop is "close 1") |
+| scp-secret-laboratory | 7 | LocalAdmin.exe | console `exit` | done; real server: pending |
+| unturned | 2 | ServerHelper.bat | console commands | done; real server: pending (official +InternetServer start) |
+| core-keeper | 2 | Launch.bat | Ctrl+C, world backups | done (real server: yes) |
+| hurtworld | 2 | hurtworld.exe | check console | done; real server: pending (server exits after start; Unity log next run) |
+| the-isle | 2 | TheIsleServer.exe | check RCON | done; real server: pending (evrima branch) |
+| pavlov-vr | 2 | (Linux listed) | Pavlov RCON | done; real server: pending (libc++ copy) |
+| warfork | 3 | wf_server_x64.exe | Quake-style RCON / console quit | done (real server: yes) |
+| wurm-unlimited | 2 | WurmServerLauncher.exe | check | done (real server: yes) |
+| chivalry-medieval-warfare | 2 | Binaries/Win32/UDK.exe | check | done; real server: pending (steam_appid.txt, binary folder) |
+| day-of-dragons | 2 | DragonsServer.exe | check | done (real server: yes) |
+| humanitz | 2 | (TSSGameServer.sh) | check | done (real server: yes) |
+| hypercharge-unboxed | 2 | Unboxed/Binaries/Win64/UnboxedServer-Win64-Shipping.exe | check | done (real server: yes) |
+| battalion-legacy | 2 | BattalionServer.exe | check | done; real server: pending (query port 27015) |
+| stickybots | 2 | blank1/Binaries/Win64/blank1Server-Win64-Shipping.exe | check | done (real server: yes) |
+| the-front | 2 | (Linux listed) | check | done (real server: yes) |
+| tower-unite | 2 | (StartTowerServerUI.bat) | check | done (real server: yes) |
+| runescape-dragonwilds | 2 | RSDragonwildsServer.exe | check | done (real server: yes) |
+| dayz | 2 | DayZServer_x64.exe | BattlEye RCON; needs Steam login (no CI) | done (real server: no, needs a Steam account that owns it) |
+| arma-3 | 2 | (readme only) | BattlEye RCON; needs Steam login (no CI) | done (real server: no, needs a Steam account that owns it) |
+| scum | — | SCUM/Binaries/Win64/SCUMServer.exe | Windows only | done (real server: no, Windows only) |
 | jedi-knight-ii-jedi-outcast | 3 | — | **removed**: Steam app is the game, Linux server comes from outside Steam | done (removed) |
 | jedi-knight-jedi-academy | 3 | — | **removed**: as above | done (removed) |
 | quake-4 | 3 | — | **removed**: as above | done (removed) |

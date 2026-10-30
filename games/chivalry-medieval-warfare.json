@@ -14,8 +14,7 @@
         "-multihome=0.0.0.0",
         "-Port={port:game}",
         "-QueryPort={port:query}",
-        "-seekfreeloadingserver",
-        "-configsubdir=neledport"
+        "-seekfreeloadingserver"
       ],
       "steamClient": [
         {
@@ -25,7 +24,7 @@
       ],
       "configFiles": [
         {
-          "path": "UDKGame/Config/neledport/PCServer-UDKGame.ini",
+          "path": "UDKGame/Config/PCServer-UDKGame.ini",
           "format": "ini"
         }
       ],
@@ -44,12 +43,11 @@
         "-multihome=0.0.0.0",
         "-Port={port:game}",
         "-QueryPort={port:query}",
-        "-seekfreeloadingserver",
-        "-configsubdir=neledport"
+        "-seekfreeloadingserver"
       ],
       "configFiles": [
         {
-          "path": "UDKGame/Config/neledport/PCServer-UDKGame.ini",
+          "path": "UDKGame/Config/PCServer-UDKGame.ini",
           "format": "ini"
         }
       ],
@@ -68,7 +66,7 @@
       "protocol": "udp"
     }
   ],
-  "saveDir": "UDKGame/Config/neledport",
+  "saveDir": "UDKGame/Config",
   "control": {
     "type": "signal"
   },
