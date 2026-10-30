@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readdirSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -9,7 +9,7 @@ import { e2e, e2eManager, platform, retry } from './harness'
 const gameId = process.env.NELEDPORT_E2E_GAME ?? 'counter-strike-1-6'
 
 describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, () => {
-  it('installs the right mod, answers over UDP RCON, bans for real and quits cleanly', { timeout: 45 * 60_000 }, async () => {
+  it('installs the right mod, answers over UDP RCON, bans for real, quits cleanly and runs AMX Mod X', { timeout: 45 * 60_000 }, async () => {
     const root = mkdtempSync(join(tmpdir(), 'neledport-e2e-'))
     const manager = e2eManager(root)
     const { id, installDir } = manager.create({ gameId, name: 'NeledPort E2E', settings: { serverName: 'NeledPort E2E', maxPlayers: '8' } })
@@ -39,5 +39,27 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
     const { forced } = await manager.stop(id)
     expect(forced).toBe(false)
     expect(manager.get(id).status).toBe('stopped')
+
+    // Real Metamod + AMX Mod X: liblist.gam points at Metamod, which loads AMX Mod X.
+    await manager.installLoader(id, 'amxmodx')
+    expect(readFileSync(join(installDir, mod, 'liblist.gam'), 'utf8')).toMatch(/gamedll_linux "addons\/metamod\/dlls\/metamod.so"/)
+    await manager.start(id)
+    const version = await retry(
+      manager,
+      id,
+      async () => {
+        const out = await manager.command(id, 'amxx version')
+        if (!/AMX Mod X/i.test(out)) throw new Error(`amxx version answered: ${out}`)
+        return out
+      },
+      5 * 60_000
+    )
+    console.log(version)
+    expect(await manager.command(id, 'meta list')).toMatch(/AMX Mod X/i)
+    await manager.stop(id)
+
+    // Removing it lets SteamCMD validate put the original liblist.gam back.
+    await manager.uninstallLoader(id, 'amxmodx')
+    expect(readFileSync(join(installDir, mod, 'liblist.gam'), 'utf8')).not.toMatch(/metamod/)
   })
 })
