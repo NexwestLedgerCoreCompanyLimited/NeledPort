@@ -186,6 +186,12 @@
         "shutdown": {
           "type": "string"
         },
+        "interrupts": {
+          "description": "How many Ctrl+C a stop sends, 5 s apart, for games that quit on Ctrl+C (Conan Exiles needs 2, as LinuxGSM's fn_stop_graceful_ce).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
         "saveDone": {
           "description": "Regular expression for the text the console prints when the save command has finished (Soulmask: \"world is saved\").",
           "type": "string",

@@ -45,6 +45,8 @@ export interface GameDefinition {
   saveDir?: string
   control?: {
     type: 'rcon' | 'webrcon' | 'goldsrc' | 'quake' | 'pavlov' | 'isle' | 'ns2' | 'battleye' | 'telnet' | 'rest' | 'satisfactory' | 'stdin' | 'signal'
+    /** How many Ctrl+C a stop sends, 5 s apart, when the game quits on Ctrl+C (Conan Exiles needs 2). */
+    interrupts?: number
     /** Text the console prints when the save command has finished (Soulmask: "world is saved"). */
     saveDone?: string
     /** Secret setting holding the remote password when the player chooses it (Satisfactory's claim password). */

@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events'
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { loadCatalog, validateDefinition } from './catalog'
 import { makeZip } from './testing/zip'
 import { ServerManager, type ManagerDeps, type ProcessLike } from './manager'
@@ -837,6 +837,26 @@ describe('RCON games that stop on Ctrl+C', () => {
     await manager.stop(id)
     expect(restCalls).toEqual(['rcon:SaveWorld'])
     expect(log).toContain('interrupt')
+  })
+
+  // Conan Exiles: LinuxGSM's fn_stop_graceful_ce sends Ctrl+C, waits 5 s, then sends it again; one is not enough.
+  it('sends Ctrl+C as many times as the game needs, 5 s apart', async () => {
+    const { deps, log } = setup()
+    const conan = games.find((g) => g.id === 'conan-exiles')!
+    const manager = new ServerManager(deps)
+    const { id } = manager.create({ gameId: 'conan-exiles', name: 'x', settings: {} })
+    await manager.install(id)
+    await manager.start(id)
+    expect(conan.control?.interrupts).toBe(2)
+    vi.useFakeTimers()
+    try {
+      const stopping = manager.stop(id)
+      await vi.advanceTimersByTimeAsync(5000)
+      await stopping
+    } finally {
+      vi.useRealTimers()
+    }
+    expect(log.filter((l) => l === 'interrupt')).toHaveLength(2)
   })
 
   it('is not a graceful stop on Windows, which has no Ctrl+C for a background server', async () => {

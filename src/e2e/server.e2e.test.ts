@@ -10,6 +10,8 @@ import { e2e, e2eManager, platform, retry, withGameLogs, waitForStatus } from '.
 // (Core Keeper, Tower Unite, The Front, Chivalry...). See .github/e2e-games.json.
 const gameId = process.env.NELEDPORT_E2E_GAME ?? 'core-keeper'
 const game = loadCatalog(join(__dirname, '../../games')).games.find((g) => g.id === gameId)!
+// Games that write their save folder only once someone plays (Tower Unite saves a condo when a player builds in it).
+const SAVES_AFTER_PLAY = new Set(['tower-unite'])
 // Settings a game will not start without.
 const SETTINGS: Record<string, Record<string, string>> = { 'runescape-dragonwilds': { ownerId: '0123456789abcdef0123456789abcdef' } }
 
@@ -40,7 +42,7 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
       console.log('written while running:\n' + execFileSync('find', [installDir, '-newer', marker, '-type', 'f', '-not', '-path', '*/steamapps/*'], { encoding: 'utf8' }))
       expect(forced).toBe(false)
       expect(manager.get(id).status).toBe('stopped')
-      if (game.saveDir) expect(await manager.backup(id)).not.toBeNull()
+      if (game.saveDir && !SAVES_AFTER_PLAY.has(gameId)) expect(await manager.backup(id)).not.toBeNull()
     })
   })
 })

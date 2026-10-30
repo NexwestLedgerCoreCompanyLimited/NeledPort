@@ -409,6 +409,14 @@ export class ServerManager extends EventEmitter {
     }
 
     const control = game.control
+    // Conan Exiles needs Ctrl+C twice, 5 s apart (LinuxGSM's fn_stop_graceful_ce).
+    const ctrlC = async () => {
+      proc.interrupt()
+      for (let i = 1; i < (control?.interrupts ?? 1); i++) {
+        await new Promise((r) => setTimeout(r, 5000))
+        if (proc.state !== 'stopped' && proc.state !== 'crashed') proc.interrupt()
+      }
+    }
     let graceful: (() => unknown) | undefined
     if (control?.type === 'rest' && control.rest) {
       const rest = (this.deps.rest ?? palworldRest)({
@@ -456,7 +464,7 @@ export class ServerManager extends EventEmitter {
           if (control.save) await admin.command?.(control.save)
           // No quit command (Conan, Squad): the game stops cleanly on Ctrl+C.
           if (control.shutdown) await admin.command?.(control.shutdown)
-          else proc.interrupt()
+          else await ctrlC()
         } catch (e) {
           // Remote console unreachable: fall back to Ctrl+C where the OS allows it.
           this.addLine(id, `[NeledPort] ${(e as Error).message}; sending Ctrl+C instead`)
@@ -464,7 +472,7 @@ export class ServerManager extends EventEmitter {
         }
       }
     } else {
-      graceful = () => proc.interrupt()
+      graceful = ctrlC
     }
     return proc.stop({ graceful, timeoutMs: STOP_TIMEOUT_MS })
   }
