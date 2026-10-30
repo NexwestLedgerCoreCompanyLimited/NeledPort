@@ -5,20 +5,70 @@
   "serverAppId": 3792580,
   "gameAppId": 513710,
   "anonymous": true,
-  "tier": "basic",
-  "settings": [{ "key": "maxPlayers", "label": "Max players", "type": "number", "default": 64 }],
+  "tier": "full",
+  "settings": [
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 64
+    }
+  ],
   "platforms": {
     "windows": {
       "executable": "SCUM/Binaries/Win64/SCUMServer.exe",
-      "args": ["-log", "-port={port:game}", "-MaxPlayers={setting:maxPlayers}"]
+      "args": [
+        "-log",
+        "-port={port:game}",
+        "-MaxPlayers={setting:maxPlayers}"
+      ],
+      "configFiles": [
+        {
+          "path": "SCUM/Saved/Config/WindowsServer/ServerSettings.ini",
+          "format": "ini"
+        },
+        {
+          "path": "SCUM/Saved/Config/WindowsServer/AdminUsers.ini",
+          "format": "ini"
+        },
+        {
+          "path": "SCUM/Saved/Config/WindowsServer/BannedUsers.ini",
+          "format": "ini"
+        },
+        {
+          "path": "SCUM/Saved/Config/WindowsServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "SCUM/Saved/Config/WindowsServer/Engine.ini",
+          "format": "ini"
+        }
+      ]
     }
   },
   "ports": [
-    { "name": "game", "default": 7777, "protocol": "udp" },
-    { "name": "raw", "default": 7778, "protocol": "udp" },
-    { "name": "query", "default": 7779, "protocol": "udp" }
+    {
+      "name": "game",
+      "default": 7777,
+      "protocol": "udp"
+    },
+    {
+      "name": "raw",
+      "default": 7778,
+      "protocol": "udp"
+    },
+    {
+      "name": "query",
+      "default": 7779,
+      "protocol": "udp"
+    }
   ],
   "saveDir": "SCUM/Saved",
-  "control": { "type": "signal" },
-  "players": { "source": "a2s", "port": "query" }
+  "control": {
+    "type": "signal"
+  },
+  "players": {
+    "source": "a2s",
+    "port": "query"
+  }
 }

@@ -235,6 +235,39 @@ describe('loaders that set up the game (AMX Mod X)', () => {
   })
 })
 
+describe('Metamod:Source 2.0 on CS2 (gameinfo.gi)', () => {
+  // AlliedModders' CS2 instructions: "Game csgo/addons/metamod" goes on its own line after "Game_LowViolence csgo_lv".
+  const metamod2: ModLoaderDefinition = {
+    id: 'metamod',
+    name: 'Metamod:Source',
+    download: { linux: 'https://mms.alliedmods.net/mmsdrop/2.0/mmsource-latest-linux' },
+    latestFile: true,
+    installTo: 'game/csgo',
+    setup: [{ file: 'game/csgo/gameinfo.gi', insertAfter: { match: 'Game_LowViolence', line: 'Game\tcsgo/addons/metamod' } }],
+    pluginDir: 'game/csgo/addons',
+    pluginExtensions: ['.vdf'],
+    reapplyAfterUpdate: true
+  }
+  const gameinfo = '\t\tSearchPaths\r\n\t\t{\r\n\t\t\tGame_LowViolence\tcsgo_lv // Perform lowviolence file lookups\r\n\t\t\tGame\tcsgo\r\n\t\t}\r\n'
+
+  it('adds the search path once, indented like its neighbour, and keeps the file for Steam to restore', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mods-'))
+    mkdirSync(join(dir, 'game/csgo'), { recursive: true })
+    writeFileSync(join(dir, 'game/csgo/gameinfo.gi'), gameinfo)
+    const files: Record<string, Buffer> = {
+      'https://mms.alliedmods.net/mmsdrop/2.0/mmsource-latest-linux': Buffer.from('mmsource-2.0.0-git1483-linux.tar.gz\n'),
+      'https://mms.alliedmods.net/mmsdrop/2.0/mmsource-2.0.0-git1483-linux.tar.gz': makeTarGz([{ name: 'addons/metamod.vdf', text: 'mm' }])
+    }
+    const download = async (url: string) => files[url]
+    await installLoader(dir, metamod2, 'linux', download)
+    await installLoader(dir, metamod2, 'linux', download)
+    expect(readFileSync(join(dir, 'game/csgo/gameinfo.gi'), 'utf8')).toBe(
+      '\t\tSearchPaths\r\n\t\t{\r\n\t\t\tGame_LowViolence\tcsgo_lv // Perform lowviolence file lookups\r\n\t\t\tGame\tcsgo/addons/metamod\r\n\t\t\tGame\tcsgo\r\n\t\t}\r\n'
+    )
+    expect(uninstallLoader(dir, 'metamod')).toEqual({ needsValidate: true })
+  })
+})
+
 describe('allowedDownloadHost', () => {
   it.each([
     ['https://objects.githubusercontent.com/x', true],

@@ -70,8 +70,9 @@ export interface ModLoaderDefinition {
   latestFile?: boolean
   /** Folder inside the server the archives unpack into, such as a Source game's mod folder. */
   installTo?: string
-  /** Files changed after unpacking: `set` rewrites `key value` lines (liblist.gam), `lines` writes a whole file. */
-  setup?: { file: string; set?: Record<string, string>; lines?: string[] }[]
+  /** Files changed after unpacking: `set` rewrites `key value` lines (liblist.gam), `lines` writes a whole file,
+   * `insertAfter` adds a line after another (CS2's gameinfo.gi search path for Metamod). */
+  setup?: { file: string; set?: Record<string, string>; lines?: string[]; insertAfter?: { match: string; line: string } }[]
   /** Config listing the plugins to load (AMX Mod X's plugins.ini); kept in step with the plugin folder. */
   pluginList?: string
   stripTopFolder?: string

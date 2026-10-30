@@ -422,6 +422,16 @@
                     "type": "string",
                     "pattern": "^[^\\r\\n]*$"
                   }
+                },
+                "insertAfter": {
+                  "description": "Adds `line` after the first line starting with `match`, indented the same, unless it is there already.",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["match", "line"],
+                  "properties": {
+                    "match": { "type": "string", "minLength": 1, "pattern": "^[^\\r\\n]*$" },
+                    "line": { "type": "string", "minLength": 1, "pattern": "^[^\\r\\n]*$" }
+                  }
                 }
               }
             }

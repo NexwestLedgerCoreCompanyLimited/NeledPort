@@ -5,8 +5,14 @@
   "serverAppId": 730,
   "gameAppId": 730,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort CS2"
+    },
     {
       "key": "map",
       "label": "Start map",
@@ -37,16 +43,24 @@
         "{port:game}",
         "-maxplayers",
         "{setting:maxPlayers}",
+        "+exec",
+        "neledport.cfg",
         "+map",
         "{setting:map}",
-        "+rcon_password",
-        "{adminPassword}",
         "+sv_setsteamaccount",
         "{setting:gslt}"
       ],
       "configFiles": [
         {
+          "path": "game/csgo/cfg/neledport.cfg",
+          "format": "cfg"
+        },
+        {
           "path": "game/csgo/cfg/server.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "game/csgo/cfg/gamemode_competitive_server.cfg",
           "format": "cfg"
         }
       ]
@@ -61,16 +75,24 @@
         "{port:game}",
         "-maxplayers",
         "{setting:maxPlayers}",
+        "+exec",
+        "neledport.cfg",
         "+map",
         "{setting:map}",
-        "+rcon_password",
-        "{adminPassword}",
         "+sv_setsteamaccount",
         "{setting:gslt}"
       ],
       "configFiles": [
         {
+          "path": "game/csgo/cfg/neledport.cfg",
+          "format": "cfg"
+        },
+        {
           "path": "game/csgo/cfg/server.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "game/csgo/cfg/gamemode_competitive_server.cfg",
           "format": "cfg"
         }
       ]
@@ -83,6 +105,8 @@
       "protocol": "udp"
     }
   ],
+  "configAdapter": "source",
+  "saveDir": "game/csgo/cfg",
   "control": {
     "type": "rcon",
     "port": "game",
@@ -95,5 +119,31 @@
   },
   "workshop": {
     "command": "host_workshop_map {id}"
-  }
+  },
+  "modLoaders": [
+    {
+      "id": "metamod",
+      "name": "Metamod:Source",
+      "download": {
+        "linux": "https://mms.alliedmods.net/mmsdrop/2.0/mmsource-latest-linux",
+        "windows": "https://mms.alliedmods.net/mmsdrop/2.0/mmsource-latest-windows"
+      },
+      "latestFile": true,
+      "installTo": "game/csgo",
+      "setup": [
+        {
+          "file": "game/csgo/gameinfo.gi",
+          "insertAfter": {
+            "match": "Game_LowViolence",
+            "line": "Game\tcsgo/addons/metamod"
+          }
+        }
+      ],
+      "pluginDir": "game/csgo/addons/metamod",
+      "pluginExtensions": [
+        ".vdf"
+      ],
+      "reapplyAfterUpdate": true
+    }
+  ]
 }

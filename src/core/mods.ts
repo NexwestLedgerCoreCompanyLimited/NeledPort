@@ -90,11 +90,23 @@ export async function installLoader(
 
 const ARCHIVE = /\.(?:zip|tar\.gz)$/
 
-/** Rewrites `key value` lines (keeping the file's line endings and other lines) or writes the whole file. */
+/** Rewrites `key value` lines (keeping the file's line endings and other lines), inserts a line, or writes the whole file. */
 function applySetup(file: string, step: NonNullable<ModLoaderDefinition['setup']>[number]): void {
   if (step.lines) {
     mkdirSync(dirname(file), { recursive: true })
     writeFileSync(file, step.lines.join('\n') + '\n')
+  }
+  if (step.insertAfter && existsSync(file)) {
+    // A line of its own after the first line starting with `match`, with the same indentation; never twice.
+    const { match, line } = step.insertAfter
+    const text = readFileSync(file, 'utf8')
+    const eol = text.includes('\r\n') ? '\r\n' : '\n'
+    const lines = text.split(/\r?\n/)
+    const at = lines.findIndex((l) => l.trimStart().startsWith(match))
+    if (at >= 0 && !lines.some((l) => l.trim() === line.trim())) {
+      lines.splice(at + 1, 0, `${/^\s*/.exec(lines[at])![0]}${line}`)
+      writeFileSync(file, lines.join(eol))
+    }
   }
   if (step.set) {
     let text = existsSync(file) ? readFileSync(file, 'utf8') : ''
