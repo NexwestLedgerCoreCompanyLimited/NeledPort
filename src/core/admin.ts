@@ -164,6 +164,44 @@ const steamId2 = (id: string) => {
  */
 const steamId3 = (id: string) => `[U:1:${accountId(id)}]`
 
+// IDs go into commands unquoted, so only characters a player ID can have (SteamID64, STEAM_, [U:1:], EOS ids).
+function fill(template: string, id: string, reason = ''): string {
+  if (!/^[A-Za-z0-9_:\-[\].]{1,64}$/.test(id)) throw new Error(`"${id}" is not a valid player ID`)
+  return template.replaceAll('{id}', id).replaceAll('{reason}', q(reason))
+}
+
+/** Commands and player-row pattern named by the definition (games that speak RCON their own way, like ARK or Squad). */
+function fromDefinition(game: GameDefinition, remote: (cmd: string) => Promise<string>, file: string | undefined, admin: Admin): void {
+  const players = game.players
+  if (players?.command && players.pattern) {
+    const { command, pattern } = players
+    admin.players = async () =>
+      [...(await remote(command)).matchAll(new RegExp(pattern, 'gm'))].map(({ groups = {} }) => ({
+        id: groups.id ?? groups.name,
+        name: groups.name ?? groups.id,
+        ...(groups.ping ? { ping: Number(groups.ping) } : {}),
+        ...(groups.seconds ? { seconds: Number(groups.seconds) } : {})
+      }))
+  }
+  if (players?.kick) {
+    const kick = players.kick
+    admin.kick = async (p, reason) => void (await remote(fill(kick, p.id, reason)))
+  }
+  const bans = game.bans
+  if (bans?.ban && bans.unban) {
+    const { ban, unban, save } = bans
+    admin.ban = async (p, reason) => {
+      await remote(fill(ban, p.id, reason))
+      if (save) await remote(save)
+    }
+    admin.unban = async (id) => {
+      await remote(fill(unban, id))
+      if (save) await remote(save)
+    }
+    admin.bans = async () => readBans(file, bans.format)
+  }
+}
+
 export function adminFor(ctx: AdminContext): Admin {
   const { game, installDir, ports, adminPassword } = ctx
   const net = {
@@ -263,6 +301,8 @@ export function adminFor(ctx: AdminContext): Admin {
       admin.bans = async () => readBans(file, game.bans?.format)
     }
   }
+
+  if (remote) fromDefinition(game, remote, file, admin)
 
   if (game.players?.source === 'a2s' && game.players.port) {
     const port = ports[game.players.port]

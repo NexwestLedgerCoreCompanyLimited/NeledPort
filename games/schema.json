@@ -225,6 +225,21 @@
         "port": {
           "description": "Name of the port to query (A2S) for the player list.",
           "type": "string"
+        },
+        "command": {
+          "description": "RCON command listing players (games with their own commands).",
+          "type": "string",
+          "pattern": "^[^\\r\\n]+$"
+        },
+        "pattern": {
+          "description": "Regular expression for one player row, with named groups id and/or name (optional ping, seconds).",
+          "type": "string",
+          "minLength": 1
+        },
+        "kick": {
+          "description": "RCON command to kick a player: {id} and optional {reason}.",
+          "type": "string",
+          "pattern": "^[^\\r\\n]*\\{id\\}[^\\r\\n]*$"
         }
       }
     },
@@ -253,6 +268,21 @@
             "rust-cfg",
             "source-cfg"
           ]
+        },
+        "ban": {
+          "description": "RCON command to ban: {id} and optional {reason}.",
+          "type": "string",
+          "pattern": "^[^\\r\\n]*\\{id\\}[^\\r\\n]*$"
+        },
+        "unban": {
+          "description": "RCON command to unban: {id}.",
+          "type": "string",
+          "pattern": "^[^\\r\\n]*\\{id\\}[^\\r\\n]*$"
+        },
+        "save": {
+          "description": "RCON command that writes the ban list to disk, if the game needs one.",
+          "type": "string",
+          "pattern": "^[^\\r\\n]+$"
         }
       }
     },
@@ -469,6 +499,45 @@
                   "cfg",
                   "txt"
                 ]
+              }
+            }
+          }
+        },
+        "configWrites": {
+          "description": "Values written into the game's own config on every start (RCON password, ports, name); templates like args.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "file",
+              "set"
+            ],
+            "properties": {
+              "file": {
+                "type": "string",
+                "minLength": 1
+              },
+              "section": {
+                "type": "string",
+                "pattern": "^[^\\]\\r\\n]+$"
+              },
+              "style": {
+                "enum": [
+                  "equals",
+                  "space"
+                ]
+              },
+              "set": {
+                "type": "object",
+                "minProperties": 1,
+                "propertyNames": {
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_.]*$"
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "pattern": "^[^\\r\\n]*$"
+                }
               }
             }
           }

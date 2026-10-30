@@ -25,7 +25,7 @@ function definitionPaths(def: GameDefinition): string[] {
   ].filter((p): p is string => !!p)
   for (const platform of Object.values(def.platforms)) {
     if (!platform) continue
-    paths.push(platform.executable, ...(platform.configFiles ?? []).map((c) => c.path))
+    paths.push(platform.executable, ...(platform.configFiles ?? []).map((c) => c.path), ...(platform.configWrites ?? []).map((w) => w.file))
   }
   return paths
 }
@@ -50,7 +50,7 @@ function undeclaredReferences(def: GameDefinition): string[] {
     ...(def.settings ?? []).map((s) => `setting:${s.key}`)
   ])
   const used = Object.values(def.platforms).flatMap((p) =>
-    p ? [...p.args, ...Object.values(p.env ?? {})].flatMap(placeholders) : []
+    p ? [...p.args, ...Object.values(p.env ?? {}), ...(p.configWrites ?? []).flatMap((w) => Object.values(w.set))].flatMap(placeholders) : []
   )
   for (const loader of def.modLoaders ?? []) {
     for (const env of Object.values(loader.env ?? {})) used.push(...Object.values(env ?? {}).flatMap(placeholders))
@@ -72,6 +72,13 @@ function checkDefinition(file: string, data: unknown): GameDefinition | string {
   if (unsafe.length) return `unsafe path(s): ${unsafe.join(', ')}`
   const badDownloads = (data.modLoaders ?? []).flatMap((l) => Object.values(l.download).flat()).filter((u) => !isAllowedDownload(u!))
   if (badDownloads.length) return `mod loader download must be HTTPS from ${[...DOWNLOAD_HOSTS].join(', ')}: ${badDownloads.join(', ')}`
+  if (data.players?.pattern) {
+    try {
+      new RegExp(data.players.pattern)
+    } catch (e) {
+      return `players.pattern is not a valid regular expression: ${(e as Error).message}`
+    }
+  }
   const undeclared = undeclaredReferences(data)
   if (undeclared.length) return `undeclared port or setting: ${undeclared.join(', ')}`
   return data

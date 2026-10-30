@@ -121,6 +121,11 @@ describe('loadCatalog', () => {
     expect(loadCatalog(dirWith({ 'example.json': newline })).errors).toHaveLength(1)
   })
 
+  it('rejects a player pattern that is not a valid regular expression', () => {
+    const def = { ...valid, control: { type: 'rcon', port: 'game' }, players: { source: 'rcon', command: 'ListPlayers', pattern: '(?<id>[0-9' } }
+    expect(loadCatalog(dirWith({ 'example.json': def })).errors[0].message).toMatch(/pattern/)
+  })
+
   it('rejects a plugin folder outside the install folder', () => {
     const def = { ...valid, modLoaders: [{ ...loader, pluginDir: '../plugins' }] }
     expect(loadCatalog(dirWith({ 'example.json': def })).errors[0].message).toContain('../plugins')

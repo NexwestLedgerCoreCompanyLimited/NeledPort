@@ -5,6 +5,8 @@ export interface PlatformDefinition {
   args: string[]
   env?: Record<string, string>
   configFiles?: { path: string; format: 'ini' | 'json' | 'cfg' | 'txt' }[]
+  /** Values written into the game's own config on every start (RCON password, ports, name); templates like args. */
+  configWrites?: { file: string; section?: string; style?: 'equals' | 'space'; set: Record<string, string> }[]
 }
 
 export interface SettingDefinition {
@@ -38,8 +40,10 @@ export interface GameDefinition {
     rest?: { port: string; basePath: string; username: string }
     port?: string
   }
-  players?: { source: 'rest' | 'rcon' | 'a2s' | 'log'; port?: string }
-  bans?: { method: 'rest' | 'rcon' | 'file'; file?: string; format?: 'lines' | 'rust-cfg' | 'source-cfg' }
+  /** command + pattern (named groups id, name, ping, seconds) and kick: for games that speak RCON their own way. */
+  players?: { source: 'rest' | 'rcon' | 'a2s' | 'log'; port?: string; command?: string; pattern?: string; kick?: string }
+  /** ban / unban (with {id}) and save: the game's own RCON commands. */
+  bans?: { method: 'rest' | 'rcon' | 'file'; file?: string; format?: 'lines' | 'rust-cfg' | 'source-cfg'; ban?: string; unban?: string; save?: string }
   logPatterns?: { ready?: string; join?: string; leave?: string; character?: string }
   workshop?: { command: string } | null
   modLoaders?: ModLoaderDefinition[]

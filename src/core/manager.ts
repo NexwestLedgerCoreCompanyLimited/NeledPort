@@ -9,6 +9,7 @@ import { addPlugin, downloadZip, installLoader, listPlugins, loaderState, remove
 import { appInfoArgs, installedBuild, parseLatestBuild } from './build'
 import { palworldRest, prepareConfig } from './palworld'
 import { writeSourceConfig } from './sourcecfg'
+import { writeConfigValues } from './configwrite'
 import { isPortFree } from './ports'
 import { ServerProcess, type LaunchSpec } from './process'
 import { appUpdateArgs, captureSteamCmd, ensureSteamCmd, isSteamUser, parseSignedIn, parseSteamCmdLine, runSteamCmd } from './steamcmd'
@@ -324,6 +325,14 @@ export class ServerManager extends EventEmitter {
         maxPlayers: Number(server.settings.maxPlayers ?? 32),
         gamePort: server.ports.game,
         restPort: server.ports.rest
+      })
+    }
+    const ctx = launchContext(server, secrets)
+    for (const w of game.platforms[this.deps.platform]?.configWrites ?? []) {
+      writeConfigValues(join(server.installDir, w.file), {
+        section: w.section,
+        style: w.style,
+        values: Object.fromEntries(Object.entries(w.set).map(([k, v]) => [k, expand(v, ctx)]))
       })
     }
     const sourceCfg = game.platforms[this.deps.platform]?.configFiles?.[0]?.path
@@ -762,6 +771,10 @@ export class ServerManager extends EventEmitter {
   }
 }
 
+function launchContext(server: ServerConfig, secrets: Record<string, string>) {
+  return { ports: server.ports, settings: { ...server.settings, ...secrets }, installDir: server.installDir, adminPassword: secrets[ADMIN_SECRET] }
+}
+
 export function buildLaunch(
   game: GameDefinition,
   platform: Platform,
@@ -772,12 +785,7 @@ export function buildLaunch(
   const def: { executable: string; args: string[]; env?: Record<string, string> } | undefined =
     server.launch ?? game.platforms[platform]
   if (!def) throw new Error(`${game.name} has no ${platform} server`)
-  const ctx = {
-    ports: server.ports,
-    settings: { ...server.settings, ...secrets },
-    installDir: server.installDir,
-    adminPassword: secrets[ADMIN_SECRET]
-  }
+  const ctx = launchContext(server, secrets)
   const env = def.env ?? {}
   return {
     command: join(server.installDir, def.executable),

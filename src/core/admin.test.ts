@@ -257,6 +257,40 @@ describe('GoldSrc admin (UDP RCON)', () => {
   })
 })
 
+// Games that speak Source RCON with their own commands (ARK, Squad, Mordhau...): the definition names the commands and
+// a pattern for the player rows, so adding such a game needs no code.
+const dataGame: GameDefinition = {
+  ...sourceGame,
+  id: 'ark-like',
+  control: { type: 'rcon', port: 'rcon', save: 'SaveWorld', shutdown: 'DoExit' },
+  players: { source: 'rcon', command: 'ListPlayers', pattern: '^\\d+\\. (?<name>.+), (?<id>\\d{17})\\s*$', kick: 'KickPlayer {id}' },
+  bans: { method: 'rcon', ban: 'BanPlayer {id}', unban: 'UnbanPlayer {id}', file: 'Saved/BanList.txt', format: 'lines' }
+}
+
+describe('admin from data (RCON commands named by the definition)', () => {
+  function data(listing: string) {
+    const calls: string[] = []
+    const net: AdminNet = { rcon: async (o, cmd) => (calls.push(`rcon:${o.port}:${cmd}`), cmd === 'ListPlayers' ? listing : '') }
+    return { calls, admin: adminFor({ game: dataGame, installDir: dir(), ports: { rcon: 27020 }, adminPassword: 'pw', net }) }
+  }
+
+  it('lists players with the named command and pattern', async () => {
+    expect(await data('0. Mira, 76561198000000001 \n1. Rook Bold, 76561198000000002\nNo Players Connected?').admin.players()).toEqual([
+      { id: '76561198000000001', name: 'Mira' },
+      { id: '76561198000000002', name: 'Rook Bold' }
+    ])
+  })
+
+  it('kicks, bans and unbans with the named commands, refusing IDs that could add commands', async () => {
+    const { calls, admin } = data('')
+    await admin.kick!({ id: '76561198000000001', name: 'Mira' }, 'spam')
+    await admin.ban!({ id: '76561198000000001', name: 'Mira' }, 'grief')
+    await admin.unban!('76561198000000001')
+    expect(calls).toEqual(['rcon:27020:KickPlayer 76561198000000001', 'rcon:27020:BanPlayer 76561198000000001', 'rcon:27020:UnbanPlayer 76561198000000001'])
+    await expect(admin.ban!({ id: '7656 ; DoExit', name: 'x' }, '')).rejects.toThrow(/player ID/)
+  })
+})
+
 describe('Counter-Strike 2 admin (RCON + A2S)', () => {
   it('lists players by query and kicks by quoted name', async () => {
     const { calls, net } = recorder()

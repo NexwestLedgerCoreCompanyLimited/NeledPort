@@ -612,6 +612,32 @@ describe('Console', () => {
   })
 })
 
+describe('Config values on start', () => {
+  // Many games read the RCON password and port only from their own config file (Squad's Rcon.cfg, Conan's Game.ini).
+  it('writes templated values into the game config before every start', async () => {
+    const { deps, processes } = setup()
+    const game = {
+      ...games.find((g) => g.id === 'valheim')!,
+      id: 'rcon-in-file',
+      platforms: {
+        linux: {
+          ...games.find((g) => g.id === 'valheim')!.platforms.linux!,
+          configWrites: [{ file: 'Server/Rcon.cfg', set: { Port: '{port:game}', Password: '{adminPassword}', Name: '{setting:serverName}' } }]
+        }
+      }
+    }
+    const manager = new ServerManager({ ...deps, games: () => [...games, game] })
+    const { id, installDir } = manager.create({ gameId: 'rcon-in-file', name: 'x', settings: { serverName: 'My Squad', world: 'w', password: 'secret1' } })
+    await manager.install(id)
+    await manager.start(id)
+    const cfg = readFileSync(join(installDir, 'Server/Rcon.cfg'), 'utf8')
+    expect(cfg).toMatch(/^Port=2456$/m)
+    expect(cfg).toMatch(/^Name=My Squad$/m)
+    expect(/^Password=(.+)$/m.exec(cfg)![1].length).toBeGreaterThanOrEqual(16)
+    expect(processes).toHaveLength(1)
+  })
+})
+
 describe('Quitting', () => {
   it('stops a running install instead of leaving SteamCMD behind', async () => {
     const { manager } = setup('linux', { hang: true })
