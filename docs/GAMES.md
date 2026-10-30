@@ -1,6 +1,6 @@
 # Supported games
 
-NeledPort knows **80 games**. Any other Steam dedicated server works through **Any Steam App ID**, which also searches 380 more servers by name.
+NeledPort knows **75 games**. Any other Steam dedicated server works through **Any Steam App ID**, which also searches 380 more servers by name.
 
 Tiers: **full** = safe stop, player list, kick and bans, console, Windows and Linux, and one-click mods where the game has a
 server-side mod loader; **basic** = install and run, imported from [LinuxGSM](https://github.com/GameServerManagers/LinuxGSM)
@@ -12,19 +12,25 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | Game | Tier | App ID | OS | Extras |
 |---|---|---|---|---|
 | Action: Source | full | 985050 | Windows, Linux | needs a Steam account that owns it, player list, bans, console, SourceMod |
+| Base Defense | full | 817300 | Linux | player list, bans, console |
 | Black Mesa: Deathmatch | full | 346680 | Windows, Linux | player list, bans, console, SourceMod |
 | Blade Symphony | full | 228780 | Windows, Linux | needs a Steam account that owns it, player list, bans, console, SourceMod |
 | BrainBread 2 | full | 475370 | Windows, Linux | player list, bans, console, SourceMod |
 | Codename CURE | full | 383410 | Windows, Linux | player list, bans, console, SourceMod |
+| Counter-Strike 1.6 | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X |
+| Counter-Strike: Condition Zero | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X |
 | Counter-Strike: Source | full | 232330 | Windows, Linux | player list, bans, console, SourceMod |
+| Day of Defeat | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X |
 | Day of Defeat: Source | full | 232290 | Windows, Linux | player list, bans, console, SourceMod |
 | Day of Infamy | full | 462310 | Windows, Linux | player list, bans, console, SourceMod |
+| Deathmatch Classic | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X |
 | Dystopia | full | 17585 | Windows, Linux | player list, bans, console, SourceMod |
 | Empires Mod | full | 460040 | Windows, Linux | player list, bans, console, SourceMod |
 | Fistful of Frags | full | 295230 | Windows, Linux | player list, bans, console, SourceMod |
 | Garrys Mod | full | 4020 | Windows, Linux | player list, bans, console |
 | Half-Life 2: Deathmatch | full | 232370 | Windows, Linux | player list, bans, console, SourceMod |
 | Half-Life Deathmatch: Source | full | 255470 | Windows, Linux | player list, bans, console, SourceMod |
+| Half-Life: Deathmatch | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X |
 | Insurgency | full | 237410 | Windows, Linux | player list, bans, console, SourceMod |
 | IOSoccer | full | 673990 | Windows, Linux | player list, bans, console, SourceMod |
 | Jabroni Brawl: Episode 3 | full | 869800 | Windows, Linux | player list, bans, console |
@@ -33,30 +39,25 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | Military Conflict: Vietnam | full | 1136190 | Windows, Linux | player list, bans, console, SourceMod |
 | No More Room in Hell | full | 317670 | Windows, Linux | player list, bans, console, SourceMod |
 | Nuclear Dawn | full | 111710 | Windows, Linux | needs a Steam account that owns it, player list, bans, console, SourceMod |
+| Opposing Force | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X |
 | Palworld | full | 2394010 | Windows, Linux | player list, bans, console |
 | Pirates Vikings & Knights II | full | 17575 | Windows, Linux | player list, bans, console, SourceMod |
+| Ricochet | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X |
 | Rust | full | 258550 | Windows, Linux | player list, bans, console, Oxide (uMod) |
 | Team Fortress 2 | full | 232250 | Windows, Linux | player list, bans, console, SourceMod |
+| Team Fortress Classic | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X |
 | Valheim | full | 896660 | Windows, Linux | player list, bans, BepInEx |
 | Zombie Panic! Source | full | 17505 | Windows, Linux | player list, bans, console, SourceMod |
-| Action Half-Life | basic | 90 | Linux | player list |
 | ARK: Survival Evolved | basic | 376030 | Linux | player list |
 | ARMA 3 | basic | 233780 | Linux | needs a Steam account that owns it |
-| Base Defense | basic | 817300 | Linux | player list |
 | BATTALION: Legacy | basic | 805140 | Linux | player list |
-| BrainBread | basic | 90 | Linux | player list |
 | Chivalry: Medieval Warfare | basic | 220070 | Linux | player list |
 | Conan Exiles | basic | 443030 | Linux | player list |
 | Core Keeper | basic | 1963720 | Linux |  |
-| Counter-Strike 1.6 | basic | 90 | Linux | player list |
 | Counter-Strike 2 | basic | 730 | Windows, Linux | player list, console |
-| Counter-Strike: Condition Zero | basic | 90 | Linux | player list |
-| Day of Defeat | basic | 90 | Linux | player list |
 | Day of Dragons | basic | 1088320 | Linux | player list |
 | DayZ | basic | 223350 | Linux | needs a Steam account that owns it |
-| Deathmatch Classic | basic | 90 | Linux | player list |
 | Double Action: Boogaloo | basic | 317800 | Linux |  |
-| Half-Life: Deathmatch | basic | 90 | Linux | player list |
 | Humanitz | basic | 2728330 | Linux | player list |
 | Hurtworld | basic | 405100 | Linux | player list |
 | HYPERCHARGE: Unboxed | basic | 1045940 | Linux | player list |
@@ -65,14 +66,11 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | Jedi Knight: Jedi Academy | basic | 6020 | Linux | needs a Steam account that owns it |
 | Killing Floor 2 | basic | 232130 | Linux | player list |
 | MORDHAU | basic | 629800 | Linux | player list |
-| Natural Selection | basic | 90 | Linux | player list |
 | Natural Selection 2 | basic | 4940 | Linux |  |
 | NS2: Combat | basic | 313900 | Linux |  |
 | Operation: Harsh Doorstop | basic | 950900 | Linux | player list |
-| Opposing Force | basic | 90 | Linux | player list |
 | Pavlov VR | basic | 622970 | Linux |  |
 | Quake 4 | basic | 2210 | Linux | needs a Steam account that owns it |
-| Ricochet | basic | 90 | Linux | player list |
 | RuneScape: Dragonwilds | basic | 4019830 | Linux |  |
 | Satisfactory | basic | 1690800 | Linux |  |
 | SCP: Secret Laboratory | basic | 996560 | Linux |  |
@@ -82,12 +80,9 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | Squad 44 | basic | 746200 | Linux | player list |
 | StickyBots | basic | 974130 | Linux | player list |
 | Sven Co-op | basic | 276060 | Linux |  |
-| Team Fortress Classic | basic | 90 | Linux | player list |
 | The Front | basic | 2334200 | Linux | player list |
 | The Isle | basic | 412680 | Linux |  |
-| The Specialists | basic | 90 | Linux | player list |
 | Tower Unite | basic | 439660 | Linux | player list |
 | Unturned | basic | 1110390 | Linux |  |
-| Vampire Slayer | basic | 90 | Linux | player list |
 | Warfork | basic | 1136510 | Linux |  |
 | Wurm Unlimited | basic | 402370 | Linux | player list |

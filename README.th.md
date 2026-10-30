@@ -21,7 +21,7 @@
 - **Start / Stop / Restart:** สั่งเซฟโลกก่อนปิดเซิร์ฟเวอร์ทุกครั้ง
 - **คอนโซลสด:** ค้นหาข้อความ log ได้ และมีช่องส่งคำสั่ง (RCON / stdin)
 - **ผู้เล่นและการแบน:** เตะ แบน และปลดแบนผ่านระบบของเกมนั้นโดยตรง
-- **ม็อด:** ติดตั้ง mod loader ฝั่งเซิร์ฟเวอร์ (BepInEx สำหรับ Valheim, Oxide สำหรับ Rust, SourceMod สำหรับเกม Source 23 เกม) จัดการปลั๊กอิน และโหลดแมพจาก Steam Workshop ให้ CS2
+- **ม็อด:** ติดตั้ง mod loader ฝั่งเซิร์ฟเวอร์ (BepInEx สำหรับ Valheim, Oxide สำหรับ Rust, SourceMod สำหรับเกม Source 23 เกม, AMX Mod X สำหรับเกม Half-Life 8 เกม) จัดการปลั๊กอิน และโหลดแมพจาก Steam Workshop ให้ CS2
 - **ตั้งค่า:** แก้ค่าเซิร์ฟเวอร์ได้หลังสร้างแล้ว และแก้ไฟล์ตั้งค่าของเกมเองได้ในโปรแกรม (Palworld, Rust, CS2) โดยเก็บไฟล์เดิมไว้ให้
 - **สำรองข้อมูล:** สำรองให้อัตโนมัติก่อนอัปเดตทุกครั้ง หรือกด **สำรองข้อมูลตอนนี้** และกู้คืนได้ในคลิกเดียว โลกปัจจุบันจะถูกย้ายไปเก็บไว้ ไม่ถูกลบ
 - **อัปเดตตัวเอง:** บน Windows และ AppImage โปรแกรมโหลดเวอร์ชันใหม่ให้ แล้วกด **รีสตาร์ตเพื่ออัปเดต**
@@ -40,7 +40,9 @@
 
 - **รองรับเต็มรูปแบบ:** Palworld, Valheim, Rust และเกม Source อีก 25 เกม เช่น Team Fortress 2, Counter-Strike: Source, Garry's Mod, Left 4 Dead 2 และ Insurgency (มี SourceMod ในคลิกเดียว 23 เกม)
   ทดสอบกับเซิร์ฟเวอร์จริงทุกสัปดาห์: Valheim บน Linux และ Windows, Palworld, Rust, TF2 และ CS:S บน Linux
-- **พื้นฐาน (ติดตั้ง รัน คอนโซล):** Counter-Strike 2, SCUM, ARK, Satisfactory, Counter-Strike 1.6 และอีก 45 เกม ([รายชื่อทั้งหมด](docs/GAMES.md))
+- **เกม Half-Life 1 (GoldSrc) 9 เกม** เช่น Counter-Strike 1.6, Day of Defeat และ Team Fortress Classic รองรับเต็มรูปแบบ มี AMX Mod X ในคลิกเดียว 8 เกม
+  ทดสอบกับเซิร์ฟเวอร์จริงทุกสัปดาห์: CS 1.6 และ Day of Defeat บน Linux
+- **พื้นฐาน (ติดตั้ง รัน คอนโซล):** Counter-Strike 2, SCUM, ARK, Satisfactory, DayZ และอีก 33 เกม ([รายชื่อทั้งหมด](docs/GAMES.md))
 - **เกมที่ต้องใช้บัญชี Steam** เช่น ARMA 3 และ DayZ: ล็อกอินครั้งเดียวในหน้าต่าง SteamCMD ของ Valve เอง NeledPort ไม่เห็นรหัสผ่าน
 - **App ID อะไรก็ได้:** ค้นหาเซิร์ฟเวอร์อีก 380+ ตัวจากชื่อ ติดตั้ง แล้วเลือกโปรแกรมที่ใช้เปิดครั้งเดียว
 

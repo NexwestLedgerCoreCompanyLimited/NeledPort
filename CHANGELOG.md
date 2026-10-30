@@ -6,6 +6,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- **9 GoldSrc (Half-Life 1) games now have full support**: Counter-Strike 1.6, Condition Zero, Day of Defeat, Team
+  Fortress Classic, Half-Life Deathmatch, Opposing Force, Ricochet, Deathmatch Classic and Base Defense. Each gets
+  the right game downloaded (HLDS serves several), RCON over UDP with a clean quit, the player list, kick, bans that
+  survive restarts, the console, a server name and start map, and Windows support (Base Defense: Linux).
+- **AMX Mod X** with Metamod installs in one click on 8 of them, following AMX Mod X's own install guide. Plugins you
+  add, disable or remove are kept in step with AMX Mod X's `plugins.ini`.
+- Counter-Strike 1.6 and Day of Defeat join the weekly real-server test: the right game installed, RCON, real bans, a
+  clean quit and AMX Mod X loading.
+
+### Removed
+
+- Games that install from outside Steam, which NeledPort cannot do yet: Action Half-Life, BrainBread, Natural
+  Selection, The Specialists and Vampire Slayer. Any Steam App ID still installs Half-Life servers by hand.
+
+### Security
+
+- The RCON password never appears in the console or `server.log`, even though HLDS prints it with every command.
+
 ## [0.8.0] - 2026-10-30
 
 ### Added

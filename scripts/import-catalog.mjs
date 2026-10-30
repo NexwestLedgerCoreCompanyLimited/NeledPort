@@ -192,7 +192,7 @@ function writeGamesDoc(gamesDir, searchable) {
       !d.anonymous && 'needs a Steam account that owns it',
       d.players && 'player list',
       d.bans && 'bans',
-      d.control?.type === 'webrcon' || d.control?.type === 'rcon' || d.control?.type === 'rest' ? 'console' : null,
+      ['webrcon', 'rcon', 'goldsrc', 'rest'].includes(d.control?.type) ? 'console' : null,
       d.modLoaders?.length && d.modLoaders.map((l) => l.name).join(' / ')
     ]
       .filter(Boolean)

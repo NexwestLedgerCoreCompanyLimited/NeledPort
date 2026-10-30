@@ -31,7 +31,8 @@ NeledPort wraps all of that in a desktop app for Windows and Linux.
 - **Start, stop, restart** with graceful shutdown, so worlds are saved first.
 - **Live console** with search and a command box (RCON / stdin).
 - **Players and bans:** kick, ban and unban through each game's own mechanism.
-- **Mods:** one-click server-side mod loaders (BepInEx for Valheim, Oxide for Rust, SourceMod for 23 Source games), a plugin
+- **Mods:** one-click server-side mod loaders (BepInEx for Valheim, Oxide for Rust, SourceMod for 23 Source games, AMX
+  Mod X for 8 Half-Life games), a plugin
   manager, and Steam Workshop maps for CS2.
 - **Config:** change a server's settings after creating it, and edit the game's own config file (Palworld, Rust, CS2).
   The previous file is kept.
@@ -74,7 +75,8 @@ With the `.deb`, install the new `.deb` from Releases.
 | Counter-Strike 2 | basic | install, run, RCON console, players, kick, Workshop maps, server.cfg |
 | SCUM | basic | install, run, players (Windows only) |
 | Team Fortress 2, Counter-Strike: Source, Garry's Mod, Left 4 Dead 2, Insurgency and 20 more Source games | full | install, run, update, players, kick/ban, RCON console, SourceMod (23 of them); TF2 and CS:S tested on real Linux servers weekly |
-| ARK, Satisfactory, Conan Exiles, Squad, Counter-Strike 1.6 and 45 more | basic | install, run, console ([full list](docs/GAMES.md)) |
+| Counter-Strike 1.6, Day of Defeat, Team Fortress Classic, Half-Life Deathmatch and 5 more GoldSrc games | full | install, run, update, players, kick/ban, RCON console, AMX Mod X (8 of them); CS 1.6 and DoD tested on real Linux servers weekly |
+| ARK, Satisfactory, Conan Exiles, Squad, DayZ and 31 more | basic | install, run, console ([full list](docs/GAMES.md)) |
 | ARMA 3, DayZ and 6 more that need a Steam account | basic | sign in once in SteamCMD's own window; NeledPort never sees your password |
 | **Any Steam App ID** | custom | search 380+ more servers by name, install, pick the program once, share it |
 

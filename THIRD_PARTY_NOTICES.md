@@ -21,6 +21,13 @@ The searchable list of Steam dedicated servers in `games/index/steam-servers.jso
 
 Copyright (c) 2022-2023 Daniel Gibbs
 
+## Downloaded when you ask, never bundled
+
+SteamCMD and the game servers come from Valve. The one-click mod loaders come straight from their own sites when you
+install them in the Mods tab, under their own licences: BepInEx (Thunderstore), Oxide (GitHub), Metamod:Source and
+SourceMod (AlliedModders, GPLv3), Metamod 1.21.1-am and AMX Mod X (AlliedModders, GPL). NeledPort does not ship or
+modify them.
+
 ## MIT License (applies to all three)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

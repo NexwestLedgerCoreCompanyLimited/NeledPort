@@ -2,6 +2,19 @@
 
 Significant choices, why we made them, and what we turned down. Newest first.
 
+## 2026-10-30 · GoldSrc games: app_set_config, UDP RCON, Metamod-AM for AMX Mod X
+
+- **Decision:** HLDS (app 90) games set SteamCMD's `app_set_config 90 mod <mod>` before `app_update` (as WindowsGSM
+  does) and are controlled with GoldSrc RCON over UDP on the game port. AMX Mod X installs with Metamod 1.21.1-am,
+  the build AMX Mod X's own site links, plus `liblist.gam` pointed at Metamod and `addons/metamod/plugins.ini`.
+- **Why:** real CS 1.6 and Day of Defeat servers on CI showed the mod setting downloads the right game (Day of
+  Defeat's `dod/dlls/dod.so`) without LinuxGSM's seeded app manifests. Metamod-R's current docs say it needs ReHLDS,
+  which would mean replacing Valve's engine.
+- **Trade-off:** GoldSrc RCON answers on the public game port and HLDS echoes the password in its console, so
+  NeledPort hides the password from the console and log, and the password is random (24 characters).
+- **Rejected:** LinuxGSM's pre-seeded `appmanifest_*.acf` files (more moving parts, not needed on the real servers);
+  Metamod-P (only `.tar.xz` builds, which Node cannot unpack without a new dependency).
+
 ## 2026-10-30 · Source engine games: RCON on the game port, name and password in neledport.cfg
 
 - **Decision:** Source games are controlled over RCON on the game port (TCP), as srcds does. NeledPort writes
