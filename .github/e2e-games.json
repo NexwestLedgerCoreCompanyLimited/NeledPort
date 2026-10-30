@@ -122,5 +122,9 @@
  {
   "game": "warfork",
   "test": "rcon"
+ },
+ {
+  "game": "pavlov-vr",
+  "test": "rcon"
  }
 ]

@@ -5,7 +5,21 @@
   "serverAppId": 622970,
   "gameAppId": 555160,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Pavlov"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 10
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "Pavlov/Binaries/Linux/PavlovServer-Linux-Shipping",
@@ -16,6 +30,48 @@
         "-Port={port:game}",
         "ApiKey=",
         "-log"
+      ],
+      "steamClient": [
+        {
+          "bits": 64,
+          "to": "Pavlov/Binaries/Linux"
+        }
+      ],
+      "configFiles": [
+        {
+          "path": "Pavlov/Saved/Config/LinuxServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "Pavlov/Saved/Config/blacklist.txt",
+          "format": "txt"
+        },
+        {
+          "path": "Pavlov/Saved/Config/whitelist.txt",
+          "format": "txt"
+        },
+        {
+          "path": "Pavlov/Saved/Config/mods.txt",
+          "format": "txt"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "Pavlov/Saved/Config/RconSettings.txt",
+          "set": {
+            "Password": "{adminPassword}",
+            "Port": "{port:rcon}"
+          }
+        },
+        {
+          "file": "Pavlov/Saved/Config/LinuxServer/Game.ini",
+          "section": "/Script/Pavlov.DedicatedServer",
+          "set": {
+            "ServerName": "{setting:serverName}",
+            "MaxPlayers": "{setting:maxPlayers}",
+            "bCustomServer": "true"
+          }
+        }
       ]
     }
   },
@@ -24,9 +80,29 @@
       "name": "game",
       "default": 7777,
       "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 9100,
+      "protocol": "tcp"
     }
   ],
+  "saveDir": "Pavlov/Saved/Config",
   "control": {
-    "type": "signal"
+    "type": "pavlov",
+    "port": "rcon"
+  },
+  "players": {
+    "source": "rcon",
+    "command": "RefreshList",
+    "pattern": "\"Username\"\\s*:\\s*\"(?<name>(?:[^\"\\\\]|\\\\.)*)\"\\s*,\\s*\"UniqueId\"\\s*:\\s*\"(?<id>[^\"]+)\"",
+    "kick": "Kick {id}"
+  },
+  "bans": {
+    "method": "rcon",
+    "ban": "Ban {id}",
+    "unban": "Unban {id}",
+    "file": "Pavlov/Saved/Config/blacklist.txt",
+    "format": "lines"
   }
 }

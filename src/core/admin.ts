@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import { queryPlayers } from './a2s'
 import { goldsrcRconExec } from './goldsrc'
 import { palworldRest } from './palworld'
+import { pavlovRconExec } from './pavlov'
 import { quakeRconExec } from './quake'
 import { rconExec } from './rcon'
 import { satisfactoryApi } from './satisfactory'
@@ -37,6 +38,7 @@ export interface AdminNet {
   satisfactory?: typeof satisfactoryApi
   telnet?: typeof telnetExec
   quake?: Remote
+  pavlov?: Remote
 }
 
 export interface AdminContext {
@@ -243,7 +245,8 @@ export function adminFor(ctx: AdminContext): Admin {
     rest: ctx.net?.rest ?? palworldRest,
     satisfactory: ctx.net?.satisfactory ?? satisfactoryApi,
     telnet: ctx.net?.telnet ?? telnetExec,
-    quake: ctx.net?.quake ?? quakeRconExec
+    quake: ctx.net?.quake ?? quakeRconExec,
+    pavlov: ctx.net?.pavlov ?? pavlovRconExec
   }
   const file = banFile(installDir, game)
   const admin: Admin = { players: async () => Promise.reject(new Error('A player list is not available for this game yet')) }
@@ -257,7 +260,9 @@ export function adminFor(ctx: AdminContext): Admin {
         ? (cmd) => net.rcon({ port: remotePort, password: adminPassword }, cmd)
         : control?.type === 'goldsrc' && remotePort
           ? (cmd) => net.goldsrc({ port: remotePort, password: adminPassword }, cmd)
-          : control?.type === 'quake' && remotePort
+          : control?.type === 'pavlov' && remotePort
+            ? (cmd) => net.pavlov({ port: remotePort, password: adminPassword }, cmd)
+            : control?.type === 'quake' && remotePort
             ? (cmd) => net.quake({ port: remotePort, password: adminPassword }, cmd)
             : control?.type === 'telnet' && remotePort
             ? (cmd) => net.telnet({ port: remotePort }, cmd)

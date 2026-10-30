@@ -173,7 +173,8 @@
             "signal",
             "satisfactory",
             "telnet",
-            "quake"
+            "quake",
+            "pavlov"
           ]
         },
         "save": {

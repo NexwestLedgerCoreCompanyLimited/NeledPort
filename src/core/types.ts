@@ -40,7 +40,7 @@ export interface GameDefinition {
   configAdapter?: 'palworld' | 'source'
   saveDir?: string
   control?: {
-    type: 'rcon' | 'webrcon' | 'goldsrc' | 'quake' | 'telnet' | 'rest' | 'satisfactory' | 'stdin' | 'signal'
+    type: 'rcon' | 'webrcon' | 'goldsrc' | 'quake' | 'pavlov' | 'telnet' | 'rest' | 'satisfactory' | 'stdin' | 'signal'
     /** Text the console prints when the save command has finished (Soulmask: "world is saved"). */
     saveDone?: string
     /** Secret setting holding the remote password when the player chooses it (Satisfactory's claim password). */

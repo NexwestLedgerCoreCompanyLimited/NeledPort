@@ -348,7 +348,7 @@ describe('admin from data (RCON commands named by the definition)', () => {
 describe('player lists as each game prints them', () => {
   // Sample replies from the sources the definitions were built from (ark_rcon, SquadJS, NWI's admin guide, humanitzbot).
   const listed = (gameId: string, reply: string) =>
-    adminFor({ game: game(gameId), installDir: dir(), ports: { rcon: 1, query: 2, game: 3 }, adminPassword: 'pw', net: { rcon: async () => reply, quake: async () => reply } }).players()
+    adminFor({ game: game(gameId), installDir: dir(), ports: { rcon: 1, query: 2, game: 3 }, adminPassword: 'pw', net: { rcon: async () => reply, quake: async () => reply, pavlov: async () => reply } }).players()
 
   it('ARK: ListPlayers', async () => {
     expect(await listed('ark-survival-evolved', '\n0. Mira, 76561198000000001\n1. Rook Bold, 76561198000000002 \n')).toEqual([
@@ -393,6 +393,14 @@ describe('player lists as each game prints them', () => {
       { id: '76561198000000001', name: 'Mira', ping: 42 },
       { id: '76561198000000002', name: 'Rook Bold' },
       { id: '76561198000000003', name: 'SixteenCharsName', ping: 12 }
+    ])
+  })
+
+  it('Pavlov VR: RefreshList', async () => {
+    const reply = '{\n\t"PlayerList": [\n\t\t{ "Username": "Mira", "UniqueId": "76561198000000001" },\n\t\t{ "Username": "Rook \\"B\\"", "UniqueId": "76561198000000002" }\n\t]\n}'
+    expect(await listed('pavlov-vr', reply)).toEqual([
+      { id: '76561198000000001', name: 'Mira' },
+      { id: '76561198000000002', name: 'Rook \\"B\\"' }
     ])
   })
 
