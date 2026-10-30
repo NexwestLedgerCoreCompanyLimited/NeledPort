@@ -51,14 +51,17 @@ Commit messages follow [Conventional Commits](https://www.conventionalcommits.or
 
 Versions follow [Semantic Versioning](https://semver.org/); `0.x` releases are published as pre-releases.
 
-1. Move the `Unreleased` notes in [CHANGELOG.md](CHANGELOG.md) under the new version and commit.
+1. Move the `Unreleased` notes in [CHANGELOG.md](CHANGELOG.md) under a new `## [X.Y.Z] - date` heading, as
+   English bullet points grouped under `### Added`, `### Fixed` and so on, and commit. This section becomes the
+   text of the GitHub Release.
 2. `npm version patch` (bug fixes), `npm version minor` (new features) or `npm version major`.
    This bumps `package.json`, commits, and creates the tag `vX.Y.Z`.
 3. `git push --follow-tags`.
 
 The [Release workflow](.github/workflows/release.yml) then builds the Windows and Linux installers and
-publishes them as a GitHub Release with generated notes. It refuses to run if the tag and
-`package.json` version differ.
+publishes them as a GitHub Release whose text is that CHANGELOG section
+(`node scripts/release-notes.mjs X.Y.Z` shows it). It refuses to run if the tag and `package.json` version
+differ, or if CHANGELOG.md has no notes for the version.
 
 ## Ground rules
 

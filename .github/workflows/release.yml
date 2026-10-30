@@ -24,6 +24,9 @@ jobs:
       - name: Tag must match package.json version
         shell: bash
         run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+      - name: CHANGELOG.md must have notes for this version
+        shell: bash
+        run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > /dev/null
       - run: npm ci
       - run: npm test
       - run: npm run dist -- --publish never
@@ -44,10 +47,13 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
+      - name: Release notes from CHANGELOG.md
+        run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > notes.md
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -56,4 +62,4 @@ jobs:
           pre=""
           if [[ "$GITHUB_REF_NAME" == v0.* || "$GITHUB_REF_NAME" == *-* ]]; then pre="--prerelease"; fi
           gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" \
-            --title "NeledPort $GITHUB_REF_NAME" --generate-notes $pre
+            --title "NeledPort $GITHUB_REF_NAME" --notes-file notes.md $pre

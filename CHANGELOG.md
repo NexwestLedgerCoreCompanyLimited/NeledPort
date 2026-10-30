@@ -100,6 +100,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Ban-list paths in game definitions are checked like every other path, so a definition cannot point
   NeledPort at files outside the server folder.
 
+## [0.2.0] - 2026-10-30
+
 ### Added
 
 - Add a Palworld or Valheim server from the catalog; NeledPort downloads SteamCMD from Valve and installs
