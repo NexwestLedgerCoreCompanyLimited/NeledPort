@@ -37,7 +37,7 @@ export interface GameDefinition {
     port?: string
   }
   players?: { source: 'rest' | 'rcon' | 'a2s' | 'log'; port?: string }
-  bans?: { method: 'rest' | 'rcon' | 'file'; file?: string; format?: 'lines' | 'rust-cfg' }
+  bans?: { method: 'rest' | 'rcon' | 'file'; file?: string; format?: 'lines' | 'rust-cfg' | 'source-cfg' }
   logPatterns?: { ready?: string; join?: string; leave?: string; character?: string }
   workshop?: { command: string } | null
   modLoaders?: ModLoaderDefinition[]
@@ -46,7 +46,12 @@ export interface GameDefinition {
 export interface ModLoaderDefinition {
   id: string
   name: string
-  download: Partial<Record<Platform, string>>
+  /** One archive, or several installed in order (Metamod:Source, then SourceMod). */
+  download: Partial<Record<Platform, string | string[]>>
+  /** Each download URL is a text file naming the latest build in the same folder (AlliedModders' "-latest-" files). */
+  latestFile?: boolean
+  /** Folder inside the server the archives unpack into, such as a Source game's mod folder. */
+  installTo?: string
   stripTopFolder?: string
   pluginDir: string
   pluginExtensions: string[]

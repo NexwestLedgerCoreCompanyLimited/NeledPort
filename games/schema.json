@@ -243,7 +243,8 @@
         "format": {
           "enum": [
             "lines",
-            "rust-cfg"
+            "rust-cfg",
+            "source-cfg"
           ]
         }
       }
@@ -310,18 +311,27 @@
             "minLength": 1
           },
           "download": {
-            "description": "Zip per platform; HTTPS from github.com or thunderstore.io only.",
+            "description": "Archive (.zip or .tar.gz) per platform, or several installed in order; HTTPS from github.com, thunderstore.io, sm.alliedmods.net or mms.alliedmods.net only.",
             "type": "object",
             "additionalProperties": false,
             "minProperties": 1,
             "properties": {
               "windows": {
-                "type": "string"
+                "$ref": "#/$defs/downloads"
               },
               "linux": {
-                "type": "string"
+                "$ref": "#/$defs/downloads"
               }
             }
+          },
+          "latestFile": {
+            "description": "Each download URL is a text file naming the latest build in the same folder (AlliedModders' -latest- files).",
+            "type": "boolean"
+          },
+          "installTo": {
+            "description": "Folder inside the server the archives unpack into, such as a Source game's mod folder.",
+            "type": "string",
+            "minLength": 1
           },
           "stripTopFolder": {
             "description": "Folder inside the zip whose contents go to the server folder.",
@@ -418,6 +428,20 @@
           }
         }
       }
+    },
+    "downloads": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
     }
   }
 }

@@ -18,7 +18,7 @@ function isUnsafePath(p: string): boolean {
 }
 
 function definitionPaths(def: GameDefinition): string[] {
-  const paths = [def.saveDir, def.bans?.file, ...(def.modLoaders ?? []).map((l) => l.pluginDir)].filter((p): p is string => !!p)
+  const paths = [def.saveDir, def.bans?.file, ...(def.modLoaders ?? []).flatMap((l) => [l.pluginDir, l.installTo])].filter((p): p is string => !!p)
   for (const platform of Object.values(def.platforms)) {
     if (!platform) continue
     paths.push(platform.executable, ...(platform.configFiles ?? []).map((c) => c.path))
@@ -27,7 +27,7 @@ function definitionPaths(def: GameDefinition): string[] {
 }
 
 // Loader archives run code inside the game server, so they may only come from these hosts.
-const DOWNLOAD_HOSTS = new Set(['github.com', 'thunderstore.io'])
+const DOWNLOAD_HOSTS = new Set(['github.com', 'thunderstore.io', 'sm.alliedmods.net', 'mms.alliedmods.net'])
 
 export function isAllowedDownload(url: string): boolean {
   try {
@@ -66,8 +66,8 @@ function checkDefinition(file: string, data: unknown): GameDefinition | string {
   if (`${data.id}.json` !== file) return `id '${data.id}' must match the filename`
   const unsafe = definitionPaths(data).filter(isUnsafePath)
   if (unsafe.length) return `unsafe path(s): ${unsafe.join(', ')}`
-  const badDownloads = (data.modLoaders ?? []).flatMap((l) => Object.values(l.download)).filter((u) => !isAllowedDownload(u!))
-  if (badDownloads.length) return `mod loader download must be HTTPS from github.com or thunderstore.io: ${badDownloads.join(', ')}`
+  const badDownloads = (data.modLoaders ?? []).flatMap((l) => Object.values(l.download).flat()).filter((u) => !isAllowedDownload(u!))
+  if (badDownloads.length) return `mod loader download must be HTTPS from ${[...DOWNLOAD_HOSTS].join(', ')}: ${badDownloads.join(', ')}`
   const undeclared = undeclaredReferences(data)
   if (undeclared.length) return `undeclared port or setting: ${undeclared.join(', ')}`
   return data

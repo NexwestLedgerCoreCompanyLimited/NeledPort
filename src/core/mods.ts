@@ -1,7 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { basename, extname, join } from 'node:path'
+import { basename, extname, join, posix } from 'node:path'
 import type { ModLoaderDefinition, Platform, PluginInfo } from './types'
-import { extractZip, readZip } from './unzip'
+import { extractArchive, readArchive } from './unzip'
 
 export interface LoaderState {
   id: string
@@ -18,13 +18,15 @@ const stateDir = (installDir: string) => join(installDir, '.neledport')
 const stateFile = (installDir: string, id: string) => join(stateDir(installDir), `loader-${id}.json`)
 const disabledDir = (installDir: string, loader: ModLoaderDefinition) => join(stateDir(installDir), 'disabled-plugins', loader.id)
 
-/** Where a loader download may end up after redirects: GitHub and Thunderstore and their file CDNs. */
+/** Where a loader download may end up after redirects: GitHub, Thunderstore, their file CDNs, and AlliedModders' build servers. */
 export function allowedDownloadHost(url: string): boolean {
   try {
     const { protocol, hostname } = new URL(url)
     return (
       protocol === 'https:' &&
-      (['github.com', 'thunderstore.io'].includes(hostname) || hostname.endsWith('.githubusercontent.com') || hostname.endsWith('.thunderstore.io'))
+      (['github.com', 'thunderstore.io', 'sm.alliedmods.net', 'mms.alliedmods.net'].includes(hostname) ||
+        hostname.endsWith('.githubusercontent.com') ||
+        hostname.endsWith('.thunderstore.io'))
     )
   } catch {
     return false
@@ -54,20 +56,24 @@ export async function installLoader(
   platform: Platform,
   download: (url: string) => Promise<Buffer> = downloadZip
 ): Promise<LoaderState> {
-  const url = loader.download[platform]
-  if (!url) throw new Error(`${loader.name} has no ${platform} build`)
+  const urls = [loader.download[platform] ?? []].flat()
+  if (!urls.length) throw new Error(`${loader.name} has no ${platform} build`)
   // Download and read everything before touching the server, so a failure leaves it as it was.
-  const buf = await download(url)
+  const archives: Buffer[] = []
+  for (const url of urls) archives.push(await download(loader.latestFile ? await latestBuild(url, download) : url))
   const prefix = loader.stripTopFolder ? `${loader.stripTopFolder}/` : ''
-  const paths = readZip(buf)
-    .map((e) => e.path)
-    .filter((p) => p.startsWith(prefix))
-    .map((p) => p.slice(prefix.length))
+  const target = loader.installTo ? join(installDir, loader.installTo) : installDir
+  const paths = archives.flatMap((buf) =>
+    readArchive(buf)
+      .map((e) => e.path)
+      .filter((p) => p.startsWith(prefix))
+      .map((p) => posix.join(loader.installTo ?? '', p.slice(prefix.length)))
+  )
   const previous = loaderState(installDir, loader.id)
   const ownFiles = new Set(previous?.added ?? [])
   const replaced = paths.filter((p) => !ownFiles.has(p) && existsSync(join(installDir, p)))
   const added = paths.filter((p) => !replaced.includes(p))
-  extractZip(buf, installDir, { stripTopFolder: loader.stripTopFolder })
+  for (const buf of archives) extractArchive(buf, target, { stripTopFolder: loader.stripTopFolder })
   const state: LoaderState = {
     id: loader.id,
     installedAt: new Date().toISOString(),
@@ -77,6 +83,13 @@ export async function installLoader(
   mkdirSync(stateDir(installDir), { recursive: true })
   writeFileSync(stateFile(installDir, loader.id), JSON.stringify(state, null, 2))
   return state
+}
+
+/** AlliedModders' "-latest-" file holds only the archive name; it must stay a plain name in the same folder. */
+async function latestBuild(url: string, download: (url: string) => Promise<Buffer>): Promise<string> {
+  const name = (await download(url)).toString('utf8').trim()
+  if (!/^[\w.+-]+\.(?:zip|tar\.gz)$/.test(name)) throw new Error(`Unexpected latest build name from ${url}: ${name.slice(0, 80)}`)
+  return new URL(name, url).href
 }
 
 export function uninstallLoader(installDir: string, id: string): { needsValidate: boolean } {

@@ -91,6 +91,29 @@ describe('loadCatalog', () => {
     expect(loadCatalog(dirWith({ 'example.json': def })).errors[0].message).toMatch(/download/)
   })
 
+  it('accepts SourceMod: several AlliedModders archives unpacked into the mod folder', () => {
+    const sourcemod = {
+      ...loader,
+      id: 'sourcemod',
+      download: {
+        linux: ['https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-linux', 'https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-linux'],
+        windows: ['https://mms.alliedmods.net/mmsdrop/1.12/mmsource-latest-windows', 'https://sm.alliedmods.net/smdrop/1.12/sourcemod-latest-windows']
+      },
+      latestFile: true,
+      installTo: 'tf',
+      pluginDir: 'tf/addons/sourcemod/plugins',
+      pluginExtensions: ['.smx']
+    }
+    expect(loadCatalog(dirWith({ 'example.json': { ...valid, modLoaders: [sourcemod] } })).errors).toEqual([])
+  })
+
+  it('checks every archive of a loader and its install folder', () => {
+    const many = { ...valid, modLoaders: [{ ...loader, download: { linux: ['https://github.com/a.zip', 'https://evil.example/b.zip'] } }] }
+    expect(loadCatalog(dirWith({ 'example.json': many })).errors[0].message).toMatch(/evil\.example/)
+    const outside = { ...valid, modLoaders: [{ ...loader, installTo: '../../home' }] }
+    expect(loadCatalog(dirWith({ 'example.json': outside })).errors[0].message).toContain('../../home')
+  })
+
   it('rejects a plugin folder outside the install folder', () => {
     const def = { ...valid, modLoaders: [{ ...loader, pluginDir: '../plugins' }] }
     expect(loadCatalog(dirWith({ 'example.json': def })).errors[0].message).toContain('../plugins')
