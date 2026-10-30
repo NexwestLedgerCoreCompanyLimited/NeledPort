@@ -11,7 +11,7 @@ import { e2e, e2eManager, platform, retry, withGameLogs } from './harness'
 const gameId = process.env.NELEDPORT_E2E_GAME ?? 'ark-survival-evolved'
 const game = loadCatalog(join(__dirname, '../../games')).games.find((g) => g.id === gameId)!
 // Games whose player list comes from A2S: a harmless command that shows what their own listing prints.
-const PROBE: Record<string, string> = { 'conan-exiles': 'listplayers', mordhau: 'playerlist', 'operation-harsh-doorstop': 'status', soulmask: 'help' }
+const PROBE: Record<string, string> = { 'conan-exiles': 'listplayers', mordhau: 'playerlist', 'operation-harsh-doorstop': 'status', soulmask: 'help', cs2: 'status' }
 // A SteamID64 no player owns (account 1), for the ban round trip.
 const nobody = '76561197960265729'
 

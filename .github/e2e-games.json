@@ -146,5 +146,9 @@
  {
   "game": "wurm-unlimited",
   "test": "server"
+ },
+ {
+  "game": "cs2",
+  "test": "rcon"
  }
 ]
