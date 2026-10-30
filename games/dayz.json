@@ -5,21 +5,116 @@
   "serverAppId": 223350,
   "gameAppId": 221100,
   "anonymous": false,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort DayZ"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 60
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "DayZServer",
       "args": [
         "-ip=0.0.0.0",
         "-port={port:game}",
-        "-config={installDir}/cfg/neledport.server.cfg",
-        "-mod=",
-        "-servermod=",
-        "-bepath=",
+        "-config=cfg/neledport.server.cfg",
+        "-bepath={installDir}/battleye",
+        "-profiles={installDir}/profiles",
         "-limitFPS=60",
         "-dologs",
         "-adminlog",
         "-freezeCheck"
+      ],
+      "copyIfMissing": [
+        {
+          "from": "serverDZ.cfg",
+          "to": "cfg/neledport.server.cfg"
+        }
+      ],
+      "configFiles": [
+        {
+          "path": "cfg/neledport.server.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "battleye/bans.txt",
+          "format": "txt"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "cfg/neledport.server.cfg",
+          "set": {
+            "hostname": "\"{setting:serverName}\";",
+            "maxPlayers": "{setting:maxPlayers};"
+          }
+        },
+        {
+          "file": "battleye/BEServer_x64.cfg",
+          "style": "space",
+          "set": {
+            "RConPassword": "{adminPassword}",
+            "RConPort": "{port:rcon}",
+            "RestrictRCon": "0"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "DayZServer_x64.exe",
+      "args": [
+        "-ip=0.0.0.0",
+        "-port={port:game}",
+        "-config=cfg/neledport.server.cfg",
+        "-bepath={installDir}/battleye",
+        "-profiles={installDir}/profiles",
+        "-limitFPS=60",
+        "-dologs",
+        "-adminlog",
+        "-freezeCheck"
+      ],
+      "copyIfMissing": [
+        {
+          "from": "serverDZ.cfg",
+          "to": "cfg/neledport.server.cfg"
+        }
+      ],
+      "configFiles": [
+        {
+          "path": "cfg/neledport.server.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "battleye/bans.txt",
+          "format": "txt"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "cfg/neledport.server.cfg",
+          "set": {
+            "hostname": "\"{setting:serverName}\";",
+            "maxPlayers": "{setting:maxPlayers};"
+          }
+        },
+        {
+          "file": "battleye/BEServer_x64.cfg",
+          "style": "space",
+          "set": {
+            "RConPassword": "{adminPassword}",
+            "RConPort": "{port:rcon}",
+            "RestrictRCon": "0"
+          }
+        }
       ]
     }
   },
@@ -28,9 +123,30 @@
       "name": "game",
       "default": 2302,
       "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 2306,
+      "protocol": "udp"
     }
   ],
+  "saveDir": "mpmissions",
   "control": {
-    "type": "signal"
+    "type": "battleye",
+    "port": "rcon",
+    "shutdown": "#shutdown"
+  },
+  "players": {
+    "source": "rcon",
+    "command": "players",
+    "pattern": "^(?<id>\\d+)\\s+[\\d.]+:\\d+\\s+(?<ping>\\d+)\\s+[0-9a-f]{32}\\((?:OK|\\?)\\)\\s+(?<name>.+?)(?: \\(Lobby\\))?\\s*$",
+    "kick": "kick {id} {reason}"
+  },
+  "bans": {
+    "method": "rcon",
+    "ban": "ban {id} 0 {reason}",
+    "file": "battleye/bans.txt",
+    "format": "battleye",
+    "save": "loadBans"
   }
 }

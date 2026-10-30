@@ -338,6 +338,19 @@ describe('admin from data (RCON commands named by the definition)', () => {
     expect(await admin.bans!()).toEqual([{ id: '76561198000000001' }, { id: '76561198000000002' }])
   })
 
+  it("reads BattlEye's bans.txt and unbans by taking the line out, then reloading it", async () => {
+    const installDir = dir()
+    mkdirSync(join(installDir, 'battleye'))
+    writeFileSync(join(installDir, 'battleye/bans.txt'), '0123456789abcdef0123456789abcdef -1 cheating\n1.2.3.4 1767225600 spam\n')
+    const calls: string[] = []
+    const admin = adminFor({ game: game('dayz'), installDir, ports: { rcon: 2306 }, adminPassword: 'pw', net: { battleye: async (_, cmd) => (calls.push(cmd), '') } })
+    expect(await admin.bans!()).toEqual([{ id: '0123456789abcdef0123456789abcdef', reason: 'cheating' }, { id: '1.2.3.4', reason: 'spam' }])
+    await admin.ban!({ id: '0', name: 'Mira' }, 'grief')
+    await admin.unban!('0123456789abcdef0123456789abcdef')
+    expect(readFileSync(join(installDir, 'battleye/bans.txt'), 'utf8')).toBe('1.2.3.4 1767225600 spam\n')
+    expect(calls).toEqual(['ban 0 0 grief', 'loadBans', 'loadBans'])
+  })
+
   it('offers no kick when the definition names no kick command', async () => {
     const noKick: GameDefinition = { ...dataGame, players: { source: 'a2s', port: 'query' } }
     const admin = adminFor({ game: noKick, installDir: dir(), ports: { rcon: 27020, query: 27015 }, adminPassword: 'pw', net: recorder().net })
@@ -348,7 +361,7 @@ describe('admin from data (RCON commands named by the definition)', () => {
 describe('player lists as each game prints them', () => {
   // Sample replies from the sources the definitions were built from (ark_rcon, SquadJS, NWI's admin guide, humanitzbot).
   const listed = (gameId: string, reply: string) =>
-    adminFor({ game: game(gameId), installDir: dir(), ports: { rcon: 1, query: 2, game: 3 }, adminPassword: 'pw', net: { rcon: async () => reply, quake: async () => reply, pavlov: async () => reply, isle: async () => reply } }).players()
+    adminFor({ game: game(gameId), installDir: dir(), ports: { rcon: 1, query: 2, game: 3 }, adminPassword: 'pw', net: { rcon: async () => reply, quake: async () => reply, pavlov: async () => reply, isle: async () => reply, battleye: async () => reply } }).players()
 
   it('ARK: ListPlayers', async () => {
     expect(await listed('ark-survival-evolved', '\n0. Mira, 76561198000000001\n1. Rook Bold, 76561198000000002 \n')).toEqual([
@@ -409,6 +422,24 @@ describe('player lists as each game prints them', () => {
       { id: '76561198000000001', name: 'Mira' },
       { id: '76561198000000002', name: 'Rook Bold' }
     ])
+  })
+
+  it('DayZ and Arma 3: BattlEye players, skipping players still joining', async () => {
+    const reply = [
+      'Players on server:',
+      '[#] [IP Address]:[Port] [Ping] [GUID] [Name]',
+      '--------------------------------------------------',
+      '0   1.2.3.4:2304     47   0123456789abcdef0123456789abcdef(OK) Mira',
+      '1   5.6.7.8:2304     12   fedcba9876543210fedcba9876543210(OK) Rook Bold (Lobby)',
+      '2   9.9.9.9:2304     -1   -  Joining',
+      '(3 players in total)'
+    ].join('\n')
+    for (const id of ['dayz', 'arma-3']) {
+      expect(await listed(id, reply)).toEqual([
+        { id: '0', name: 'Mira', ping: 47 },
+        { id: '1', name: 'Rook Bold', ping: 12 }
+      ])
+    }
   })
 
   it('HumanitZ: Players', async () => {

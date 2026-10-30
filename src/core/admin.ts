@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { queryPlayers } from './a2s'
+import { battleyeExec } from './battleye'
 import { goldsrcRconExec } from './goldsrc'
 import { isleRconExec } from './isle'
 import { ns2WebAdmin } from './ns2'
@@ -43,6 +44,7 @@ export interface AdminNet {
   pavlov?: Remote
   isle?: Remote
   ns2?: typeof ns2WebAdmin
+  battleye?: Remote
 }
 
 export interface AdminContext {
@@ -122,6 +124,11 @@ function banLine(line: string, format: BanFormat = 'lines'): BanEntry | undefine
   if (format === 'rust-cfg') {
     const m = /^banid\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"/.exec(l)
     return m ? { id: m[1], name: m[2], reason: m[3] } : undefined
+  }
+  if (format === 'battleye') {
+    // BattlEye's bans.txt: "<GUID or IP> <expiry, -1 for never> <reason>".
+    const m = /^([0-9a-f]{32}|[\d.]+)\s+-?\d+\s*(.*)$/i.exec(l)
+    return m ? { id: m[1], ...(m[2] ? { reason: m[2] } : {}) } : undefined
   }
   if (format === 'listip') {
     // Quake-engine listip.cfg as Warfork's writeip leaves it: "ban <steamid64> [minutes]".
@@ -257,7 +264,8 @@ export function adminFor(ctx: AdminContext): Admin {
     quake: ctx.net?.quake ?? quakeRconExec,
     pavlov: ctx.net?.pavlov ?? pavlovRconExec,
     isle: ctx.net?.isle ?? isleRconExec,
-    ns2: ctx.net?.ns2 ?? ns2WebAdmin
+    ns2: ctx.net?.ns2 ?? ns2WebAdmin,
+    battleye: ctx.net?.battleye ?? battleyeExec
   }
   const file = banFile(installDir, game)
   const admin: Admin = { players: async () => Promise.reject(new Error('A player list is not available for this game yet')) }
@@ -271,7 +279,9 @@ export function adminFor(ctx: AdminContext): Admin {
         ? (cmd) => net.rcon({ port: remotePort, password: adminPassword }, cmd)
         : control?.type === 'goldsrc' && remotePort
           ? (cmd) => net.goldsrc({ port: remotePort, password: adminPassword }, cmd)
-          : control?.type === 'ns2' && remotePort
+          : control?.type === 'battleye' && remotePort
+            ? (cmd) => net.battleye({ port: remotePort, password: adminPassword }, cmd)
+            : control?.type === 'ns2' && remotePort
             ? async (cmd) => (await net.ns2({ port: remotePort, password: adminPassword }).send(cmd), '')
             : control?.type === 'isle' && remotePort
             ? (cmd) => net.isle({ port: remotePort, password: adminPassword }, cmd)

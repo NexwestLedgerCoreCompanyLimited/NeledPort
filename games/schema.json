@@ -176,7 +176,8 @@
             "quake",
             "pavlov",
             "isle",
-            "ns2"
+            "ns2",
+            "battleye"
           ]
         },
         "save": {
@@ -286,7 +287,8 @@
             "source-cfg",
             "squad-cfg",
             "listip",
-            "ns2-json"
+            "ns2-json",
+            "battleye"
           ]
         },
         "ban": {
