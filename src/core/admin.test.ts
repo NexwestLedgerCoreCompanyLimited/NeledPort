@@ -299,10 +299,75 @@ describe('admin from data (RCON commands named by the definition)', () => {
     expect(calls).toEqual(['kick "Rook Bold" afk'])
   })
 
+  it('reads a Squad-style Bans.cfg and unbans by taking the line out, then reloading', async () => {
+    const installDir = dir()
+    mkdirSync(join(installDir, 'ServerConfig'))
+    writeFileSync(
+      join(installDir, 'ServerConfig/Bans.cfg'),
+      'Admin [SteamID 76561198000000009] Banned:76561198000000001:0 //grief\r\n76561198000000002:1767225600 //spam\n// note\n'
+    )
+    const calls: string[] = []
+    const squadLike: GameDefinition = {
+      ...dataGame,
+      bans: { method: 'rcon', ban: 'AdminBan {id} 0 {reason}', file: 'ServerConfig/Bans.cfg', format: 'squad-cfg', save: 'AdminReloadServerConfig' }
+    }
+    const admin = adminFor({ game: squadLike, installDir, ports: { rcon: 21114 }, adminPassword: 'pw', net: { rcon: async (_, cmd) => (calls.push(cmd), '') } })
+    expect(await admin.bans!()).toEqual([
+      { id: '76561198000000001', reason: 'grief' },
+      { id: '76561198000000002', reason: 'spam' }
+    ])
+    await admin.unban!('76561198000000001')
+    expect(readFileSync(join(installDir, 'ServerConfig/Bans.cfg'), 'utf8')).toBe('76561198000000002:1767225600 //spam\n// note\n')
+    expect(calls).toEqual(['AdminReloadServerConfig'])
+  })
+
   it('offers no kick when the definition names no kick command', async () => {
     const noKick: GameDefinition = { ...dataGame, players: { source: 'a2s', port: 'query' } }
     const admin = adminFor({ game: noKick, installDir: dir(), ports: { rcon: 27020, query: 27015 }, adminPassword: 'pw', net: recorder().net })
     expect(admin.kick).toBeUndefined()
+  })
+})
+
+describe('player lists as each game prints them', () => {
+  // Sample replies from the sources the definitions were built from (ark_rcon, SquadJS, NWI's admin guide, humanitzbot).
+  const listed = (gameId: string, reply: string) =>
+    adminFor({ game: game(gameId), installDir: dir(), ports: { rcon: 1, query: 2 }, adminPassword: 'pw', net: { rcon: async () => reply } }).players()
+
+  it('ARK: ListPlayers', async () => {
+    expect(await listed('ark-survival-evolved', '\n0. Mira, 76561198000000001\n1. Rook Bold, 76561198000000002 \n')).toEqual([
+      { id: '76561198000000001', name: 'Mira' },
+      { id: '76561198000000002', name: 'Rook Bold' }
+    ])
+    expect(await listed('ark-survival-evolved', 'No Players Connected')).toEqual([])
+  })
+
+  it('Squad: ListPlayers, old and new ID forms, without recently disconnected players', async () => {
+    const reply = [
+      '----- Active Players -----',
+      'ID: 0 | Online IDs: EOS: 0002abcdef0123456789abcdef012345 steam: 76561198000000001 | Name: Mira | Team ID: 1 | Squad ID: N/A | Is Leader: False | Role: USA_Rifleman_01',
+      'ID: 1 | SteamID: 76561198000000002 | Name: Rook | Bold | Team ID: 2 | Squad ID: 1 | Is Leader: True | Role: RUS_SL_01',
+      '----- Recently Disconnected Players [Max of 15] -----',
+      'ID: 2 | Online IDs: EOS: 0002 steam: 76561198000000003 | Since Disconnect: 02m.30s | Name: Gone'
+    ].join('\n')
+    for (const id of ['squad', 'squad-44']) {
+      expect(await listed(id, reply)).toEqual([
+        { id: '76561198000000001', name: 'Mira' },
+        { id: '76561198000000002', name: 'Rook | Bold' }
+      ])
+    }
+  })
+
+  it('Insurgency: Sandstorm: listplayers, skipping bots', async () => {
+    const reply = 'ID\t | Name\t\t | NetID\t\t | IP\t | Score\t | \n=====\n0\t | \t | None:INVALID\t | \t | 0\t |\n256\t | Mira\t\t | SteamNWI:76561198000000001\t | 127.0.0.1\t | 0\t |\n'
+    expect(await listed('insurgency-sandstorm', reply)).toEqual([{ id: 'SteamNWI:76561198000000001', name: 'Mira' }])
+  })
+
+  it('HumanitZ: Players', async () => {
+    const reply = 'Mira (76561198000000001_+_|0002abc) Lv:27 Clan:X DPassed:54\r\nRook Bold (76561198000000002_+_|0002def) Lv:1 Clan: DPassed:0\r\n'
+    expect(await listed('humanitz', reply)).toEqual([
+      { id: '76561198000000001', name: 'Mira' },
+      { id: '76561198000000002', name: 'Rook Bold' }
+    ])
   })
 })
 

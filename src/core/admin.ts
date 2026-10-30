@@ -95,22 +95,37 @@ function banFile(installDir: string, game: GameDefinition): string | undefined {
   return game.bans?.file ? join(installDir, game.bans.file) : undefined
 }
 
-function readBans(file: string | undefined, format: 'lines' | 'rust-cfg' | 'source-cfg' = 'lines'): BanEntry[] {
-  if (!file || !existsSync(file)) return []
-  const lines = readFileSync(file, 'utf8').split(/\r?\n/).map((l) => l.trim())
+type BanFormat = NonNullable<GameDefinition['bans']>['format']
+
+/** One ban-list line as the game writes it, or nothing for comments and other lines. */
+function banLine(line: string, format: BanFormat = 'lines'): BanEntry | undefined {
+  const l = line.trim()
   if (format === 'source-cfg') {
-    return lines.flatMap((l) => {
-      const id = /^banid\s+[\d.]+\s+(\S+)/.exec(l)?.[1]
-      return id ? [{ id }] : []
-    })
+    const id = /^banid\s+[\d.]+\s+(\S+)/.exec(l)?.[1]
+    return id ? { id } : undefined
   }
   if (format === 'rust-cfg') {
-    return lines.flatMap((l) => {
-      const m = /^banid\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"/.exec(l)
-      return m ? [{ id: m[1], name: m[2], reason: m[3] }] : []
-    })
+    const m = /^banid\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"/.exec(l)
+    return m ? { id: m[1], name: m[2], reason: m[3] } : undefined
   }
-  return lines.filter((l) => l && !l.startsWith('//')).map((id) => ({ id }))
+  if (format === 'squad-cfg') {
+    // "<id>:<unban time> //reason", or the same after "Admin [SteamID x] Banned:" when the server wrote it.
+    const m = /(?:^|Banned:)(\d{17}):\d+(?:\s*\/\/\s*(.*))?$/.exec(l)
+    return m ? { id: m[1], ...(m[2] ? { reason: m[2] } : {}) } : undefined
+  }
+  return l && !l.startsWith('//') ? { id: l } : undefined
+}
+
+function readBans(file: string | undefined, format?: BanFormat): BanEntry[] {
+  if (!file || !existsSync(file)) return []
+  return readFileSync(file, 'utf8').split(/\r?\n/).flatMap((l) => banLine(l, format) ?? [])
+}
+
+/** Takes a player's lines out of a ban list the game reads (Squad's Bans.cfg has no unban command). */
+function removeBan(file: string, format: BanFormat, id: string): void {
+  if (!existsSync(file)) return
+  const kept = readFileSync(file, 'utf8').split(/\r?\n/).filter((l) => l !== '' && banLine(l, format)?.id !== id)
+  writeFileSync(file, kept.length ? kept.join('\n') + '\n' : '')
 }
 
 function writeLineBan(file: string, id: string, add: boolean): void {
@@ -189,14 +204,15 @@ function fromDefinition(game: GameDefinition, remote: (cmd: string) => Promise<s
     admin.kick = async (p, reason) => void (await remote(fill(kick, p, reason)))
   }
   const bans = game.bans
-  if (bans?.ban && bans.unban) {
+  if (bans?.ban && (bans.unban || file)) {
     const { ban, unban, save } = bans
     admin.ban = async (p, reason) => {
       await remote(fill(ban, p, reason))
       if (save) await remote(save)
     }
     admin.unban = async (id) => {
-      await remote(fill(unban, { id }))
+      if (unban) await remote(fill(unban, { id }))
+      else if (file) removeBan(file, bans.format, id)
       if (save) await remote(save)
     }
     admin.bans = async () => readBans(file, bans.format)

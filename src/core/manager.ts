@@ -295,7 +295,8 @@ export class ServerManager extends EventEmitter {
       const steam = this.deps.steamcmd ?? { ensure: ensureSteamCmd, run: runSteamCmd }
       this.addLine(id, '[NeledPort] Preparing SteamCMD…')
       const exe = await steam.ensure(join(this.deps.dataDir, 'steamcmd'), this.deps.platform)
-      const args = appUpdateArgs({ installDir: server.installDir, appId: game.serverAppId, validate, login, mod: game.steamMod })
+      const branch = game.platforms[this.deps.platform]?.steamBranch
+      const args = appUpdateArgs({ installDir: server.installDir, appId: game.serverAppId, validate, login, mod: game.steamMod, branch })
       const onLine = (line: string) => {
         this.addLine(id, line)
         const event = parseSteamCmdLine(line)
@@ -592,7 +593,7 @@ export class ServerManager extends EventEmitter {
     return output
   }
 
-  /** Compares the installed build with the latest public build on Steam. */
+  /** Compares the installed build with the latest build on Steam of the branch the game installs from. */
   async checkBuild(id: string): Promise<BuildInfo> {
     const server = this.config(id)
     const game = this.game(server)
@@ -600,7 +601,7 @@ export class ServerManager extends EventEmitter {
     try {
       const steam = this.deps.steamcmd ?? { ensure: ensureSteamCmd, run: runSteamCmd, capture: captureSteamCmd }
       const exe = await steam.ensure(join(this.deps.dataDir, 'steamcmd'), this.deps.platform)
-      const latest = parseLatestBuild(await (steam.capture ?? captureSteamCmd)(exe, appInfoArgs(game.serverAppId)))
+      const latest = parseLatestBuild(await (steam.capture ?? captureSteamCmd)(exe, appInfoArgs(game.serverAppId)), game.platforms[this.deps.platform]?.steamBranch)
       if (!latest) throw new Error('Steam did not return build information')
       rt.latestBuild = latest
       rt.buildError = undefined

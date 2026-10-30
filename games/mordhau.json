@@ -5,19 +5,96 @@
   "serverAppId": 629800,
   "gameAppId": 629760,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Mordhau"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 16
+    },
+    {
+      "key": "map",
+      "label": "Map",
+      "type": "text",
+      "default": "FFA_ThePit"
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "Mordhau/Binaries/Linux/MordhauServer-Linux-Shipping",
       "args": [
         "Mordhau",
-        "FFA_ThePit",
+        "{setting:map}",
         "-MultiHome=0.0.0.0",
         "-Port={port:game}",
         "-BeaconPort={port:beacon}",
         "-QueryPort={port:query}",
         "-GameIni={installDir}/Mordhau/Saved/Config/LinuxServer/Game.ini",
         "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "Mordhau/Saved/Config/LinuxServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "Mordhau/Saved/Config/LinuxServer/Engine.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "Mordhau/Saved/Config/LinuxServer/Game.ini",
+          "section": "/Script/Mordhau.MordhauGameSession",
+          "set": {
+            "RconPort": "{port:rcon}",
+            "RconPassword": "{adminPassword}",
+            "ServerName": "{setting:serverName}",
+            "MaxSlots": "{setting:maxPlayers}"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "MordhauServer.exe",
+      "args": [
+        "Mordhau",
+        "{setting:map}",
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-BeaconPort={port:beacon}",
+        "-QueryPort={port:query}",
+        "-GameIni={installDir}/Mordhau/Saved/Config/WindowsServer/Game.ini",
+        "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "Mordhau/Saved/Config/WindowsServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "Mordhau/Saved/Config/WindowsServer/Engine.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "Mordhau/Saved/Config/WindowsServer/Game.ini",
+          "section": "/Script/Mordhau.MordhauGameSession",
+          "set": {
+            "RconPort": "{port:rcon}",
+            "RconPassword": "{adminPassword}",
+            "ServerName": "{setting:serverName}",
+            "MaxSlots": "{setting:maxPlayers}"
+          }
+        }
       ]
     }
   },
@@ -36,10 +113,17 @@
       "name": "query",
       "default": 27015,
       "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 27030,
+      "protocol": "tcp"
     }
   ],
+  "saveDir": "Mordhau/Saved",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "rcon"
   },
   "players": {
     "source": "a2s",

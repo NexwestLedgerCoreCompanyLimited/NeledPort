@@ -5,17 +5,118 @@
   "serverAppId": 376030,
   "gameAppId": 346110,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort ARK"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 70
+    },
+    {
+      "key": "map",
+      "label": "Map (TheIsland, TheCenter, Ragnarok...)",
+      "type": "text",
+      "default": "TheIsland"
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "ShooterGame/Binaries/Linux/ShooterGameServer",
       "args": [
-        "TheIsland?AltSaveDirectoryName=TheIsland",
+        "{setting:map}?listen?AltSaveDirectoryName={setting:map}",
         "-MultiHome=0.0.0.0",
         "-Port={port:game}",
         "-QueryPort={port:query}",
         "-AutoManagedMods",
         "-Crossplay"
+      ],
+      "configFiles": [
+        {
+          "path": "ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini",
+          "format": "ini"
+        },
+        {
+          "path": "ShooterGame/Saved/Config/LinuxServer/Game.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini",
+          "section": "ServerSettings",
+          "set": {
+            "RCONEnabled": "True",
+            "RCONPort": "{port:rcon}",
+            "ServerAdminPassword": "{adminPassword}"
+          }
+        },
+        {
+          "file": "ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini",
+          "section": "SessionSettings",
+          "set": {
+            "SessionName": "{setting:serverName}"
+          }
+        },
+        {
+          "file": "ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini",
+          "section": "/Script/Engine.GameSession",
+          "set": {
+            "MaxPlayers": "{setting:maxPlayers}"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "ShooterGame/Binaries/Win64/ShooterGameServer.exe",
+      "args": [
+        "{setting:map}?listen?AltSaveDirectoryName={setting:map}",
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-AutoManagedMods",
+        "-Crossplay"
+      ],
+      "configFiles": [
+        {
+          "path": "ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini",
+          "format": "ini"
+        },
+        {
+          "path": "ShooterGame/Saved/Config/WindowsServer/Game.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini",
+          "section": "ServerSettings",
+          "set": {
+            "RCONEnabled": "True",
+            "RCONPort": "{port:rcon}",
+            "ServerAdminPassword": "{adminPassword}"
+          }
+        },
+        {
+          "file": "ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini",
+          "section": "SessionSettings",
+          "set": {
+            "SessionName": "{setting:serverName}"
+          }
+        },
+        {
+          "file": "ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini",
+          "section": "/Script/Engine.GameSession",
+          "set": {
+            "MaxPlayers": "{setting:maxPlayers}"
+          }
+        }
       ]
     }
   },
@@ -29,13 +130,29 @@
       "name": "query",
       "default": 27015,
       "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 27020,
+      "protocol": "tcp"
     }
   ],
+  "saveDir": "ShooterGame/Saved",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "rcon",
+    "save": "SaveWorld",
+    "shutdown": "DoExit"
   },
   "players": {
-    "source": "a2s",
-    "port": "query"
+    "source": "rcon",
+    "command": "ListPlayers",
+    "pattern": "^\\d+\\. (?<name>.+), (?<id>\\d{17})\\s*$",
+    "kick": "KickPlayer {id}"
+  },
+  "bans": {
+    "method": "rcon",
+    "ban": "BanPlayer {id}",
+    "unban": "UnbanPlayer {id}"
   }
 }

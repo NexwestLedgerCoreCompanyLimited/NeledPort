@@ -4,7 +4,21 @@
   "name": "Squad 44",
   "serverAppId": 746200,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Squad 44"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 40
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "PostScriptumServer.sh",
@@ -13,6 +27,85 @@
         "-Port={port:game}",
         "-QueryPort={port:query}",
         "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "PostScriptum/ServerConfig/Server.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "PostScriptum/ServerConfig/Admins.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "PostScriptum/ServerConfig/Bans.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "PostScriptum/ServerConfig/MOTD.cfg",
+          "format": "cfg"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "PostScriptum/ServerConfig/Rcon.cfg",
+          "set": {
+            "IP": "127.0.0.1",
+            "Port": "{port:rcon}",
+            "Password": "{adminPassword}"
+          }
+        },
+        {
+          "file": "PostScriptum/ServerConfig/Server.cfg",
+          "set": {
+            "ServerName": "\"{setting:serverName}\"",
+            "MaxPlayers": "{setting:maxPlayers}"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "PostScriptumServer.exe",
+      "args": [
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "PostScriptum/ServerConfig/Server.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "PostScriptum/ServerConfig/Admins.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "PostScriptum/ServerConfig/Bans.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "PostScriptum/ServerConfig/MOTD.cfg",
+          "format": "cfg"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "PostScriptum/ServerConfig/Rcon.cfg",
+          "set": {
+            "IP": "127.0.0.1",
+            "Port": "{port:rcon}",
+            "Password": "{adminPassword}"
+          }
+        },
+        {
+          "file": "PostScriptum/ServerConfig/Server.cfg",
+          "set": {
+            "ServerName": "\"{setting:serverName}\"",
+            "MaxPlayers": "{setting:maxPlayers}"
+          }
+        }
       ]
     }
   },
@@ -26,13 +119,29 @@
       "name": "query",
       "default": 10037,
       "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 21114,
+      "protocol": "tcp"
     }
   ],
+  "saveDir": "PostScriptum/ServerConfig",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "rcon"
   },
   "players": {
-    "source": "a2s",
-    "port": "query"
+    "source": "rcon",
+    "command": "ListPlayers",
+    "pattern": "^ID: \\d+ \\| (?:SteamID: |Online IDs:[^|]*?steam: )(?<id>\\d{17})[^|]*\\| Name: (?<name>.+?) \\| Team ID:",
+    "kick": "AdminKick {id} {reason}"
+  },
+  "bans": {
+    "method": "rcon",
+    "ban": "AdminBan {id} 0 {reason}",
+    "file": "PostScriptum/ServerConfig/Bans.cfg",
+    "format": "squad-cfg",
+    "save": "AdminReloadServerConfig"
   }
 }

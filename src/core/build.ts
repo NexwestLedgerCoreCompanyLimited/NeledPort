@@ -8,13 +8,13 @@ export function installedBuild(installDir: string, appId: number): string | unde
   return /"buildid"\s+"(\d+)"/.exec(readFileSync(file, 'utf8'))?.[1]
 }
 
-/** Latest public build id from `steamcmd +app_info_print <appid>` output. */
-export function parseLatestBuild(appInfo: string): string | undefined {
+/** Latest build id of a branch (public unless the game installs a beta) from `steamcmd +app_info_print <appid>` output. */
+export function parseLatestBuild(appInfo: string, branch = 'public'): string | undefined {
   const branches = appInfo.indexOf('"branches"')
   if (branches < 0) return undefined
-  const publicBranch = appInfo.indexOf('"public"', branches)
-  if (publicBranch < 0) return undefined
-  return /"buildid"\s+"(\d+)"/.exec(appInfo.slice(publicBranch))?.[1]
+  const at = appInfo.indexOf(`"${branch}"`, branches)
+  if (at < 0) return undefined
+  return /"buildid"\s+"(\d+)"/.exec(appInfo.slice(at))?.[1]
 }
 
 export function appInfoArgs(appId: number): string[] {

@@ -5,13 +5,19 @@
   "serverAppId": 2728330,
   "gameAppId": 1766060,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
       "label": "Server name",
       "type": "text",
       "default": "NeledPort server"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 16
     }
   ],
   "platforms": {
@@ -22,6 +28,26 @@
         "-port={port:game}",
         "-queryport={port:query}",
         "-steamservername={setting:serverName}"
+      ],
+      "steamBranch": "linuxbranch",
+      "configFiles": [
+        {
+          "path": "HumanitZServer/GameServerSettings.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "HumanitZServer/GameServerSettings.ini",
+          "section": "Host Settings",
+          "set": {
+            "ServerName": "\"{setting:serverName}\"",
+            "MaxPlayers": "{setting:maxPlayers}",
+            "RCONEnabled": "true",
+            "RConPort": "{port:rcon}",
+            "RCONPass": "{adminPassword}"
+          }
+        }
       ]
     }
   },
@@ -35,13 +61,29 @@
       "name": "query",
       "default": 27015,
       "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 8888,
+      "protocol": "tcp"
     }
   ],
+  "saveDir": "HumanitZServer/Saved",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "rcon",
+    "save": "save",
+    "shutdown": "shutdown"
   },
   "players": {
-    "source": "a2s",
-    "port": "query"
+    "source": "rcon",
+    "command": "Players",
+    "pattern": "^(?<name>.+?) \\((?<id>\\d{17})_\\+_",
+    "kick": "kick {id}"
+  },
+  "bans": {
+    "method": "rcon",
+    "ban": "ban {id}",
+    "unban": "unban {id}"
   }
 }

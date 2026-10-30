@@ -266,7 +266,8 @@
           "enum": [
             "lines",
             "rust-cfg",
-            "source-cfg"
+            "source-cfg",
+            "squad-cfg"
           ]
         },
         "ban": {
@@ -502,6 +503,11 @@
               }
             }
           }
+        },
+        "steamBranch": {
+          "description": "Steam beta branch holding this platform's server, such as HumanitZ's \"linuxbranch\".",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]{1,64}$"
         },
         "configWrites": {
           "description": "Values written into the game's own config on every start (RCON password, ports, name); templates like args.",

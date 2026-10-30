@@ -5,7 +5,7 @@
   "serverAppId": 581330,
   "gameAppId": 581320,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -35,10 +35,82 @@
         "-QueryPort={port:query}",
         "-hostname={setting:serverName}",
         "-Rcon",
-        "-RconPassword={adminPassword}",
         "-RconListenPort={port:rcon}",
         "-GSLTToken={setting:gslt}",
         "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "Insurgency/Saved/Config/LinuxServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "Insurgency/Saved/Config/LinuxServer/Engine.ini",
+          "format": "ini"
+        },
+        {
+          "path": "Insurgency/Config/Server/Admins.txt",
+          "format": "txt"
+        },
+        {
+          "path": "Insurgency/Config/Server/MapCycle.txt",
+          "format": "txt"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "Insurgency/Saved/Config/LinuxServer/Game.ini",
+          "section": "Rcon",
+          "set": {
+            "bEnabled": "True",
+            "Password": "{adminPassword}",
+            "ListenPort": "{port:rcon}",
+            "bAllowConsoleCommands": "True"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "InsurgencyServer.exe",
+      "args": [
+        "Oilfield?Scenario=Scenario_Refinery_Push_Security?MaxPlayers={setting:maxPlayers}",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-hostname={setting:serverName}",
+        "-Rcon",
+        "-RconListenPort={port:rcon}",
+        "-GSLTToken={setting:gslt}",
+        "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "Insurgency/Saved/Config/WindowsServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "Insurgency/Saved/Config/WindowsServer/Engine.ini",
+          "format": "ini"
+        },
+        {
+          "path": "Insurgency/Config/Server/Admins.txt",
+          "format": "txt"
+        },
+        {
+          "path": "Insurgency/Config/Server/MapCycle.txt",
+          "format": "txt"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "Insurgency/Saved/Config/WindowsServer/Game.ini",
+          "section": "Rcon",
+          "set": {
+            "bEnabled": "True",
+            "Password": "{adminPassword}",
+            "ListenPort": "{port:rcon}",
+            "bAllowConsoleCommands": "True"
+          }
+        }
       ]
     }
   },
@@ -59,11 +131,20 @@
       "protocol": "tcp"
     }
   ],
+  "saveDir": "Insurgency/Saved",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "rcon"
   },
   "players": {
-    "source": "a2s",
-    "port": "query"
+    "source": "rcon",
+    "command": "listplayers",
+    "pattern": "\\|\\s*(?<name>[^|\\r\\n]+?)\\s*\\|\\s*(?<id>SteamNWI:\\d{17})",
+    "kick": "kick {id} {reason}"
+  },
+  "bans": {
+    "method": "rcon",
+    "ban": "permban {id} {reason}",
+    "unban": "unban {id}"
   }
 }

@@ -5,7 +5,21 @@
   "serverAppId": 403240,
   "gameAppId": 393380,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
+  "settings": [
+    {
+      "key": "serverName",
+      "label": "Server name",
+      "type": "text",
+      "default": "NeledPort Squad"
+    },
+    {
+      "key": "maxPlayers",
+      "label": "Max players",
+      "type": "number",
+      "default": 100
+    }
+  ],
   "platforms": {
     "linux": {
       "executable": "SquadGameServer.sh",
@@ -13,6 +27,84 @@
         "-MultiHome=0.0.0.0",
         "-Port={port:game}",
         "-QueryPort={port:query}"
+      ],
+      "configFiles": [
+        {
+          "path": "SquadGame/ServerConfig/Server.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "SquadGame/ServerConfig/Admins.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "SquadGame/ServerConfig/Bans.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "SquadGame/ServerConfig/MOTD.cfg",
+          "format": "cfg"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "SquadGame/ServerConfig/Rcon.cfg",
+          "set": {
+            "IP": "127.0.0.1",
+            "Port": "{port:rcon}",
+            "Password": "{adminPassword}"
+          }
+        },
+        {
+          "file": "SquadGame/ServerConfig/Server.cfg",
+          "set": {
+            "ServerName": "\"{setting:serverName}\"",
+            "MaxPlayers": "{setting:maxPlayers}"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "SquadServer.exe",
+      "args": [
+        "-MultiHome=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}"
+      ],
+      "configFiles": [
+        {
+          "path": "SquadGame/ServerConfig/Server.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "SquadGame/ServerConfig/Admins.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "SquadGame/ServerConfig/Bans.cfg",
+          "format": "cfg"
+        },
+        {
+          "path": "SquadGame/ServerConfig/MOTD.cfg",
+          "format": "cfg"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "SquadGame/ServerConfig/Rcon.cfg",
+          "set": {
+            "IP": "127.0.0.1",
+            "Port": "{port:rcon}",
+            "Password": "{adminPassword}"
+          }
+        },
+        {
+          "file": "SquadGame/ServerConfig/Server.cfg",
+          "set": {
+            "ServerName": "\"{setting:serverName}\"",
+            "MaxPlayers": "{setting:maxPlayers}"
+          }
+        }
       ]
     }
   },
@@ -26,13 +118,29 @@
       "name": "query",
       "default": 27165,
       "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 21114,
+      "protocol": "tcp"
     }
   ],
+  "saveDir": "SquadGame/ServerConfig",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "rcon"
   },
   "players": {
-    "source": "a2s",
-    "port": "query"
+    "source": "rcon",
+    "command": "ListPlayers",
+    "pattern": "^ID: \\d+ \\| (?:SteamID: |Online IDs:[^|]*?steam: )(?<id>\\d{17})[^|]*\\| Name: (?<name>.+?) \\| Team ID:",
+    "kick": "AdminKick {id} {reason}"
+  },
+  "bans": {
+    "method": "rcon",
+    "ban": "AdminBan {id} 0 {reason}",
+    "file": "SquadGame/ServerConfig/Bans.cfg",
+    "format": "squad-cfg",
+    "save": "AdminReloadServerConfig"
   }
 }

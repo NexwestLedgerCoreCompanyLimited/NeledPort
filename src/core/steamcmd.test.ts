@@ -38,6 +38,12 @@ describe('appUpdateArgs', () => {
     expect(args).toEqual(['+force_install_dir', '/srv/dod', '+login', 'anonymous', '+app_set_config', '90', 'mod', 'dod', '+app_update', '90', '+quit'])
   })
 
+  // HumanitZ ships its Linux server only on the "linuxbranch" beta (LinuxGSM installs it the same way).
+  it('downloads a beta branch when the game needs one', () => {
+    const args = appUpdateArgs({ installDir: '/srv/hz', appId: 2728330, validate: true, branch: 'linuxbranch' })
+    expect(args.slice(-6)).toEqual(['+app_update', '2728330', '-beta', 'linuxbranch', 'validate', '+quit'])
+  })
+
   it('logs in with the Steam account when the game needs one', () => {
     const args = appUpdateArgs({ installDir: '/srv/arma', appId: 233780, validate: false, login: 'gamer_1' })
     expect(args).toEqual(['+force_install_dir', '/srv/arma', '+login', 'gamer_1', '+app_update', '233780', '+quit'])

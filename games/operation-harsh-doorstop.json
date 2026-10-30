@@ -5,7 +5,7 @@
   "serverAppId": 950900,
   "gameAppId": 736590,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -31,6 +31,27 @@
         "-RconPort={port:rcon}",
         "-SteamServerName={setting:serverName}",
         "-log"
+      ],
+      "configFiles": [
+        {
+          "path": "HarshDoorstop/Saved/Config/LinuxServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "HarshDoorstop/Saved/Config/LinuxServer/Engine.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "HarshDoorstop/Saved/Config/LinuxServer/Game.ini",
+          "section": "/Script/RCON.RCONServerSystem",
+          "set": {
+            "bEnabled": "True",
+            "ListenPort": "{port:rcon}",
+            "Password": "{adminPassword}"
+          }
+        }
       ]
     }
   },
@@ -51,8 +72,10 @@
       "protocol": "tcp"
     }
   ],
+  "saveDir": "HarshDoorstop/Saved",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "rcon"
   },
   "players": {
     "source": "a2s",

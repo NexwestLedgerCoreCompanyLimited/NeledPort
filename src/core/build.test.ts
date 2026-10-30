@@ -50,6 +50,10 @@ describe('parseLatestBuild', () => {
     expect(parseLatestBuild(APP_INFO)).toBe('20400000')
   })
 
+  it('reads the beta branch a game installs from', () => {
+    expect(parseLatestBuild(APP_INFO, 'public-test')).toBe('20500000')
+  })
+
   it('returns undefined when the output has no branch info', () => {
     expect(parseLatestBuild('No app info for AppID 1 found')).toBeUndefined()
   })

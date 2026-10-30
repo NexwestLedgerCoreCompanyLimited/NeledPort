@@ -5,7 +5,7 @@
   "serverAppId": 443030,
   "gameAppId": 440900,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -31,6 +31,68 @@
         "-QueryPort={port:query}",
         "-ServerName={setting:serverName}",
         "-MaxPlayers={setting:maxPlayers}"
+      ],
+      "configFiles": [
+        {
+          "path": "ConanSandbox/Saved/Config/LinuxServer/ServerSettings.ini",
+          "format": "ini"
+        },
+        {
+          "path": "ConanSandbox/Saved/Config/LinuxServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "ConanSandbox/Saved/Config/LinuxServer/Engine.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "ConanSandbox/Saved/Config/LinuxServer/Game.ini",
+          "section": "RconPlugin",
+          "set": {
+            "RconEnabled": "1",
+            "RconPassword": "{adminPassword}",
+            "RconPort": "{port:rcon}"
+          }
+        }
+      ]
+    },
+    "windows": {
+      "executable": "ConanSandboxServer.exe",
+      "args": [
+        "ConanSandbox",
+        "-log",
+        "-MULTIHOME=0.0.0.0",
+        "-Port={port:game}",
+        "-QueryPort={port:query}",
+        "-ServerName={setting:serverName}",
+        "-MaxPlayers={setting:maxPlayers}"
+      ],
+      "configFiles": [
+        {
+          "path": "ConanSandbox/Saved/Config/WindowsServer/ServerSettings.ini",
+          "format": "ini"
+        },
+        {
+          "path": "ConanSandbox/Saved/Config/WindowsServer/Game.ini",
+          "format": "ini"
+        },
+        {
+          "path": "ConanSandbox/Saved/Config/WindowsServer/Engine.ini",
+          "format": "ini"
+        }
+      ],
+      "configWrites": [
+        {
+          "file": "ConanSandbox/Saved/Config/WindowsServer/Game.ini",
+          "section": "RconPlugin",
+          "set": {
+            "RconEnabled": "1",
+            "RconPassword": "{adminPassword}",
+            "RconPort": "{port:rcon}"
+          }
+        }
       ]
     }
   },
@@ -44,13 +106,25 @@
       "name": "query",
       "default": 27015,
       "protocol": "udp"
+    },
+    {
+      "name": "rcon",
+      "default": 25575,
+      "protocol": "tcp"
     }
   ],
+  "saveDir": "ConanSandbox/Saved",
   "control": {
-    "type": "signal"
+    "type": "rcon",
+    "port": "rcon"
   },
   "players": {
     "source": "a2s",
     "port": "query"
+  },
+  "bans": {
+    "method": "file",
+    "file": "ConanSandbox/Saved/blacklist.txt",
+    "format": "lines"
   }
 }
