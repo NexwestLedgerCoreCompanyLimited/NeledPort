@@ -271,7 +271,7 @@ export class ServerManager extends EventEmitter {
       const steam = this.deps.steamcmd ?? { ensure: ensureSteamCmd, run: runSteamCmd }
       this.addLine(id, '[NeledPort] Preparing SteamCMD…')
       const exe = await steam.ensure(join(this.deps.dataDir, 'steamcmd'), this.deps.platform)
-      const args = appUpdateArgs({ installDir: server.installDir, appId: game.serverAppId, validate, login })
+      const args = appUpdateArgs({ installDir: server.installDir, appId: game.serverAppId, validate, login, mod: game.steamMod })
       const onLine = (line: string) => {
         this.addLine(id, line)
         const event = parseSteamCmdLine(line)
@@ -379,7 +379,7 @@ export class ServerManager extends EventEmitter {
       }
     } else if (control?.type === 'stdin') {
       graceful = () => proc.write(control.shutdown ?? 'quit')
-    } else if (control?.type === 'rcon' || control?.type === 'webrcon') {
+    } else if (control?.type === 'rcon' || control?.type === 'webrcon' || control?.type === 'goldsrc') {
       const admin = this.admin(server)
       graceful = async () => {
         try {

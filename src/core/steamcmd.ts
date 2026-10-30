@@ -23,13 +23,15 @@ export const isSteamUser = (value: unknown): value is string => typeof value ===
 /** True when SteamCMD logged in with its saved session (it prints this only after a successful login). */
 export const parseSignedIn = (output: string): boolean => /Waiting for user info\.\.\.OK/.test(output)
 
-export function appUpdateArgs(o: { installDir: string; appId: number; validate: boolean; login?: string }): string[] {
+export function appUpdateArgs(o: { installDir: string; appId: number; validate: boolean; login?: string; mod?: string }): string[] {
   // force_install_dir must come before login or SteamCMD ignores it.
   return [
     '+force_install_dir',
     o.installDir,
     '+login',
     o.login ?? 'anonymous',
+    // HLDS (app 90) serves several games; the mod setting picks which one is downloaded.
+    ...(o.mod ? ['+app_set_config', String(o.appId), 'mod', o.mod] : []),
     '+app_update',
     String(o.appId),
     ...(o.validate ? ['validate'] : []),

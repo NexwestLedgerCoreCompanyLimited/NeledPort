@@ -42,6 +42,11 @@
       "description": "true if SteamCMD can download the server with +login anonymous.",
       "type": "boolean"
     },
+    "steamMod": {
+      "description": "HLDS (app 90) game to download: SteamCMD's app_set_config mod value, such as \"dod\".",
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
     "tier": {
       "description": "full = every feature tested; basic = install, run, console; custom = user-defined.",
       "enum": [
@@ -162,6 +167,7 @@
           "enum": [
             "rcon",
             "webrcon",
+            "goldsrc",
             "rest",
             "stdin",
             "signal"

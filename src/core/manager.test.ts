@@ -91,7 +91,8 @@ function setup(platform: Platform = 'linux', opts: { busyPorts?: number[]; insta
     portFree: async (port) => !(opts.busyPorts ?? []).includes(port),
     net: {
       webrcon: async (o, cmd) => (restCalls.push(`web:${cmd}`), cmd === 'status' ? 'hostname: test\nplayers : 0' : ''),
-      rcon: async (o, cmd) => (restCalls.push(`rcon:${cmd}`), '')
+      rcon: async (o, cmd) => (restCalls.push(`rcon:${cmd}`), ''),
+      goldsrc: async (o, cmd) => (restCalls.push(`gold:${cmd}`), '')
     },
     download: async (url) => {
       log.push(`download ${url.split('/').pop() || url}`)
@@ -578,6 +579,21 @@ describe('Source engine servers', () => {
     expect(password.length).toBeGreaterThanOrEqual(16)
     expect(processes[0].spec!.args).not.toContain(password)
     expect(processes[0].spec!.args).toEqual(expect.arrayContaining(['+servercfgfile', 'neledport.cfg', '+map', 'cp_badlands']))
+  })
+})
+
+describe('GoldSrc servers', () => {
+  it('installs the chosen Half-Life mod and stops with quit over UDP RCON', async () => {
+    const { manager, steamArgs, restCalls, log } = setup()
+    const { id } = manager.create({ gameId: 'day-of-defeat', name: 'DoD', settings: { serverName: 'DoD Night', maxPlayers: '16' } })
+    await manager.install(id)
+    expect(steamArgs[0]).toEqual(expect.arrayContaining(['+app_set_config', '90', 'mod', 'dod']))
+    expect(steamArgs[0].indexOf('+app_set_config')).toBeLessThan(steamArgs[0].indexOf('+app_update'))
+    await manager.start(id)
+    log.length = 0
+    await manager.stop(id)
+    expect(restCalls).toEqual(['gold:quit'])
+    expect(log).not.toContain('interrupt')
   })
 })
 

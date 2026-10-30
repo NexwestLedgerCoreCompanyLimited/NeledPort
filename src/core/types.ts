@@ -23,6 +23,8 @@ export interface GameDefinition {
   serverAppId: number
   gameAppId?: number
   anonymous: boolean
+  /** HLDS (app 90) game to download: SteamCMD's app_set_config mod value, such as "dod". */
+  steamMod?: string
   tier: 'full' | 'basic' | 'custom'
   platforms: Partial<Record<Platform, PlatformDefinition>>
   ports: { name: string; default: number; protocol: 'udp' | 'tcp' }[]
@@ -30,7 +32,7 @@ export interface GameDefinition {
   configAdapter?: 'palworld' | 'source'
   saveDir?: string
   control?: {
-    type: 'rcon' | 'webrcon' | 'rest' | 'stdin' | 'signal'
+    type: 'rcon' | 'webrcon' | 'goldsrc' | 'rest' | 'stdin' | 'signal'
     save?: string
     shutdown?: string
     rest?: { port: string; basePath: string; username: string }

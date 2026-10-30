@@ -196,6 +196,67 @@ describe('Source engine admin (RCON)', () => {
   })
 })
 
+// GoldSrc (Half-Life 1) games: Counter-Strike 1.6, Day of Defeat, Team Fortress Classic, ...
+const goldGame: GameDefinition = {
+  ...sourceGame,
+  id: 'cs16-like',
+  control: { type: 'goldsrc', port: 'game', shutdown: 'quit' },
+  bans: { method: 'rcon', file: 'cstrike/banned.cfg', format: 'source-cfg' }
+}
+
+const GOLDSRC_STATUS = `hostname:  NeledPort CS
+version :  48/1.1.2.7/Stdio 10211 secure  (10)
+players :  3 active (16 max)
+
+#      name userid uniqueid frag time ping loss adr
+# 1 "Mira" 2 STEAM_0:1:12345   3 01:02:03   45    0 203.0.113.9:27005
+# 2 "Rook "x"" 3 STEAM_0:0:67890  -1 00:42   80    0 198.51.100.7:27005
+# 3 "Bot01" 4 BOT   0 00:10    0    0
+3 users
+`
+
+describe('GoldSrc admin (UDP RCON)', () => {
+  function gold(status: string) {
+    const calls: string[] = []
+    const net: AdminNet = { goldsrc: async (o, cmd) => (calls.push(`gold:${o.port}:${cmd}`), cmd === 'status' ? status : '') }
+    return { calls, admin: adminFor({ game: goldGame, installDir: dir(), ports: { game: 27015 }, adminPassword: 'pw', net }) }
+  }
+
+  it('lists players from the GoldSrc status table, skipping bots', async () => {
+    expect(await gold(GOLDSRC_STATUS).admin.players()).toEqual([
+      { id: 'STEAM_0:1:12345', name: 'Mira', ping: 45, seconds: 3723 },
+      { id: 'STEAM_0:0:67890', name: 'Rook "x"', ping: 80, seconds: 42 }
+    ])
+  })
+
+  it('bans in the STEAM_0 form GoldSrc knows, and kicks by #userid', async () => {
+    const { calls, admin } = gold(GOLDSRC_STATUS)
+    await admin.ban!({ id: '[U:1:1555]', name: 'Kai' }, 'grief')
+    await admin.ban!({ id: '76561198000000001', name: 'Pasted' }, '')
+    await admin.unban!('STEAM_0:1:777')
+    await admin.kick!({ id: 'STEAM_0:0:67890', name: 'Rook' }, 'spam')
+    expect(calls).toEqual([
+      'gold:27015:banid 0 STEAM_0:1:777 kick',
+      'gold:27015:writeid',
+      'gold:27015:banid 0 STEAM_0:1:19867136 kick',
+      'gold:27015:writeid',
+      'gold:27015:removeid STEAM_0:1:777',
+      'gold:27015:writeid',
+      'gold:27015:status',
+      'gold:27015:kick #3 "spam"'
+    ])
+    await expect(admin.ban!({ id: 'STEAM_0:1:1 ; quit', name: 'x' }, '')).rejects.toThrow(/SteamID/)
+  })
+
+  it('reads banned.cfg as written by writeid', async () => {
+    const d = dir()
+    mkdirSync(join(d, 'cstrike'), { recursive: true })
+    writeFileSync(join(d, 'cstrike/banned.cfg'), 'banid 0.0 STEAM_0:1:777\r\n')
+    const admin = adminFor({ game: goldGame, installDir: d, ports: { game: 27015 }, adminPassword: 'pw', net: {} })
+    expect(await admin.bans!()).toEqual([{ id: 'STEAM_0:1:777' }])
+  })
+})
+
 describe('Counter-Strike 2 admin (RCON + A2S)', () => {
   it('lists players by query and kicks by quoted name', async () => {
     const { calls, net } = recorder()

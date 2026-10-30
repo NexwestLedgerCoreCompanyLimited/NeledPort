@@ -32,6 +32,12 @@ describe('appUpdateArgs', () => {
     expect(args.slice(-3)).toEqual(['2394010', 'validate', '+quit'])
   })
 
+  // HLDS (app 90) holds several games; app_set_config picks which one SteamCMD downloads (WindowsGSM does the same).
+  it('chooses the Half-Life mod before updating', () => {
+    const args = appUpdateArgs({ installDir: '/srv/dod', appId: 90, validate: false, mod: 'dod' })
+    expect(args).toEqual(['+force_install_dir', '/srv/dod', '+login', 'anonymous', '+app_set_config', '90', 'mod', 'dod', '+app_update', '90', '+quit'])
+  })
+
   it('logs in with the Steam account when the game needs one', () => {
     const args = appUpdateArgs({ installDir: '/srv/arma', appId: 233780, validate: false, login: 'gamer_1' })
     expect(args).toEqual(['+force_install_dir', '/srv/arma', '+login', 'gamer_1', '+app_update', '233780', '+quit'])

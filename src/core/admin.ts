@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { queryPlayers } from './a2s'
+import { goldsrcRconExec } from './goldsrc'
 import { palworldRest } from './palworld'
 import { rconExec } from './rcon'
 import type { AdminCapabilities, BanEntry, GameDefinition, PlayerInfo } from './types'
@@ -20,6 +21,7 @@ type Remote = (o: { port: number; password: string }, command: string) => Promis
 export interface AdminNet {
   rcon?: Remote
   webrcon?: Remote
+  goldsrc?: Remote
   a2s?: (port: number) => Promise<{ name: string; score: number; seconds: number }[]>
   rest?: (o: { port: number; basePath: string; username: string; password: string }) => {
     players(): Promise<{ players?: { name: string; userId: string; ping?: number }[] }>
@@ -129,24 +131,45 @@ function parseSourceStatus(text: string): (PlayerInfo & { userid: number })[] {
   })
 }
 
+/** GoldSrc status: # slot "name" userid uniqueid frag time ping loss adr. Bots and HLTV have no SteamID. */
+function parseGoldsrcStatus(text: string): (PlayerInfo & { userid: number })[] {
+  return text.split(/\r?\n/).flatMap((line) => {
+    const m = /^#\s*\d+\s+"(.*)"\s+(\d+)\s+(\S+)\s+-?\d+\s+(\d+(?::\d+){1,2})\s+(\d+)\s+\d+/.exec(line)
+    if (!m || !m[3].startsWith('STEAM_')) return []
+    const seconds = m[4].split(':').reduce((total, part) => total * 60 + Number(part), 0)
+    return [{ userid: Number(m[2]), id: m[3], name: m[1], ping: Number(m[5]), seconds }]
+  })
+}
+
+/** Steam account number from STEAM_X:Y:Z, [U:1:N] or SteamID64; anything else is refused (IDs go into commands unquoted). */
+function accountId(id: string): bigint {
+  const text = id.trim()
+  const legacy = /^STEAM_[0-5]:([01]):(\d{1,10})$/.exec(text)
+  if (legacy) return BigInt(legacy[2]) * 2n + BigInt(legacy[1])
+  const id3 = /^\[U:1:(\d{1,10})\]$/.exec(text)
+  if (id3) return BigInt(id3[1])
+  if (/^7656119\d{10}$/.test(text)) return BigInt(text) - 76561197960265728n
+  throw new Error(`"${id}" is not a SteamID (use STEAM_0:1:123, [U:1:123] or a 7656119… number)`)
+}
+
+/** GoldSrc only knows STEAM_0:Y:Z. */
+const steamId2 = (id: string) => {
+  const account = accountId(id)
+  return `STEAM_0:${account % 2n}:${account / 2n}`
+}
+
 /**
  * A SteamID as Source stores bans: [U:1:N]. Real servers refuse a quoted ID in banid and write every ban in this form,
  * so the ID is sent unquoted and must be nothing but a SteamID. Accepts STEAM_X:Y:Z, [U:1:N] and SteamID64.
  */
-function steamId3(id: string): string {
-  const text = id.trim()
-  const legacy = /^STEAM_[0-5]:([01]):(\d{1,10})$/.exec(text)
-  if (legacy) return `[U:1:${Number(legacy[2]) * 2 + Number(legacy[1])}]`
-  if (/^\[U:1:\d{1,10}\]$/.test(text)) return text
-  if (/^7656119\d{10}$/.test(text)) return `[U:1:${BigInt(text) - 76561197960265728n}]`
-  throw new Error(`"${id}" is not a SteamID (use STEAM_0:1:123, [U:1:123] or a 7656119… number)`)
-}
+const steamId3 = (id: string) => `[U:1:${accountId(id)}]`
 
 export function adminFor(ctx: AdminContext): Admin {
   const { game, installDir, ports, adminPassword } = ctx
   const net = {
     rcon: ctx.net?.rcon ?? rconExec,
     webrcon: ctx.net?.webrcon ?? webRconExec,
+    goldsrc: ctx.net?.goldsrc ?? goldsrcRconExec,
     a2s: ctx.net?.a2s ?? ((port: number) => queryPlayers(port)),
     rest: ctx.net?.rest ?? palworldRest
   }
@@ -160,7 +183,9 @@ export function adminFor(ctx: AdminContext): Admin {
       ? (cmd) => net.webrcon({ port: remotePort, password: adminPassword }, cmd)
       : control?.type === 'rcon' && remotePort
         ? (cmd) => net.rcon({ port: remotePort, password: adminPassword }, cmd)
-        : undefined
+        : control?.type === 'goldsrc' && remotePort
+          ? (cmd) => net.goldsrc({ port: remotePort, password: adminPassword }, cmd)
+          : undefined
 
   if (control?.type === 'rest' && control.rest) {
     const api = net.rest({ port: ports[control.rest.port], basePath: control.rest.basePath, username: control.rest.username, password: adminPassword })
@@ -187,9 +212,11 @@ export function adminFor(ctx: AdminContext): Admin {
 
   if (remote) {
     admin.command = remote
-    // Source engine: status rows carry the SteamID that kickid, banid and removeid need.
-    const sourceIds = control?.type === 'rcon' && game.players?.source === 'rcon'
-    if (sourceIds) admin.players = async () => parseSourceStatus(await remote('status')).map(({ userid: _, ...p }) => p)
+    // Source and GoldSrc: status rows carry the SteamID that bans need and the userid that kicks use.
+    const goldsrc = control?.type === 'goldsrc'
+    const sourceIds = (control?.type === 'rcon' || goldsrc) && game.players?.source === 'rcon'
+    const statusRows = async () => (goldsrc ? parseGoldsrcStatus : parseSourceStatus)(await remote('status'))
+    if (sourceIds) admin.players = async () => (await statusRows()).map(({ userid: _, ...p }) => p)
     if (game.players?.source === 'rcon' && control?.type === 'webrcon') {
       admin.players = async () =>
         (JSON.parse((await remote('playerlist')) || '[]') as { SteamID: string; DisplayName: string; Ping: number; ConnectedSeconds: number }[]).map((p) => ({
@@ -208,18 +235,19 @@ export function adminFor(ctx: AdminContext): Admin {
     // kickid with the userid from status: the standard form, with no SteamID parsing involved.
     if (sourceIds) {
       admin.kick = async (p, reason) => {
-        const row = parseSourceStatus(await remote('status')).find((r) => r.id === p.id)
+        const row = (await statusRows()).find((r) => r.id === p.id)
         if (!row) throw new Error(`${p.name} is not on the server any more`)
-        await remote(`kickid ${row.userid}${reason ? ` "${q(reason)}"` : ''}`)
+        await remote(`${goldsrc ? `kick #${row.userid}` : `kickid ${row.userid}`}${reason ? ` "${q(reason)}"` : ''}`)
       }
     }
-    if (game.bans?.method === 'rcon' && control?.type === 'rcon') {
+    if (game.bans?.method === 'rcon' && (control?.type === 'rcon' || goldsrc)) {
+      const steamId = goldsrc ? steamId2 : steamId3
       admin.ban = async (p) => {
-        await remote(`banid 0 ${steamId3(p.id)} kick`)
+        await remote(`banid 0 ${steamId(p.id)} kick`)
         await remote('writeid')
       }
       admin.unban = async (id) => {
-        await remote(`removeid ${steamId3(id)}`)
+        await remote(`removeid ${steamId(id)}`)
         await remote('writeid')
       }
       admin.bans = async () => readBans(file, game.bans?.format)
