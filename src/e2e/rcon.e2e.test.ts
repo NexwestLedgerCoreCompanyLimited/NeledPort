@@ -12,6 +12,8 @@ const gameId = process.env.NELEDPORT_E2E_GAME ?? 'ark-survival-evolved'
 const game = loadCatalog(join(__dirname, '../../games')).games.find((g) => g.id === gameId)!
 // Games whose player list comes from A2S: a harmless command that shows what their own listing prints.
 const PROBE: Record<string, string> = { 'conan-exiles': 'listplayers', mordhau: 'playerlist', 'operation-harsh-doorstop': 'status', soulmask: 'help', cs2: 'status' }
+// Minutes to wait for the remote console: ARK loads for a long time on a 4-core CI machine.
+const SLOW_START: Record<string, number> = { 'ark-survival-evolved': 50 }
 // Games whose ban command only finds players who are online (no file is written for anyone else).
 const ONLINE_ONLY_BANS = new Set(['pavlov-vr'])
 // A SteamID64 no player owns (account 1), for the ban round trip.
@@ -35,7 +37,7 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
 
       // RCON answering is the sign the server is up and read the port and password NeledPort wrote into its config.
       const probe = game.players?.command ?? PROBE[gameId] ?? 'help'
-      console.log(`${probe}:`, await retry(manager, id, () => manager.command(id, probe), 25 * 60_000))
+      console.log(`${probe}:`, await retry(manager, id, () => manager.command(id, probe), (SLOW_START[gameId] ?? 25) * 60_000))
       if (game.players?.command) expect(await manager.players(id)).toEqual([])
 
       if (game.bans?.format === 'squad-cfg') {

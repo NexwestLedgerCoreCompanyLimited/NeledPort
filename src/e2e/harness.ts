@@ -63,6 +63,8 @@ export async function withGameLogs<T>(installDir: string, run: () => Promise<T>)
     const dirs = [installDir, ...(existsSync(unity) ? [unity] : [])]
     const files = execFileSync('find', [...dirs, '-name', '*.log', '-size', '-50M', '-not', '-path', '*/steamapps/*'], { encoding: 'utf8' }).trim()
     for (const file of files ? files.split('\n') : []) console.log(`--- ${file}\n${execFileSync('tail', ['-n', '60', file], { encoding: 'utf8' })}`)
+    // Which ports the server really listens on (a remote console on another port, or none yet).
+    console.log(`--- listening sockets\n${execFileSync('ss', ['-lntup'], { encoding: 'utf8' })}`)
     throw e
   }
 }
