@@ -67,8 +67,8 @@ With the `.deb`, install the new `.deb` from Releases.
 
 | Game | Support | Status |
 |---|---|---|
-| Palworld | full | install, run, update, players, kick/ban, console, settings file |
-| Valheim | full | install, run, update, players, bans, BepInEx mods; tested on real Linux servers weekly |
+| Palworld | full | install, run, update, players, kick/ban, console, settings file; tested on a real Linux server weekly |
+| Valheim | full | install, run, update, players, bans, BepInEx mods; tested on real Linux and Windows servers weekly |
 | Rust | full | install, run, update, players, kick/ban, WebRCON console, Oxide plugins, server.cfg |
 | Counter-Strike 2 | basic | install, run, RCON console, players, kick, Workshop maps, server.cfg |
 | SCUM | basic | install, run, players (Windows only) |

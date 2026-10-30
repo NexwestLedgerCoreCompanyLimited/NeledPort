@@ -97,7 +97,11 @@ export class ServerProcess extends EventEmitter {
       new Promise<boolean>((r) => setTimeout(() => r(true), o.timeoutMs))
     ])
     if (!timedOut) return { forced: false }
-    this.addLine('[NeledPort] The server did not stop in time and was forced to quit.')
+    this.addLine(
+      o.timeoutMs > 0
+        ? '[NeledPort] The server did not stop in time and was forced to quit.'
+        : '[NeledPort] This server cannot be asked to save on this system. Closing the server now.'
+    )
     this.killTree()
     await exited
     return { forced: true }

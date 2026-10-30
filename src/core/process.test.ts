@@ -64,6 +64,16 @@ describe('ServerProcess', () => {
     expect(p.lines().at(-1)).toMatch(/forced/i)
   })
 
+  // Windows signal-only games (Valheim) are closed at once on purpose, after a backup: no "did not stop in time".
+  it('closes at once without calling it a timeout when asked for no wait', async () => {
+    const p = make()
+    p.start(spec('stubborn'))
+    await waitFor(p, 'running')
+    expect(await p.stop({ timeoutMs: 0 })).toEqual({ forced: true })
+    expect(p.lines().join('\n')).not.toMatch(/did not stop in time/)
+    expect(p.lines().at(-1)).toMatch(/Closing the server now/)
+  })
+
   it('reports a crash', async () => {
     const p = make()
     p.start(spec('crash'))
