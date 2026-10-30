@@ -47,13 +47,14 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
         expect((await manager.bans(id)).map((b) => b.id)).not.toContain(nobody)
         console.log('AdminReloadServerConfig:', await manager.command(id, 'AdminReloadServerConfig'))
       } else if (manager.get(id).admin.ban) {
-        const banned = gameId === 'insurgency-sandstorm' ? `SteamNWI:${nobody}` : nobody
+        // Sandstorm prefixes its IDs; NS2 keeps the 32-bit account number (1 for this SteamID64).
+        const banned = gameId === 'insurgency-sandstorm' ? `SteamNWI:${nobody}` : game.bans?.format === 'ns2-json' ? '1' : nobody
         await manager.ban(id, { id: banned, name: 'nobody' }, 'end-to-end test')
         // Where the game keeps bans, so a definition can list them: every text file that now holds the ID.
         console.log('ban stored in:', grepFiles(nobody, installDir))
-        if (game.bans?.file) expect((await manager.bans(id)).map((b) => b.id)).toContain(nobody)
+        if (game.bans?.file) expect((await manager.bans(id)).map((b) => b.id)).toContain(banned)
         await manager.unban(id, banned)
-        if (game.bans?.file) expect((await manager.bans(id)).map((b) => b.id)).not.toContain(nobody)
+        if (game.bans?.file) expect((await manager.bans(id)).map((b) => b.id)).not.toContain(banned)
       }
 
       const { forced } = await manager.stop(id)

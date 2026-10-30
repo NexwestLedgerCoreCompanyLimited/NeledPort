@@ -420,6 +420,33 @@ describe('player lists as each game prints them', () => {
   })
 })
 
+describe('Natural Selection 2 admin (web admin)', () => {
+  const ns2Net = (calls: string[]): AdminNet => ({
+    ns2: () => ({
+      state: async () => ({ player_list: [{ name: 'Mira', steamid: 1234567, ping: 40, isbot: false }, { name: 'Bot', steamid: 0, isbot: true }] }),
+      send: async (cmd: string) => void calls.push(cmd)
+    })
+  })
+
+  it('lists players from the server state, skipping bots, and kicks and bans with console commands', async () => {
+    const calls: string[] = []
+    const admin = adminFor({ game: game('natural-selection-2'), installDir: dir(), ports: { http: 8080 }, adminPassword: 'pw', net: ns2Net(calls) })
+    expect(await admin.players()).toEqual([{ id: '1234567', name: 'Mira', ping: 40 }])
+    await admin.kick!({ id: '1234567', name: 'Mira' }, 'afk')
+    await admin.ban!({ id: '1234567', name: 'Mira' }, 'grief')
+    await admin.unban!('1234567')
+    expect(calls).toEqual(['sv_kick 1234567', 'sv_ban 1234567 0 grief', 'sv_unban 1234567'])
+  })
+
+  it('reads BannedPlayers.json', async () => {
+    const installDir = dir()
+    mkdirSync(join(installDir, 'neledport'))
+    writeFileSync(join(installDir, 'neledport/BannedPlayers.json'), JSON.stringify([{ id: 1234567, name: 'Mira', reason: 'grief', time: 0 }]))
+    const admin = adminFor({ game: game('natural-selection-2'), installDir, ports: { http: 8080 }, adminPassword: 'pw', net: ns2Net([]) })
+    expect(await admin.bans!()).toEqual([{ id: '1234567', name: 'Mira', reason: 'grief' }])
+  })
+})
+
 describe('Counter-Strike 2 admin (RCON + A2S)', () => {
   it('lists players by query and kicks by quoted name', async () => {
     const { calls, net } = recorder()

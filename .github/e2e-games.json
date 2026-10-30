@@ -130,5 +130,13 @@
  {
   "game": "the-isle",
   "test": "rcon"
+ },
+ {
+  "game": "natural-selection-2",
+  "test": "rcon"
+ },
+ {
+  "game": "ns2-combat",
+  "test": "rcon"
  }
 ]

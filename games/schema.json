@@ -175,7 +175,8 @@
             "telnet",
             "quake",
             "pavlov",
-            "isle"
+            "isle",
+            "ns2"
           ]
         },
         "save": {
@@ -284,7 +285,8 @@
             "rust-cfg",
             "source-cfg",
             "squad-cfg",
-            "listip"
+            "listip",
+            "ns2-json"
           ]
         },
         "ban": {

@@ -40,7 +40,7 @@ export interface GameDefinition {
   configAdapter?: 'palworld' | 'source'
   saveDir?: string
   control?: {
-    type: 'rcon' | 'webrcon' | 'goldsrc' | 'quake' | 'pavlov' | 'isle' | 'telnet' | 'rest' | 'satisfactory' | 'stdin' | 'signal'
+    type: 'rcon' | 'webrcon' | 'goldsrc' | 'quake' | 'pavlov' | 'isle' | 'ns2' | 'telnet' | 'rest' | 'satisfactory' | 'stdin' | 'signal'
     /** Text the console prints when the save command has finished (Soulmask: "world is saved"). */
     saveDone?: string
     /** Secret setting holding the remote password when the player chooses it (Satisfactory's claim password). */
@@ -53,7 +53,7 @@ export interface GameDefinition {
   /** command + pattern (named groups id, name, ping, seconds) and kick: for games that speak RCON their own way. */
   players?: { source: 'rest' | 'rcon' | 'console' | 'a2s' | 'log'; port?: string; command?: string; pattern?: string; kick?: string }
   /** ban / unban (with {id}) and save: the game's own RCON commands; with no unban, the line is taken out of the file. */
-  bans?: { method: 'rest' | 'rcon' | 'file'; file?: string; format?: 'lines' | 'rust-cfg' | 'source-cfg' | 'squad-cfg' | 'listip'; ban?: string; unban?: string; save?: string }
+  bans?: { method: 'rest' | 'rcon' | 'file'; file?: string; format?: 'lines' | 'rust-cfg' | 'source-cfg' | 'squad-cfg' | 'listip' | 'ns2-json'; ban?: string; unban?: string; save?: string }
   logPatterns?: { ready?: string; join?: string; leave?: string; character?: string }
   workshop?: { command: string } | null
   modLoaders?: ModLoaderDefinition[]

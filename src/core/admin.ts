@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import { queryPlayers } from './a2s'
 import { goldsrcRconExec } from './goldsrc'
 import { isleRconExec } from './isle'
+import { ns2WebAdmin } from './ns2'
 import { palworldRest } from './palworld'
 import { pavlovRconExec } from './pavlov'
 import { quakeRconExec } from './quake'
@@ -41,6 +42,7 @@ export interface AdminNet {
   quake?: Remote
   pavlov?: Remote
   isle?: Remote
+  ns2?: typeof ns2WebAdmin
 }
 
 export interface AdminContext {
@@ -136,6 +138,11 @@ function banLine(line: string, format: BanFormat = 'lines'): BanEntry | undefine
 
 function readBans(file: string | undefined, format?: BanFormat): BanEntry[] {
   if (!file || !existsSync(file)) return []
+  if (format === 'ns2-json') {
+    // NS2's BannedPlayers.json: [{ id: <Steam account id>, name, reason, time }].
+    const list = JSON.parse(readFileSync(file, 'utf8') || '[]') as { id: number; name?: string; reason?: string }[]
+    return list.map((b) => ({ id: String(b.id), ...(b.name ? { name: b.name } : {}), ...(b.reason ? { reason: b.reason } : {}) }))
+  }
   return readFileSync(file, 'utf8').split(/\r?\n/).flatMap((l) => banLine(l, format) ?? [])
 }
 
@@ -249,7 +256,8 @@ export function adminFor(ctx: AdminContext): Admin {
     telnet: ctx.net?.telnet ?? telnetExec,
     quake: ctx.net?.quake ?? quakeRconExec,
     pavlov: ctx.net?.pavlov ?? pavlovRconExec,
-    isle: ctx.net?.isle ?? isleRconExec
+    isle: ctx.net?.isle ?? isleRconExec,
+    ns2: ctx.net?.ns2 ?? ns2WebAdmin
   }
   const file = banFile(installDir, game)
   const admin: Admin = { players: async () => Promise.reject(new Error('A player list is not available for this game yet')) }
@@ -263,7 +271,9 @@ export function adminFor(ctx: AdminContext): Admin {
         ? (cmd) => net.rcon({ port: remotePort, password: adminPassword }, cmd)
         : control?.type === 'goldsrc' && remotePort
           ? (cmd) => net.goldsrc({ port: remotePort, password: adminPassword }, cmd)
-          : control?.type === 'isle' && remotePort
+          : control?.type === 'ns2' && remotePort
+            ? async (cmd) => (await net.ns2({ port: remotePort, password: adminPassword }).send(cmd), '')
+            : control?.type === 'isle' && remotePort
             ? (cmd) => net.isle({ port: remotePort, password: adminPassword }, cmd)
             : control?.type === 'pavlov' && remotePort
             ? (cmd) => net.pavlov({ port: remotePort, password: adminPassword }, cmd)
@@ -307,6 +317,12 @@ export function adminFor(ctx: AdminContext): Admin {
     const sourceIds = (control?.type === 'rcon' || goldsrc) && game.players?.source === 'rcon'
     const statusRows = async () => (goldsrc ? parseGoldsrcStatus : parseSourceStatus)(await remote('status'))
     if (sourceIds) admin.players = async () => (await statusRows()).map(({ userid: _, ...p }) => p)
+    if (game.players?.source === 'rcon' && control?.type === 'ns2' && remotePort) {
+      admin.players = async () =>
+        ((await net.ns2({ port: remotePort, password: adminPassword }).state()).player_list ?? [])
+          .filter((p) => !p.isbot)
+          .map((p) => ({ id: String(p.steamid), name: p.name, ...(p.ping !== undefined ? { ping: p.ping } : {}) }))
+    }
     if (game.players?.source === 'rcon' && control?.type === 'webrcon') {
       admin.players = async () =>
         (JSON.parse((await remote('playerlist')) || '[]') as { SteamID: string; DisplayName: string; Ping: number; ConnectedSeconds: number }[]).map((p) => ({

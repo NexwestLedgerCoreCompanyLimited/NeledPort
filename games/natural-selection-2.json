@@ -5,7 +5,7 @@
   "serverAppId": 4940,
   "gameAppId": 4920,
   "anonymous": true,
-  "tier": "basic",
+  "tier": "full",
   "settings": [
     {
       "key": "serverName",
@@ -30,11 +30,11 @@
         "{port:game}",
         "-webadmin",
         "-webdomain",
-        "0.0.0.0",
+        "127.0.0.1",
         "-webuser",
         "admin",
         "-webpassword",
-        "CHANGE_ME",
+        "{adminPassword}",
         "-webport",
         "{port:http}",
         "-startmodserver",
@@ -50,6 +50,73 @@
         "{installDir}/neledport",
         "-modstorage",
         "{installDir}/neledport/Workshop"
+      ],
+      "configFiles": [
+        {
+          "path": "neledport/ServerConfig.json",
+          "format": "json"
+        },
+        {
+          "path": "neledport/ServerAdmin.json",
+          "format": "json"
+        },
+        {
+          "path": "neledport/BannedPlayers.json",
+          "format": "json"
+        },
+        {
+          "path": "neledport/MapCycle.json",
+          "format": "json"
+        }
+      ]
+    },
+    "windows": {
+      "executable": "x64/Server.exe",
+      "args": [
+        "-name",
+        "{setting:serverName}",
+        "-port",
+        "{port:game}",
+        "-webadmin",
+        "-webdomain",
+        "127.0.0.1",
+        "-webuser",
+        "admin",
+        "-webpassword",
+        "{adminPassword}",
+        "-webport",
+        "{port:http}",
+        "-startmodserver",
+        "-modserverport",
+        "{port:modserver}",
+        "-map",
+        "ns2_summit",
+        "-limit",
+        "{setting:maxPlayers}",
+        "-speclimit",
+        "5",
+        "-config_path",
+        "{installDir}/neledport",
+        "-modstorage",
+        "{installDir}/neledport/Workshop"
+      ],
+      "configFiles": [
+        {
+          "path": "neledport/ServerConfig.json",
+          "format": "json"
+        },
+        {
+          "path": "neledport/ServerAdmin.json",
+          "format": "json"
+        },
+        {
+          "path": "neledport/BannedPlayers.json",
+          "format": "json"
+        },
+        {
+          "path": "neledport/MapCycle.json",
+          "format": "json"
+        }
       ]
     }
   },
@@ -70,7 +137,20 @@
       "protocol": "udp"
     }
   ],
+  "saveDir": "neledport",
   "control": {
-    "type": "signal"
+    "type": "ns2",
+    "port": "http"
+  },
+  "players": {
+    "source": "rcon",
+    "kick": "sv_kick {id}"
+  },
+  "bans": {
+    "method": "rcon",
+    "ban": "sv_ban {id} 0 {reason}",
+    "unban": "sv_unban {id}",
+    "file": "neledport/BannedPlayers.json",
+    "format": "ns2-json"
   }
 }
