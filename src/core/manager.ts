@@ -89,6 +89,8 @@ interface Runtime {
 const STOP_TIMEOUT_MS = 60_000
 const MAX_LINES = 2000
 const ADMIN_SECRET = 'adminPassword'
+// Letters and digits only: it goes on command lines and into config files of every kind (36 hex characters, 144 bits).
+const newAdminPassword = () => randomBytes(18).toString('hex')
 
 export class ServerManager extends EventEmitter {
   private servers: ServerConfig[]
@@ -188,7 +190,7 @@ export class ServerManager extends EventEmitter {
 
     const { settings, secrets } = this.checkSettings(game, input.settings)
     // One generated password per server for whatever remote control the game uses (REST, RCON, WebRCON).
-    secrets[ADMIN_SECRET] = this.deps.secrets.encrypt(randomBytes(18).toString('base64url'))
+    secrets[ADMIN_SECRET] = this.deps.secrets.encrypt(newAdminPassword())
 
     const ports = Object.fromEntries(game.ports.map((p) => [p.name, input.ports?.[p.name] ?? p.default]))
     for (const [portName, port] of Object.entries(ports)) {
@@ -805,8 +807,10 @@ export class ServerManager extends EventEmitter {
 
   /** Servers created before every server got an admin password receive one on their next start. */
   private ensureAdminSecret(server: ServerConfig): ServerConfig {
-    if (!server.secrets[ADMIN_SECRET]) {
-      server.secrets[ADMIN_SECRET] = this.deps.secrets.encrypt(randomBytes(18).toString('base64url'))
+    const current = server.secrets[ADMIN_SECRET] ? this.deps.secrets.decrypt(server.secrets[ADMIN_SECRET]) : ''
+    // Older passwords could hold "-" and "_", which NS2 splits its command line on; NeledPort rewrites it on every start.
+    if (!/^[A-Za-z0-9]+$/.test(current)) {
+      server.secrets[ADMIN_SECRET] = this.deps.secrets.encrypt(newAdminPassword())
       this.persist()
     }
     return server

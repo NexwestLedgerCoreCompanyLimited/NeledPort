@@ -23,7 +23,7 @@
       "key": "map",
       "label": "Map",
       "type": "text",
-      "default": "diemensland"
+      "default": "nullius"
     }
   ],
   "platforms": {

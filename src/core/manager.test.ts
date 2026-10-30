@@ -270,7 +270,7 @@ describe('ServerManager', () => {
     await manager.install(id)
     await manager.start(id)
     const args = processes[0].spec!.args
-    expect(args[args.indexOf('+rcon.password') + 1]).toMatch(/^[\w-]{24}$/)
+    expect(args[args.indexOf('+rcon.password') + 1]).toMatch(/^[0-9a-f]{36}$/)
   })
 
   it('bans through the ban file and lists bans while stopped', async () => {
@@ -710,6 +710,25 @@ describe('Servers that run from their binary folder', () => {
     await manager.install(id)
     await manager.start(id)
     expect(processes[0].spec!.cwd).toBe(join(installDir, 'Binaries/Linux'))
+  })
+})
+
+describe('Admin passwords', () => {
+  // NS2 splits its command line at every "-", even inside a value, so a password with "-" never matched.
+  it('are letters and digits only, and older ones with other characters are replaced at the next start', async () => {
+    const { deps, processes } = setup()
+    const manager = new ServerManager(deps)
+    const { id } = manager.create(valheim)
+    const store = () => JSON.parse(readFileSync(join(deps.dataDir, 'servers.json'), 'utf8')).servers[0].secrets.adminPassword as string
+    expect(store().replace(/^enc:/, '')).toMatch(/^[A-Za-z0-9]{24,}$/)
+    const data = JSON.parse(readFileSync(join(deps.dataDir, 'servers.json'), 'utf8'))
+    data.servers[0].secrets.adminPassword = 'enc:ab-cd_ef'
+    writeFileSync(join(deps.dataDir, 'servers.json'), JSON.stringify(data))
+    const later = new ServerManager(deps)
+    await later.install(id)
+    await later.start(id)
+    expect(store().replace(/^enc:/, '')).toMatch(/^[A-Za-z0-9]{24,}$/)
+    expect(processes.at(-1)!.opts?.hide?.[0]).toBe(store().replace(/^enc:/, ''))
   })
 })
 

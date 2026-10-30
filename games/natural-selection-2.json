@@ -47,9 +47,9 @@
         "-speclimit",
         "5",
         "-config_path",
-        "{installDir}/neledport",
+        "../neledport",
         "-modstorage",
-        "{installDir}/neledport/Workshop"
+        "../neledport/Workshop"
       ],
       "configFiles": [
         {
@@ -97,9 +97,9 @@
         "-speclimit",
         "5",
         "-config_path",
-        "{installDir}/neledport",
+        "../neledport",
         "-modstorage",
-        "{installDir}/neledport/Workshop"
+        "../neledport/Workshop"
       ],
       "configFiles": [
         {

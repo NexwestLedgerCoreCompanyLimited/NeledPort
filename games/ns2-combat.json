@@ -42,9 +42,9 @@
         "-limit",
         "{setting:maxPlayers}",
         "-config_path",
-        "{installDir}/neledport",
+        "../neledport",
         "-modstorage",
-        "{installDir}/neledport/Workshop",
+        "../neledport/Workshop",
         "-mods"
       ],
       "configFiles": [
@@ -88,9 +88,9 @@
         "-limit",
         "{setting:maxPlayers}",
         "-config_path",
-        "{installDir}/neledport",
+        "../neledport",
         "-modstorage",
-        "{installDir}/neledport/Workshop",
+        "../neledport/Workshop",
         "-mods"
       ],
       "configFiles": [

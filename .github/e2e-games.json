@@ -100,10 +100,6 @@
   "test": "server"
  },
  {
-  "game": "battalion-legacy",
-  "test": "server"
- },
- {
   "game": "hypercharge-unboxed",
   "test": "server"
  },

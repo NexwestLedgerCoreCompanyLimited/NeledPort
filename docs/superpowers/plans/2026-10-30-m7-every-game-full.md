@@ -48,7 +48,7 @@ Status: todo → done (tested on a real server: yes / no + why).
 | unturned | 2 | ServerHelper.bat | console commands | done; real server: pending (official +InternetServer start) |
 | core-keeper | 2 | Launch.bat | Ctrl+C, world backups | done (real server: yes) |
 | hurtworld | 2 | hurtworld.exe | check console | done; real server: pending (server exits after start; Unity log next run) |
-| the-isle | 2 | TheIsleServer.exe | check RCON | done; real server: pending (evrima branch) |
+| the-isle | 2 | TheIsleServer.exe | check RCON | done (real server: yes, evrima branch) |
 | pavlov-vr | 2 | (Linux listed) | Pavlov RCON | done; real server: pending (libc++ copy) |
 | warfork | 3 | wf_server_x64.exe | Quake-style RCON / console quit | done (real server: yes) |
 | wurm-unlimited | 2 | WurmServerLauncher.exe | check | done (real server: yes) |
@@ -56,7 +56,7 @@ Status: todo → done (tested on a real server: yes / no + why).
 | day-of-dragons | 2 | DragonsServer.exe | check | done (real server: yes) |
 | humanitz | 2 | (TSSGameServer.sh) | check | done (real server: yes) |
 | hypercharge-unboxed | 2 | Unboxed/Binaries/Win64/UnboxedServer-Win64-Shipping.exe | check | done (real server: yes) |
-| battalion-legacy | 2 | BattalionServer.exe | check | done; real server: pending (query port 27015) |
+| battalion-legacy | 2 | BattalionServer.exe | check | done (real server: no. Ruling: on Ubuntu 26.04 CI it never answered the Steam query after start, and its Sentry crash handler needs OpenSSL 1.1, which current Ubuntu lacks; kept with launcher, configs and backups, marked not tested — cost if wrong: Battalion users on new Linux find it does not come up) |
 | stickybots | 2 | blank1/Binaries/Win64/blank1Server-Win64-Shipping.exe | check | done (real server: yes) |
 | the-front | 2 | (Linux listed) | check | done (real server: yes) |
 | tower-unite | 2 | (StartTowerServerUI.bat) | check | done (real server: yes) |
