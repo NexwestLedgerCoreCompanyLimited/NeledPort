@@ -1,8 +1,8 @@
 name: E2E (real server)
 
 # Installs SteamCMD and real dedicated servers, starts them, stops them and checks the world was saved:
-# Valheim on Linux and Windows; Palworld, Rust, Counter-Strike: Source and Team Fortress 2 on Linux. Heavy (Rust
-# alone is ~10 GB), so it runs on demand and weekly rather than on every push.
+# Valheim on Linux and Windows; Palworld, Rust, Counter-Strike: Source, Team Fortress 2, Counter-Strike 1.6 and
+# Day of Defeat on Linux. Heavy (Rust alone is ~10 GB), so it runs on demand and weekly rather than on every push.
 on:
   workflow_dispatch:
   schedule:
@@ -21,14 +21,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        game: [valheim, palworld, rust, counter-strike-source, team-fortress-2]
+        game: [valheim, palworld, rust, counter-strike-source, team-fortress-2, counter-strike-1-6, day-of-defeat]
         include:
-          # The Source engine games share one test file; NELEDPORT_E2E_GAME picks the game.
+          # Source and GoldSrc games share one test file per engine; NELEDPORT_E2E_GAME picks the game.
           - { game: valheim, test: valheim }
           - { game: palworld, test: palworld }
           - { game: rust, test: rust }
           - { game: counter-strike-source, test: source }
           - { game: team-fortress-2, test: source }
+          - { game: counter-strike-1-6, test: goldsrc }
+          - { game: day-of-defeat, test: goldsrc }
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
