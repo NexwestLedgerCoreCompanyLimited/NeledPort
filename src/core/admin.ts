@@ -140,7 +140,8 @@ function banLine(line: string, format: BanFormat = 'lines'): BanEntry | undefine
     const m = /(?:^|Banned:)(\d{17}):\d+(?:\s*\/\/\s*(.*))?$/.exec(l)
     return m ? { id: m[1], ...(m[2] ? { reason: m[2] } : {}) } : undefined
   }
-  return l && !l.startsWith('//') ? { id: l } : undefined
+  // One ID per line; ARK's BanList.txt ends each with a comma.
+  return l && !l.startsWith('//') ? { id: l.replace(/,$/, '') } : undefined
 }
 
 function readBans(file: string | undefined, format?: BanFormat): BanEntry[] {

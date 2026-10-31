@@ -330,6 +330,15 @@ describe('admin from data (RCON commands named by the definition)', () => {
     expect(calls).toEqual(['AdminReloadServerConfig'])
   })
 
+  // A real ARK server wrote "<SteamID64>," per line to ShooterGame/Binaries/Linux/BanList.txt.
+  it("reads ARK's BanList.txt, one ID and a comma per line", async () => {
+    const installDir = dir()
+    mkdirSync(join(installDir, 'ShooterGame/Binaries/Linux'), { recursive: true })
+    writeFileSync(join(installDir, 'ShooterGame/Binaries/Linux/BanList.txt'), '76561197960265729,\n76561198000000002,\n')
+    const admin = adminFor({ game: game('ark-survival-evolved'), installDir, ports: { rcon: 27020 }, adminPassword: 'pw', net: { rcon: async () => '' } })
+    expect(await admin.bans!()).toEqual([{ id: '76561197960265729' }, { id: '76561198000000002' }])
+  })
+
   it("reads Warfork's listip.cfg as writeip leaves it", async () => {
     const installDir = dir()
     mkdirSync(join(installDir, 'basewf'))
