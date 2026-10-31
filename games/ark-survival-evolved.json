@@ -141,8 +141,7 @@
   "control": {
     "type": "rcon",
     "port": "rcon",
-    "save": "SaveWorld",
-    "shutdown": "DoExit"
+    "save": "SaveWorld"
   },
   "players": {
     "source": "rcon",
@@ -153,6 +152,8 @@
   "bans": {
     "method": "rcon",
     "ban": "BanPlayer {id}",
-    "unban": "UnbanPlayer {id}"
+    "unban": "UnbanPlayer {id}",
+    "file": "ShooterGame/Binaries/Linux/BanList.txt",
+    "format": "lines"
   }
 }
