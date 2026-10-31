@@ -30,7 +30,7 @@
     "linux": {
       "executable": "ShooterGame/Binaries/Linux/ShooterGameServer",
       "args": [
-        "{setting:map}?listen?AltSaveDirectoryName={setting:map}?RCONEnabled=True?RCONPort={port:rcon}",
+        "{setting:map}?listen?AltSaveDirectoryName={setting:map}?RCONEnabled=True?RCONPort={port:rcon}?ServerAdminPassword={adminPassword}",
         "-MultiHome=0.0.0.0",
         "-Port={port:game}",
         "-QueryPort={port:query}",
@@ -76,7 +76,7 @@
     "windows": {
       "executable": "ShooterGame/Binaries/Win64/ShooterGameServer.exe",
       "args": [
-        "{setting:map}?listen?AltSaveDirectoryName={setting:map}?RCONEnabled=True?RCONPort={port:rcon}",
+        "{setting:map}?listen?AltSaveDirectoryName={setting:map}?RCONEnabled=True?RCONPort={port:rcon}?ServerAdminPassword={adminPassword}",
         "-MultiHome=0.0.0.0",
         "-Port={port:game}",
         "-QueryPort={port:query}",
