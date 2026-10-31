@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { loadCatalog } from '../core/catalog'
-import { e2e, e2eManager, platform, retry, waitForStatus, withGameLogs } from './harness'
+import { e2e, e2eManager, platform, waitForStatus, withGameLogs } from './harness'
 
 // Real end-to-end run of a game NeledPort drives through its own console (stdin), chosen by NELEDPORT_E2E_GAME:
 // SCP: Secret Laboratory. See .github/workflows/e2e.yml.
@@ -21,18 +21,16 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
     await withGameLogs(installDir, async () => {
       await manager.start(id)
 
+      // The ready line says the game reads its console; then it has to answer on it.
+      await waitForStatus(manager, id, 'running', 20 * 60_000)
+      const help = await manager.command(id, 'help')
+      console.log('help:', help)
+      expect(help).toMatch(/\S/)
       if (game.players?.source === 'console') {
-        // The ready line says the game reads its console; then its own help, and the player list must be a command it knows.
-        await waitForStatus(manager, id, 'running', 20 * 60_000)
-        console.log('help:', await manager.command(id, 'help'))
-        const command = game.players.command!
-        const reply = await manager.command(id, command)
-        console.log(`${command}:`, reply)
-        expect(reply).not.toMatch(/does not exist|unknown command/i)
+        const reply = await manager.command(id, game.players.command!)
+        console.log(`${game.players.command}:`, reply)
+        expect(reply).not.toMatch(/does not exist|unknown command|must join/i)
         expect(await manager.players(id)).toEqual([])
-      } else {
-        // The Steam query answering is the sign the server finished loading.
-        expect(await retry(manager, id, () => manager.players(id), 20 * 60_000)).toEqual([])
       }
 
       const { forced } = await manager.stop(id)
