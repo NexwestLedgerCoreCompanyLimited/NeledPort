@@ -31,8 +31,9 @@ describe('parseCommand', () => {
 
 describe('dataDirFor', () => {
   it('uses the folder the desktop app keeps its data in', () => {
-    expect(dataDirFor('linux', '/home/mira', {})).toBe('/home/mira/.config/NeledPort')
-    expect(dataDirFor('linux', '/home/mira', { XDG_CONFIG_HOME: '/cfg' })).toBe('/cfg/NeledPort')
+    // join() uses the separators of the system running the test (CI runs it on Windows too).
+    expect(dataDirFor('linux', '/home/mira', {})).toBe(join('/home/mira', '.config', 'NeledPort'))
+    expect(dataDirFor('linux', '/home/mira', { XDG_CONFIG_HOME: '/cfg' })).toBe(join('/cfg', 'NeledPort'))
     expect(dataDirFor('win32', 'C:\\Users\\mira', { APPDATA: 'C:\\Users\\mira\\AppData\\Roaming' })).toMatch(/Roaming[\\/]NeledPort$/)
     expect(dataDirFor('linux', '/home/mira', { NELEDPORT_DATA: '/srv/np' })).toBe('/srv/np')
   })
