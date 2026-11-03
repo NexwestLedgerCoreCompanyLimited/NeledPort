@@ -2,6 +2,27 @@
 
 Significant choices, why we made them, and what we turned down. Newest first.
 
+## 2026-10-31 · Every game full: each game's own control, proven on real servers
+
+- **Decision:** No game stays "basic". Full means what the game's own server offers, taken from its official docs, its
+  source code (Warfork, LocalAdmin), BattlEye's protocol description, well-used tools (SquadJS, NS2AdminLib,
+  isle-evrima-rcon, the HumanitZ Docker template) or LinuxGSM. Games say how they are controlled in their definition
+  (RCON commands and player-line patterns, config values written on every start, stop commands, Ctrl+C count, working
+  folder, system packages); new protocols get one small client each (Quake RCON, Pavlov, The Isle, BattlEye, telnet,
+  NS2 web admin, Satisfactory API). Games without a remote console get launchers, settings, configs and backups only.
+- **Why:** a label is worth nothing if the server does not start or stop cleanly. The weekly real-server workflow ran
+  every game a CI machine can host, and what it found changed the code: Unreal RCON plugins never echo Source's empty
+  end packet, Soulmask's `quit` only closes the console, Conan needs two Ctrl+C, Chivalry needs its binary folder as
+  the working directory, Steam's Double Action Linux files lack the game library.
+- **Trade-off:** player-list formats nobody has published (Conan, MORDHAU, OHD, Unturned) fall back to the Steam query,
+  so kick by ID is missing there; DayZ and Arma 3 need a Steam account that owns the game, so CI cannot run them.
+  ARK on Linux quits on neither Ctrl+C (one or two) nor DoExit, so its stop saves the world over RCON and then closes
+  it after the usual minute, as arkmanager does after 20 s; the real-server test checks the world file instead.
+  `docs/GAMES.md` shows which games run on a real server.
+- **Rejected:** shipping parsers guessed from hosting guides; claiming Satisfactory servers with a password the player
+  never sees (they claim in game and give NeledPort their password); a free-form launch wrapper in definitions (only
+  `xvfb-run`, which a shared definition cannot turn into another command).
+
 ## 2026-10-30 · GoldSrc games: app_set_config, UDP RCON, Metamod-AM for AMX Mod X
 
 - **Decision:** HLDS (app 90) games set SteamCMD's `app_set_config 90 mod <mod>` before `app_update` (as WindowsGSM

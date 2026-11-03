@@ -19,16 +19,16 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | ARK: Survival Evolved | full | 376030 | Windows, Linux | player list, bans, console | yes |
 | ARMA 3 | full | 233780 | Windows, Linux | needs a Steam account that owns it, player list, bans, console | — |
 | Base Defense | full | 817300 | Linux | player list, bans, console | — |
-| BATTALION: Legacy | full | 805140 | Windows, Linux | player list | yes |
+| BATTALION: Legacy | full | 805140 | Windows, Linux | player list | — |
 | Black Mesa: Deathmatch | full | 346680 | Windows, Linux | player list, bans, console, SourceMod | — |
 | Blade Symphony | full | 228780 | Windows, Linux | needs a Steam account that owns it, player list, bans, console, SourceMod | — |
 | BrainBread 2 | full | 475370 | Windows, Linux | player list, bans, console, SourceMod | — |
 | Chivalry: Medieval Warfare | full | 220070 | Windows, Linux | player list | yes |
 | Codename CURE | full | 383410 | Windows, Linux | player list, bans, console, SourceMod | — |
 | Conan Exiles | full | 443030 | Windows, Linux | player list, bans, console | yes |
-| Core Keeper | full | 1963720 | Windows, Linux | player list | yes |
+| Core Keeper | full | 1963720 | Windows, Linux | player list, Linux needs xvfb, libxi6 | yes |
 | Counter-Strike 1.6 | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X | yes |
-| Counter-Strike 2 | full | 730 | Windows, Linux | player list, console, Metamod:Source | — |
+| Counter-Strike 2 | full | 730 | Windows, Linux | player list, console, Metamod:Source | yes |
 | Counter-Strike: Condition Zero | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X | — |
 | Counter-Strike: Source | full | 232330 | Windows, Linux | player list, bans, console, SourceMod | yes |
 | Day of Defeat | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X | yes |
@@ -46,7 +46,7 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | Half-Life Deathmatch: Source | full | 255470 | Windows, Linux | player list, bans, console, SourceMod | — |
 | Half-Life: Deathmatch | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X | — |
 | Humanitz | full | 2728330 | Linux | player list, bans, console | yes |
-| Hurtworld | full | 405100 | Windows, Linux | player list, console, Oxide (uMod) | yes |
+| Hurtworld | full | 405100 | Windows, Linux | player list, Oxide (uMod) | yes |
 | HYPERCHARGE: Unboxed | full | 1045940 | Windows, Linux |  | yes |
 | Insurgency | full | 237410 | Windows, Linux | player list, bans, console, SourceMod | — |
 | Insurgency: Sandstorm | full | 581330 | Windows, Linux | player list, bans, console | yes |
@@ -64,13 +64,13 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | Operation: Harsh Doorstop | full | 950900 | Linux | player list, console | yes |
 | Opposing Force | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X | — |
 | Palworld | full | 2394010 | Windows, Linux | player list, bans, console | yes |
-| Pavlov VR | full | 622970 | Linux | player list, bans, console | yes |
+| Pavlov VR | full | 622970 | Linux | player list, bans, console, Linux needs libc++1 | yes |
 | Pirates Vikings & Knights II | full | 17575 | Windows, Linux | player list, bans, console, SourceMod | — |
 | Ricochet | full | 90 | Windows, Linux | player list, bans, console, AMX Mod X | — |
 | RuneScape: Dragonwilds | full | 4019830 | Windows, Linux |  | yes |
 | Rust | full | 258550 | Windows, Linux | player list, bans, console, Oxide (uMod) | yes |
 | Satisfactory | full | 1690800 | Windows, Linux | console | yes |
-| SCP: Secret Laboratory | full | 996560 | Windows, Linux | player list, console | yes |
+| SCP: Secret Laboratory | full | 996560 | Windows, Linux | console | yes |
 | SCUM | full | 3792580 | Windows | player list | — |
 | Soulmask | full | 3017300 | Linux | player list, console | yes |
 | Squad | full | 403240 | Windows, Linux | player list, bans, console | yes |
@@ -82,8 +82,8 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | The Front | full | 2334200 | Linux | player list | yes |
 | The Isle | full | 412680 | Windows, Linux | player list, console | yes |
 | Tower Unite | full | 439660 | Linux | player list | yes |
-| Unturned | full | 1110390 | Windows, Linux | player list, console | yes |
+| Unturned | full | 1110390 | Windows, Linux | player list | yes |
 | Valheim | full | 896660 | Windows, Linux | player list, bans, BepInEx | yes |
 | Warfork | full | 1136510 | Windows, Linux | player list, bans, console | yes |
-| Wurm Unlimited | full | 402370 | Windows, Linux | player list | yes |
+| Wurm Unlimited | full | 402370 | Windows, Linux | player list, Linux needs xvfb | yes |
 | Zombie Panic! Source | full | 17505 | Windows, Linux | player list, bans, console, SourceMod | — |

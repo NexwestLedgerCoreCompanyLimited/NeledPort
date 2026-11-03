@@ -15,18 +15,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Remote control for the games that have one, switched on for you with the server's generated password:
   - RCON in the game's own config file for ARK, Conan Exiles, Squad, Squad 44, Insurgency: Sandstorm, MORDHAU,
     Operation: Harsh Doorstop and HumanitZ; the Console tab, player lists and bans follow each game's own commands.
+    ARK saves its world over RCON before a stop, then is closed after a minute: on Linux it quits on neither Ctrl+C
+    nor DoExit (arkmanager closes it the same way).
   - Satisfactory's server API: stopping saves the running game and shuts down with the admin password you set when
     claiming the server.
-  - The server's own console for SCP: Secret Laboratory, Unturned and Hurtworld; Soulmask's telnet console; Warfork's
-    Quake-style RCON; Pavlov VR's RCON; The Isle's RCON; Natural Selection 2's web admin.
+  - SCP: Secret Laboratory's own console (LocalAdmin); Soulmask's telnet console; Warfork's Quake-style RCON; Pavlov
+    VR's RCON; The Isle's RCON; Natural Selection 2's web admin (Basic or Digest login).
   - BattlEye RCon for DayZ and Arma 3 (players, kick, bans).
 - **Metamod:Source** in one click for Counter-Strike 2, with AlliedModders' gameinfo.gi step applied again after each
   game update. **Oxide** in one click for Hurtworld.
 - Windows launchers from Valve's own app data for 25 more games.
 - Games that only run on Linux under a virtual display (Core Keeper, Wurm Unlimited) are started under `xvfb-run`, and
   servers that need a system package name it in the console when they stop unexpectedly.
+- Game definitions can now also say: a Steam beta branch (HumanitZ's Linux build, The Isle's Evrima), files LinuxGSM
+  puts beside a server (steamclient.so, steam_appid.txt, a system libc++), a starting world to copy once (Wurm), the
+  folder to start in (Unreal Engine 3 games), how many Ctrl+C a stop needs (Conan Exiles), and the text that says a
+  save finished (Soulmask).
 - Servers created before their game went full keep working: new ports and settings are added with their defaults.
-- The weekly real-server test now covers REAL_SERVER_COUNT games, and `docs/GAMES.md` says which ones.
+- The weekly real-server test now covers 37 games, and `docs/GAMES.md` says which ones.
 
 - **9 GoldSrc (Half-Life 1) games now have full support**: Counter-Strike 1.6, Condition Zero, Day of Defeat, Team
   Fortress Classic, Half-Life Deathmatch, Opposing Force, Ricochet, Deathmatch Classic and Base Defense. Each gets
@@ -41,7 +47,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - RCON replies end once the server goes quiet instead of waiting for an echoed empty packet, which Unreal Engine
   servers' RCON plugins never send back.
+- Generated admin passwords are letters and digits only (36 hex characters). Older ones with "-" or "_" are replaced
+  at the next start: Natural Selection 2 splits its command line at every "-".
+- Unturned starts the official way (`+InternetServer` with Commands.dat) and stops with Ctrl+C like Hurtworld: neither
+  reads commands from NeledPort, so they have no Console tab.
 - Double Action: Boogaloo runs on Windows only: Steam's Linux files lack the game's server library.
+- An install that SteamCMD ends with "state is 0x…" shows that line instead of only an exit code, and runs once more:
+  Half-Life servers (Counter-Strike 1.6, Day of Defeat) often need a second run.
 
 ### Removed
 

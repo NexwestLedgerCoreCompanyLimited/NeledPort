@@ -195,7 +195,8 @@ function writeGamesDoc(gamesDir, searchable) {
       d.players && 'player list',
       d.bans && 'bans',
       d.control && d.control.type !== 'signal' ? 'console' : null,
-      d.modLoaders?.length && d.modLoaders.map((l) => l.name).join(' / ')
+      d.modLoaders?.length && d.modLoaders.map((l) => l.name).join(' / '),
+      d.linuxPackages?.length && `Linux needs ${d.linuxPackages.join(', ')}`
     ]
       .filter(Boolean)
       .join(', ')

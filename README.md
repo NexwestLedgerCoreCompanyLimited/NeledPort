@@ -29,13 +29,14 @@ NeledPort wraps all of that in a desktop app for Windows and Linux.
 
 - **One-click install.** NeledPort downloads SteamCMD for you, then installs, updates and validates servers.
 - **Start, stop, restart** with graceful shutdown, so worlds are saved first.
-- **Live console** with search and a command box (RCON / stdin).
+- **Live console** with search and a command box, through whatever the game speaks: RCON, WebRCON, BattlEye RCon, a
+  web admin, a server API, telnet or the server's own console.
 - **Players and bans:** kick, ban and unban through each game's own mechanism.
-- **Mods:** one-click server-side mod loaders (BepInEx for Valheim, Oxide for Rust, SourceMod for 23 Source games, AMX
-  Mod X for 8 Half-Life games), a plugin
-  manager, and Steam Workshop maps for CS2.
-- **Config:** change a server's settings after creating it, and edit the game's own config file (Palworld, Rust, CS2).
-  The previous file is kept.
+- **Mods:** one-click server-side mod loaders (BepInEx for Valheim, Oxide for Rust and Hurtworld, SourceMod for 23
+  Source games, Metamod:Source for CS2, AMX Mod X for 8 Half-Life games), a plugin manager, and Steam Workshop maps
+  for CS2.
+- **Config:** change a server's settings after creating it, and edit the game's own config files in the app. The
+  previous file is kept.
 - **Backups:** made automatically before every update, or with **Back up now**. Restore one in a click; the current
   world is moved aside, never deleted.
 - **Speaks your language:** English and Thai today, and [adding yours](CONTRIBUTING.md#translate-neledport) is one file.
@@ -72,13 +73,19 @@ With the `.deb`, install the new `.deb` from Releases.
 | Palworld | full | install, run, update, players, kick/ban, console, settings file; tested on a real Linux server weekly |
 | Valheim | full | install, run, update, players, bans, BepInEx mods; tested on real Linux and Windows servers weekly |
 | Rust | full | install, run, update, players, kick/ban, WebRCON console, Oxide plugins, server.cfg; tested on a real Linux server weekly |
-| Counter-Strike 2 | basic | install, run, RCON console, players, kick, Workshop maps, server.cfg |
-| SCUM | basic | install, run, players (Windows only) |
 | Team Fortress 2, Counter-Strike: Source, Garry's Mod, Left 4 Dead 2, Insurgency and 20 more Source games | full | install, run, update, players, kick/ban, RCON console, SourceMod (23 of them); TF2 and CS:S tested on real Linux servers weekly |
 | Counter-Strike 1.6, Day of Defeat, Team Fortress Classic, Half-Life Deathmatch and 5 more GoldSrc games | full | install, run, update, players, kick/ban, RCON console, AMX Mod X (8 of them); CS 1.6 and DoD tested on real Linux servers weekly |
-| ARK, Satisfactory, Conan Exiles, Squad, DayZ and 31 more | basic | install, run, console ([full list](docs/GAMES.md)) |
-| ARMA 3, DayZ and 6 more that need a Steam account | basic | sign in once in SteamCMD's own window; NeledPort never sees your password |
+| Counter-Strike 2 | full | RCON console, players, kick, Workshop maps, Metamod:Source, config files |
+| ARK, Conan Exiles, Squad, Squad 44, Insurgency: Sandstorm, MORDHAU, HumanitZ, Operation: Harsh Doorstop, The Isle | full | RCON switched on for you, players, kick and bans where the game has them, save before stop, config files, backups |
+| Satisfactory | full | server API: saves and shuts down with the admin password you set when claiming the server; console |
+| Soulmask, Warfork, Pavlov VR, Natural Selection 2, NS2: Combat | full | each game's own console or admin interface: players, kick, bans where it has them, save before stop |
+| SCP: Secret Laboratory | full | its own console (LocalAdmin) and a clean stop; its player list is an in-game command, so NeledPort has none |
+| DayZ, Arma 3 | full | BattlEye RCon: players, kick, bans; sign in once in SteamCMD's own window, NeledPort never sees your password |
+| Unturned, Hurtworld, Core Keeper, Tower Unite, The Front, Wurm Unlimited, Killing Floor 2, Chivalry, Day of Dragons, RuneScape: Dragonwilds, Battalion, Hypercharge, StickyBots, SCUM | full | no remote console NeledPort can reach: launchers, settings, config files, backups, Ctrl+C stop and the Steam query player list where they answer it; Oxide for Hurtworld |
 | **Any Steam App ID** | custom | search 380+ more servers by name, install, pick the program once, share it |
+
+Every game is **full**: NeledPort does what the game's own server offers ([what each game has](docs/GAMES.md)).
+37 of them are installed, started, controlled and stopped on a real server every week.
 
 Every game is a single JSON file in [`games/`](games). Missing yours? Install it with **Any Steam App ID**, press
 **Share with the community**, and NeledPort opens a ready-made pull request for you. Or [add it by hand](CONTRIBUTING.md#add-a-game).

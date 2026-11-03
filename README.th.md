@@ -19,10 +19,10 @@
 
 - **ติดตั้งในคลิกเดียว:** โปรแกรมโหลด SteamCMD ให้เอง แล้วใช้ติดตั้ง อัปเดต และตรวจไฟล์เซิร์ฟเวอร์
 - **Start / Stop / Restart:** สั่งเซฟโลกก่อนปิดเซิร์ฟเวอร์ทุกครั้ง
-- **คอนโซลสด:** ค้นหาข้อความ log ได้ และมีช่องส่งคำสั่ง (RCON / stdin)
+- **คอนโซลสด:** ค้นหาข้อความ log ได้ และมีช่องส่งคำสั่งผ่านช่องทางของแต่ละเกม (RCON, WebRCON, BattlEye RCon, เว็บแอดมิน, API ของเซิร์ฟเวอร์, telnet หรือคอนโซลของเซิร์ฟเวอร์เอง)
 - **ผู้เล่นและการแบน:** เตะ แบน และปลดแบนผ่านระบบของเกมนั้นโดยตรง
-- **ม็อด:** ติดตั้ง mod loader ฝั่งเซิร์ฟเวอร์ (BepInEx สำหรับ Valheim, Oxide สำหรับ Rust, SourceMod สำหรับเกม Source 23 เกม, AMX Mod X สำหรับเกม Half-Life 8 เกม) จัดการปลั๊กอิน และโหลดแมพจาก Steam Workshop ให้ CS2
-- **ตั้งค่า:** แก้ค่าเซิร์ฟเวอร์ได้หลังสร้างแล้ว และแก้ไฟล์ตั้งค่าของเกมเองได้ในโปรแกรม (Palworld, Rust, CS2) โดยเก็บไฟล์เดิมไว้ให้
+- **ม็อด:** ติดตั้ง mod loader ฝั่งเซิร์ฟเวอร์ (BepInEx สำหรับ Valheim, Oxide สำหรับ Rust และ Hurtworld, SourceMod สำหรับเกม Source 23 เกม, Metamod:Source สำหรับ CS2, AMX Mod X สำหรับเกม Half-Life 8 เกม) จัดการปลั๊กอิน และโหลดแมพจาก Steam Workshop ให้ CS2
+- **ตั้งค่า:** แก้ค่าเซิร์ฟเวอร์ได้หลังสร้างแล้ว และแก้ไฟล์ตั้งค่าของเกมเองได้ในโปรแกรม โดยเก็บไฟล์เดิมไว้ให้
 - **สำรองข้อมูล:** สำรองให้อัตโนมัติก่อนอัปเดตทุกครั้ง หรือกด **สำรองข้อมูลตอนนี้** และกู้คืนได้ในคลิกเดียว โลกปัจจุบันจะถูกย้ายไปเก็บไว้ ไม่ถูกลบ
 - **อัปเดตตัวเอง:** บน Windows และ AppImage โปรแกรมโหลดเวอร์ชันใหม่ให้ แล้วกด **รีสตาร์ตเพื่ออัปเดต**
 - **หลายภาษา:** ตอนนี้มีอังกฤษ (ภาษาหลัก) และไทย เพิ่มภาษาใหม่ได้ด้วยไฟล์เดียว ([วิธีแปล](CONTRIBUTING.md#translate-neledport))
@@ -42,9 +42,16 @@
   ทดสอบกับเซิร์ฟเวอร์จริงทุกสัปดาห์: Valheim บน Linux และ Windows, Palworld, Rust, TF2 และ CS:S บน Linux
 - **เกม Half-Life 1 (GoldSrc) 9 เกม** เช่น Counter-Strike 1.6, Day of Defeat และ Team Fortress Classic รองรับเต็มรูปแบบ มี AMX Mod X ในคลิกเดียว 8 เกม
   ทดสอบกับเซิร์ฟเวอร์จริงทุกสัปดาห์: CS 1.6 และ Day of Defeat บน Linux
-- **พื้นฐาน (ติดตั้ง รัน คอนโซล):** Counter-Strike 2, SCUM, ARK, Satisfactory, DayZ และอีก 33 เกม ([รายชื่อทั้งหมด](docs/GAMES.md))
-- **เกมที่ต้องใช้บัญชี Steam** เช่น ARMA 3 และ DayZ: ล็อกอินครั้งเดียวในหน้าต่าง SteamCMD ของ Valve เอง NeledPort ไม่เห็นรหัสผ่าน
+- **Counter-Strike 2:** คอนโซล RCON รายชื่อผู้เล่น เตะ แมพ Workshop และ Metamod:Source ในคลิกเดียว
+- **ARK, Conan Exiles, Squad, Squad 44, Insurgency: Sandstorm, MORDHAU, HumanitZ, Operation: Harsh Doorstop, The Isle:** เปิด RCON ให้อัตโนมัติ มีรายชื่อผู้เล่น เตะและแบนตามที่เกมรองรับ และเซฟก่อนปิด
+- **Satisfactory:** ใช้ API ของเซิร์ฟเวอร์ เซฟและปิดด้วยรหัสแอดมินที่ตั้งตอน claim เซิร์ฟเวอร์ในเกม
+- **Soulmask, Warfork, Pavlov VR, Natural Selection 2, NS2: Combat:** สั่งงานผ่านคอนโซลหรือหน้าแอดมินของเกมเอง
+- **SCP: Secret Laboratory:** ใช้คอนโซลของเกม (LocalAdmin) และปิดเซิร์ฟเวอร์อย่างปลอดภัย ส่วนรายชื่อผู้เล่นเป็นคำสั่งในเกม จึงไม่มีใน NeledPort
+- **DayZ และ Arma 3:** BattlEye RCon (ผู้เล่น เตะ แบน) ต้องใช้บัญชี Steam ที่มีเกม ล็อกอินครั้งเดียวในหน้าต่าง SteamCMD ของ Valve เอง NeledPort ไม่เห็นรหัสผ่าน
+- **เกมที่เซิร์ฟเวอร์ไม่มีคอนโซลที่ NeledPort สั่งได้** (Unturned, Hurtworld ซึ่งมี Oxide ในคลิกเดียว, Core Keeper, Tower Unite, The Front, Wurm Unlimited, Killing Floor 2, Chivalry, Day of Dragons, RuneScape: Dragonwilds, Battalion, Hypercharge, StickyBots, SCUM): ตัวเปิดเซิร์ฟเวอร์ การตั้งค่า ไฟล์ config สำรองข้อมูล และรายชื่อผู้เล่นจาก Steam query เมื่อเกมตอบ
 - **App ID อะไรก็ได้:** ค้นหาเซิร์ฟเวอร์อีก 380+ ตัวจากชื่อ ติดตั้ง แล้วเลือกโปรแกรมที่ใช้เปิดครั้งเดียว
+
+ทุกเกมในรายการรองรับเต็มรูปแบบตามที่เซิร์ฟเวอร์ของเกมนั้นทำได้ ([ดูว่าแต่ละเกมมีอะไรบ้าง](docs/GAMES.md)) และ 37 เกมถูกทดสอบกับเซิร์ฟเวอร์จริงทุกสัปดาห์
 
 แต่ละเกมคือไฟล์ JSON 1 ไฟล์ในโฟลเดอร์ [`games/`](games) ส่วนวิธีเพิ่มเกมอยู่ใน [CONTRIBUTING.md](CONTRIBUTING.md#add-a-game)
 
