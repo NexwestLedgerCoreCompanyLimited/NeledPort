@@ -428,7 +428,7 @@ export class ServerManager extends EventEmitter {
     }
 
     const control = game.control
-    // Conan Exiles needs Ctrl+C twice, 5 s apart (LinuxGSM's fn_stop_graceful_ce); ARK too, as arkmanager repeats it.
+    // Conan Exiles needs Ctrl+C twice, 5 s apart (LinuxGSM's fn_stop_graceful_ce).
     const ctrlC = async () => {
       proc.interrupt()
       for (let i = 1; i < (control?.interrupts ?? 1); i++) {

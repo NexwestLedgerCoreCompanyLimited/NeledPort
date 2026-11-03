@@ -19,6 +19,9 @@ const SAVES_LATER = new Set(['ns2-combat'])
 // Games whose ban cannot be checked on an empty CI server, so the reply is logged instead: Pavlov's Ban only finds players
 // who are online, and NS2's sv_ban is game Lua that its hotfix scripts keep from loading on a CI machine.
 const BANS_LOGGED_ONLY = new Set(['pavlov-vr', 'natural-selection-2', 'ns2-combat'])
+// Games that save on command but do not quit on Ctrl+C or their exit command on Linux, so the stop closes them after
+// the save: ARK, which arkmanager also kills 20 s after Ctrl+C. The world file must be there instead.
+const CLOSED_AFTER_SAVE: Record<string, string> = { 'ark-survival-evolved': '*.ark' }
 // A SteamID64 no player owns (account 1), for the ban round trip.
 const nobody = '76561197960265729'
 
@@ -67,7 +70,12 @@ describe.skipIf(!e2e || platform !== 'linux')(`${gameId} on Linux, end to end`, 
       }
 
       const { forced } = await manager.stop(id)
-      expect(forced).toBe(false)
+      expect(forced).toBe(gameId in CLOSED_AFTER_SAVE)
+      if (CLOSED_AFTER_SAVE[gameId]) {
+        const saved = execFileSync('find', [join(installDir, game.saveDir!), '-name', CLOSED_AFTER_SAVE[gameId]], { encoding: 'utf8' }).trim()
+        console.log('saved before closing:', saved)
+        expect(saved).not.toBe('')
+      }
       expect(manager.get(id).status).toBe('stopped')
       if (game.saveDir && !SAVES_LATER.has(gameId)) expect(await manager.backup(id)).not.toBeNull()
     })
