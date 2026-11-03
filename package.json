@@ -17,7 +17,8 @@
     "build": "electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.node.json --composite false && tsc --noEmit -p tsconfig.web.json --composite false",
     "test": "vitest run",
-    "dist": "electron-vite build && electron-builder"
+    "dist": "electron-vite build && electron-builder",
+    "build:cli": "node scripts/build-cli.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.4.0",

@@ -30,6 +30,11 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run dist -- --publish never
+      - name: CLI package (npx neledport)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          npm run build:cli
+          node scripts/cli-smoke.mjs
       - uses: actions/upload-artifact@v7
         with:
           name: dist-${{ matrix.os }}
@@ -40,6 +45,7 @@ jobs:
             dist/*.deb
             dist/*.blockmap
             dist/latest*.yml
+            dist/neledport-*.tgz
 
   publish:
     needs: build

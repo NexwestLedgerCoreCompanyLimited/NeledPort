@@ -33,3 +33,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: CLI package works (npx, serve, remote access, roles, MCP)
+        run: |
+          npm run build:cli
+          node scripts/cli-smoke.mjs

@@ -12,5 +12,5 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["electron.vite.config.ts", "src/main/**/*", "src/preload/**/*", "src/core/**/*", "src/cli/**/*", "src/e2e/**/*", "src/renderer/*.test.ts"]
+  "include": ["electron.vite.config.ts", "vite.cli.config.mts", "src/main/**/*", "src/preload/**/*", "src/core/**/*", "src/cli/**/*", "src/e2e/**/*", "src/renderer/*.test.ts"]
 }

@@ -46,7 +46,7 @@ find a running app too.
 
 **Package.** `npm run build:cli` bundles the CLI with its dependencies into `cli/dist`, copies `games/`, and
 `npm pack ./cli` makes `neledport-<version>.tgz`, attached to each GitHub release:
-`npx --yes https://github.com/<repo>/releases/download/v<version>/neledport-<version>.tgz serve`. Publishing to the
+`npx --yes --package https://github.com/<repo>/releases/download/v<version>/neledport-<version>.tgz neledport serve`. Publishing to the
 npm registry needs an npm account and is the owner's call. The README gets a systemd unit for running 24/7.
 
 **MCP (`neledport mcp`).** Stdio server built on the official `@modelcontextprotocol/server` 2.4 (negotiates the
