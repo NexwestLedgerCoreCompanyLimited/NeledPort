@@ -2,7 +2,7 @@
 // activity log and MCP over stdio, as a user would run them. Used by CI on Linux and Windows.
 import { execFileSync, spawn } from 'node:child_process'
 import { mkdtempSync, readdirSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { networkInterfaces, tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const root = join(import.meta.dirname, '..')
@@ -49,12 +49,15 @@ try {
   r = cli(['create', 'valheim', 'Smoke', 'Test', '--set', 'serverName=Smoke', '--set', 'password=smoke123'])
   expect('create', r.code === 0 && r.out.includes('Created Smoke Test'), r.out)
 
-  r = cli(['remote', 'on', '--host', '127.0.0.1', '--port', '0', '--json'])
+  // Every network, reached through this machine's own address, as another computer would.
+  r = cli(['remote', 'on', '--host', '0.0.0.0', '--port', '0', '--json'])
   const port = JSON.parse(r.out).listening
   expect('remote on', r.code === 0 && port > 0, r.out)
+  const lan = Object.values(networkInterfaces()).flat().find((a) => a && a.family === 'IPv4' && !a.internal)?.address ?? '127.0.0.1'
+  console.log('connecting through', lan)
   const viewer = JSON.parse(cli(['devices', 'add', 'CI viewer', '--role', 'view', '--json']).out).code
   const controller = JSON.parse(cli(['devices', 'add', 'CI controller', '--role', 'control', '--json']).out).code
-  const machine = ['--machine', `127.0.0.1:${port}`]
+  const machine = ['--machine', `${lan}:${port}`]
 
   r = cli(['list', ...machine], { NELEDPORT_CODE: viewer })
   expect('a paired viewer sees the servers', r.code === 0 && r.out.includes('Smoke Test'), r.out)

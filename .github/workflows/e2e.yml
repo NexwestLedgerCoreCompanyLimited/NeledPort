@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       only:
-        description: Comma-separated game ids to test (empty = all)
+        description: Comma-separated game ids to test, or cli for the command-line package (empty = all)
         required: false
         default: ''
   schedule:
@@ -63,6 +63,27 @@ jobs:
       - run: npx vitest run src/e2e/${{ matrix.test }}.e2e.test.ts
         env:
           NELEDPORT_E2E_GAME: ${{ matrix.game }}
+
+  # The packed neledport CLI on a Linux server: install, serve --start, control over the network, SIGTERM.
+  cli:
+    name: neledport CLI on Linux (Counter-Strike 1.6)
+    if: inputs.only == '' || contains(format(',{0},', inputs.only), ',cli,')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Libraries SteamCMD and the server need
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y lib32gcc-s1 lib32stdc++6
+      - run: npm ci
+      - run: npm run build:cli
+      - run: npx vitest run src/e2e/cli.e2e.test.ts
 
   windows:
     name: valheim on Windows
