@@ -42,7 +42,7 @@
 บนเซิร์ฟเวอร์ Linux ที่ไม่มีหน้าจอ (Node.js 20.10 ขึ้นไป):
 
 ```bash
-npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz neledport serve
+npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.0/neledport.tgz neledport serve
 ```
 
 [คำสั่งทั้งหมด, systemd, การเข้าถึงระยะไกล และ MCP](docs/REMOTE.md)

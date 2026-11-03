@@ -35,9 +35,10 @@ writeFileSync(
 )
 writeFileSync(
   join(out, 'README.md'),
-  `# neledport\n\nThe command-line side of [NeledPort](${app.homepage}): host Steam dedicated game servers on a Linux or Windows\nserver without a screen, pair the NeledPort app on your PC to watch and control them, and let an AI run them over MCP.\n\n\`\`\`bash\nnpx --yes --package ${app.homepage}/releases/latest/download/neledport.tgz neledport serve\n\`\`\`\n\nRun \`neledport help\` for every command. See the main README for remote access and MCP setup.\n`
+  `# neledport\n\nThe command-line side of [NeledPort](${app.homepage}): host Steam dedicated game servers on a Linux or Windows\nserver without a screen, pair the NeledPort app on your PC to watch and control them, and let an AI run them over MCP.\n\n\`\`\`bash\nnpx --yes --package ${app.homepage}/releases/download/v${app.version}/neledport.tgz neledport serve\n\`\`\`\n\nRun \`neledport help\` for every command. See the main README for remote access and MCP setup.\n`
 )
 mkdirSync(join(root, 'dist'), { recursive: true })
 execFileSync(npm, ['pack', '--pack-destination', join(root, 'dist')], { cwd: out, stdio: 'inherit', shell: process.platform === 'win32' })
-// The same file under a fixed name, so releases/latest/download/neledport.tgz always points at the newest one.
+// The same file under a fixed name, so release links need only the tag (and releases/latest works from 1.0, when
+// releases stop being pre-releases).
 copyFileSync(join(root, 'dist', `neledport-${app.version}.tgz`), join(root, 'dist', 'neledport.tgz'))

@@ -53,15 +53,18 @@ Versions follow [Semantic Versioning](https://semver.org/); `0.x` releases are p
 
 1. Move the `Unreleased` notes in [CHANGELOG.md](CHANGELOG.md) under a new `## [X.Y.Z] - date` heading, as
    English bullet points grouped under `### Added`, `### Fixed` and so on, and commit. This section becomes the
-   text of the GitHub Release.
+   text of the GitHub Release. In the same commit, point the `neledport.tgz` links in README.md, README.th.md and
+   docs/REMOTE.md at the new tag (`releases/download/vX.Y.Z/neledport.tgz`): while releases are pre-releases,
+   GitHub's `releases/latest` links find none.
 2. `npm version patch` (bug fixes), `npm version minor` (new features) or `npm version major`.
    This bumps `package.json`, commits, and creates the tag `vX.Y.Z`.
 3. `git push --follow-tags`.
 
 The [Release workflow](.github/workflows/release.yml) then builds the Windows and Linux installers and
-publishes them as a GitHub Release whose text is that CHANGELOG section
-(`node scripts/release-notes.mjs X.Y.Z` shows it). It refuses to run if the tag and `package.json` version
-differ, or if CHANGELOG.md has no notes for the version.
+publishes them, with the `neledport` CLI package (`neledport-X.Y.Z.tgz` and `neledport.tgz`), as a GitHub Release
+whose text is that CHANGELOG section (`node scripts/release-notes.mjs X.Y.Z` shows it). It refuses to run if the tag
+and `package.json` version differ, if CHANGELOG.md has no notes for the version, or if the docs' `neledport.tgz`
+links point at another version.
 
 ## Ground rules
 
