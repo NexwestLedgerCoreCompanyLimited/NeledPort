@@ -5,7 +5,7 @@ import schema from '../../games/schema.json'
 import { placeholders } from './template'
 import type { CatalogError, CatalogResult, GameDefinition } from './types'
 
-const validate = new Ajv2020({ allErrors: true }).compile<GameDefinition>(schema)
+const validate = new Ajv2020({ allErrors: true, allowUnionTypes: true }).compile<GameDefinition>(schema)
 
 // Definitions come from pull requests, so a path must never escape the server's install folder.
 function isUnsafePath(p: string): boolean {

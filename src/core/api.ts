@@ -32,6 +32,8 @@ export interface ApiContext {
 export type Api = (caller: Caller, method: string, params: unknown) => Promise<unknown>
 
 const RANK: Record<Role, number> = { view: 0, control: 1, owner: 2 }
+// Reads above the view role (console lines, devices, settings, the log itself) are not actions: only refusals are logged.
+const isRead = (method: string) => /\.(list|get|lines|check)$/.test(method)
 
 type Params = Record<string, unknown>
 const invalid = (message: string) => new Error(message)
@@ -195,7 +197,7 @@ export function createApi(ctx: ApiContext): Api {
       log(false, error)
       throw new Error(error)
     }
-    if (entry.role === 'view') return entry.run(p, caller)
+    if (entry.role === 'view' || isRead(method)) return entry.run(p, caller)
     try {
       const result = await entry.run(p, caller)
       log(true)

@@ -276,5 +276,7 @@
   "remote.lastSeen": "เชื่อมต่อล่าสุด {time} จาก {address}",
   "remote.neverSeen": "ยังไม่เคยเชื่อมต่อ",
   "remote.activity": "กิจกรรม",
-  "remote.noActivity": "ยังไม่มี"
+  "remote.noActivity": "ยังไม่มี",
+  "remote.backedUp": "สำรองข้อมูล {name} แล้ว",
+  "remote.nothingToBackUp": "{name} ยังไม่มีเซฟให้สำรอง"
 }

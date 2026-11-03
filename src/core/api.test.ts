@@ -160,6 +160,15 @@ describe('API activity log', () => {
     ])
   })
 
+  it('does not record reads, so a page refreshing every few seconds leaves the log alone', async () => {
+    const { api, audit } = setup()
+    await api(owner, 'devices.list', {})
+    await api(controller, 'servers.lines', { id: server.id })
+    expect(audit).toEqual([])
+    await expect(api(viewer, 'servers.lines', { id: server.id })).rejects.toThrow()
+    expect(audit).toEqual([expect.objectContaining({ method: 'servers.lines', ok: false })])
+  })
+
   it('records failures from the game too', async () => {
     const { api, audit, manager } = setup()
     manager.start.mockRejectedValueOnce(new Error('Install the server first'))

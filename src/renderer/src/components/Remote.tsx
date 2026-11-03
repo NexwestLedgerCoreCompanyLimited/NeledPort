@@ -38,6 +38,7 @@ function MachineCard({ machine, onRemove }: { machine: MachineInfo; onRemove: ()
   const [servers, setServers] = useState<RemoteServer[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const call = (method: string, params?: Record<string, unknown>) => window.neledport.machineCall(machine.id, method, params)
 
   const refresh = useCallback(async () => {
@@ -60,8 +61,10 @@ function MachineCard({ machine, onRemove }: { machine: MachineInfo; onRemove: ()
   async function act(s: RemoteServer, action: 'start' | 'stop' | 'restart' | 'backup') {
     if ((action === 'stop' || action === 'restart') && !window.confirm(t(`remote.confirm.${action}`, { name: s.name, machine: machine.name }))) return
     setBusy(s.id)
+    setNotice(null)
     try {
-      await call(`servers.${action}`, { id: s.id })
+      const result = await call(`servers.${action}`, { id: s.id })
+      if (action === 'backup') setNotice(t(result ? 'remote.backedUp' : 'remote.nothingToBackUp', { name: s.name }))
     } catch (e) {
       setError(cleanError(e))
     } finally {
@@ -89,6 +92,7 @@ function MachineCard({ machine, onRemove }: { machine: MachineInfo; onRemove: ()
         </div>
       </header>
       <Alert text={error} />
+      {notice && <p className="text-sm text-slate-300">{notice}</p>}
       {status && (
         <dl className="grid grid-cols-3 gap-3 text-sm">
           <div className="rounded-lg bg-ink-950/60 p-3">

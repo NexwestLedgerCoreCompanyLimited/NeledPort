@@ -276,5 +276,7 @@
   "remote.lastSeen": "last seen {time} from {address}",
   "remote.neverSeen": "not connected yet",
   "remote.activity": "Activity",
-  "remote.noActivity": "Nothing yet."
+  "remote.noActivity": "Nothing yet.",
+  "remote.backedUp": "Backed up {name}.",
+  "remote.nothingToBackUp": "{name} has no saves to back up yet."
 }
