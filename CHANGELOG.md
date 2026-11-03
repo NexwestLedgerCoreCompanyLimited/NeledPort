@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-03
+
 ### Fixed
 
 - `neledport serve` and `neledport mcp` say plainly that NeledPort already runs on the machine (or why they could not
@@ -262,7 +264,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - CI on Linux and Windows (typecheck, tests, build) and a tag-driven release workflow.
 - Community files: MIT license, contributing guide, code of conduct, security policy.
 
-[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.7.0...v0.7.1

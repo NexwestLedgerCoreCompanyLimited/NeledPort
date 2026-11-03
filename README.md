@@ -76,7 +76,7 @@ With the `.deb`, install the new `.deb` from Releases.
 On a Linux server without a screen (Node.js 20.10+):
 
 ```bash
-npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.0/neledport.tgz neledport serve
+npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.1/neledport.tgz neledport serve
 ```
 
 [Commands, systemd, remote access and MCP](docs/REMOTE.md).

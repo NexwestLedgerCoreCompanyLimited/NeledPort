@@ -11,17 +11,17 @@ You need Node.js 20.10 or newer. Then install the 32-bit libraries SteamCMD need
 sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install -y lib32gcc-s1 lib32stdc++6
 ```
 
-Run it straight from a release (this is v0.9.0; the newest is on
+Run it straight from a release (this is v0.9.1; the newest is on
 [Releases](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases)):
 
 ```bash
-npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.0/neledport.tgz neledport serve
+npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.1/neledport.tgz neledport serve
 ```
 
 Or install it once and use `neledport` from then on:
 
 ```bash
-npm install -g https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.0/neledport.tgz
+npm install -g https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.1/neledport.tgz
 ```
 
 `neledport serve` hosts the servers and keeps running; Ctrl+C (or SIGTERM) saves and stops every server first. In a
@@ -120,7 +120,7 @@ log apply. Tools that change something carry MCP's destructive or write hints, s
 NeledPort must be running on that machine (the app or `neledport serve`). Claude Code:
 
 ```bash
-claude mcp add neledport -- npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.0/neledport.tgz neledport mcp
+claude mcp add neledport -- npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.1/neledport.tgz neledport mcp
 ```
 
 Claude Desktop and other clients, after `npm install -g` as above (`claude_desktop_config.json` or the client's MCP
