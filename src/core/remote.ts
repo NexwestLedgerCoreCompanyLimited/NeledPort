@@ -147,6 +147,8 @@ export function callApi(t: Target, method: string, params: unknown = {}, timeout
       port: t.port,
       path: '/v1',
       method: 'POST',
+      // A fresh connection per call: nothing lingers to keep a one-shot CLI command alive.
+      agent: false,
       headers: { 'content-type': 'application/json', 'content-length': Buffer.byteLength(body) },
       // No certificate in PSK mode: the shared key itself proves the server.
       checkServerIdentity: () => undefined,

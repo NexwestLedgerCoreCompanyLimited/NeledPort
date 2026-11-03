@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { basename, dirname } from 'node:path'
 
 export interface ServerConfig {
@@ -51,6 +51,8 @@ export function loadServers(file: string): { servers: ServerConfig[]; error?: st
 export function saveServers(file: string, servers: ServerConfig[]): void {
   mkdirSync(dirname(file), { recursive: true })
   const tmp = `${file}.tmp`
-  writeFileSync(tmp, JSON.stringify({ servers }, null, 2))
+  // Admin passwords are inside; where there is no OS keychain (a Linux server) they are only encoded.
+  writeFileSync(tmp, JSON.stringify({ servers }, null, 2), { mode: 0o600 })
+  chmodSync(tmp, 0o600)
   renameSync(tmp, file)
 }

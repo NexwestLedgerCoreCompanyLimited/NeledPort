@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -26,6 +26,12 @@ describe('server store', () => {
     const file = tmp()
     saveServers(file, [server])
     expect(loadServers(file)).toEqual({ servers: [server] })
+  })
+
+  it('keeps the file readable by this user only: it holds game admin passwords', () => {
+    const file = tmp()
+    saveServers(file, [server])
+    if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600)
   })
 
   it('moves a corrupt file aside instead of losing it', () => {

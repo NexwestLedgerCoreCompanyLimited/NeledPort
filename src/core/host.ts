@@ -3,6 +3,8 @@ import { join } from 'node:path'
 import { createApi, type Api, type ApiContext } from './api'
 import { auditLog, deviceStore, localAccess, readJson, writePrivate } from './devices'
 import { callApi, DEFAULT_REMOTE_PORT, parseAddress, startApiServer, type ApiServer, type Target } from './remote'
+import type { ServerManager } from './manager'
+import { isSteamUser } from './steamcmd'
 
 export interface RemoteSettings {
   enabled: boolean
@@ -122,5 +124,17 @@ export async function startHost(o: HostOptions): Promise<Host> {
       await owner.close()
       local.setPort(undefined)
     }
+  }
+}
+
+/** Steam sign-in for the CLI on a machine without a screen: it runs SteamCMD in its own terminal, which asks the user. */
+export function steamOwnerMethods(m: Pick<ServerManager, 'setSteamAccount' | 'steamCmd' | 'steamSignedIn'>): NonNullable<ApiContext['owner']> {
+  return {
+    'steam.prepare': async (p) => {
+      if (!isSteamUser(p.user)) throw new Error('Invalid Steam account name')
+      m.setSteamAccount(p.user)
+      return m.steamCmd()
+    },
+    'steam.check': () => m.steamSignedIn()
   }
 }
