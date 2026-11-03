@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed
+
+- `neledport serve` and `neledport mcp` say plainly that NeledPort already runs on the machine (or why they could not
+  start) instead of printing a stack trace.
+- The MCP `list_games` tool reports an unreachable NeledPort instead of answering with an empty list.
+- Adding a machine without a name works when the machine's hostname is longer than 60 characters.
+- Remote calls no longer rewrite `devices.json` each time; a device's last sighting is saved at most once a minute.
+
 ## [0.9.0] - 2026-11-03
 
 ### Added
