@@ -2,6 +2,25 @@
 
 Significant choices, why we made them, and what we turned down. Newest first.
 
+## 2026-11-03 · Remote machines, CLI and MCP share one API, keyed by TLS pre-shared keys
+
+- **Decision:** one API (`src/core/api.ts`) with three roles (view, control, owner) serves the app's Remote page, the
+  `neledport` CLI, the MCP server and other machines. Paired devices connect over HTTPS whose TLS 1.2 is keyed by the
+  device's own 256-bit pre-shared key (`ECDHE-PSK-CHACHA20-POLY1305`); the owner role exists only on 127.0.0.1, keyed
+  by a file only the user can read. Creating or deleting servers, launch programs, config files, mods and Steam
+  sign-in are never reachable from another machine. MCP uses the official `@modelcontextprotocol/server` 2.4; the CLI
+  ships as one bundled file in `neledport.tgz` on each release.
+- **Why:** the process that started a game server is the only one that can stop it cleanly, so the CLI and MCP talk to
+  the running NeledPort instead of opening the data themselves. PSK works the same in Node and in Electron's BoringSSL
+  (both checked as server and client on 2026-11-03), needs no certificates, and a wrong key fails the handshake.
+  Per-device keys make revoking one PC possible; the role list keeps a leaked code from writing files or running code.
+- **Trade-off:** TLS 1.2 only (BoringSSL has no external PSK in 1.3). On a Linux server without a desktop there is no
+  keychain, so game passwords there are encoded in 0600 files. A control code is as strong as the game's admin console.
+- **Rejected:** one shared password (no per-device revoke, no roles); self-signed certificates (no Node API to make
+  them, and users click through warnings); a hand-written MCP server (the 2026-07-28 protocol changed its handshake);
+  `npx github:` (it would install Electron on the server); reaching the data from the CLI directly (two processes
+  would own the same game servers).
+
 ## 2026-10-31 · Every game full: each game's own control, proven on real servers
 
 - **Decision:** No game stays "basic". Full means what the game's own server offers, taken from its official docs, its

@@ -1,5 +1,5 @@
 // Builds the neledport CLI package into out/cli and packs it as dist/neledport-<version>.tgz, which each GitHub
-// release carries: npx --yes --package <release URL of neledport-<version>.tgz> neledport serve
+// release carries (also as neledport.tgz): npx --yes --package <release URL> neledport serve
 import { execFileSync } from 'node:child_process'
 import { copyFileSync, cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -35,7 +35,9 @@ writeFileSync(
 )
 writeFileSync(
   join(out, 'README.md'),
-  `# neledport\n\nThe command-line side of [NeledPort](${app.homepage}): host Steam dedicated game servers on a Linux or Windows\nserver without a screen, pair the NeledPort app on your PC to watch and control them, and let an AI run them over MCP.\n\n\`\`\`bash\nnpx --yes --package ${app.homepage}/releases/download/v${app.version}/neledport-${app.version}.tgz neledport serve\n\`\`\`\n\nRun \`neledport help\` for every command. See the main README for remote access and MCP setup.\n`
+  `# neledport\n\nThe command-line side of [NeledPort](${app.homepage}): host Steam dedicated game servers on a Linux or Windows\nserver without a screen, pair the NeledPort app on your PC to watch and control them, and let an AI run them over MCP.\n\n\`\`\`bash\nnpx --yes --package ${app.homepage}/releases/latest/download/neledport.tgz neledport serve\n\`\`\`\n\nRun \`neledport help\` for every command. See the main README for remote access and MCP setup.\n`
 )
 mkdirSync(join(root, 'dist'), { recursive: true })
 execFileSync(npm, ['pack', '--pack-destination', join(root, 'dist')], { cwd: out, stdio: 'inherit', shell: process.platform === 'win32' })
+// The same file under a fixed name, so releases/latest/download/neledport.tgz always points at the newest one.
+copyFileSync(join(root, 'dist', `neledport-${app.version}.tgz`), join(root, 'dist', 'neledport.tgz'))

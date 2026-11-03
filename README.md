@@ -39,6 +39,13 @@ NeledPort wraps all of that in a desktop app for Windows and Linux.
   previous file is kept.
 - **Backups:** made automatically before every update, or with **Back up now**. Restore one in a click; the current
   world is moved aside, never deleted.
+- **Remote machines:** watch and control the servers on a Linux VPS or a Windows Server from the app on your PC.
+  Each paired device has its own key and role (view or control), connections are encrypted with it, and every action is
+  logged. [How it works and how it is protected](docs/REMOTE.md).
+- **No screen needed:** `neledport serve` hosts servers on a Linux server, from one `npx` command
+  ([setup](docs/REMOTE.md#run-neledport-on-a-linux-server-without-a-screen)).
+- **AI over MCP:** `neledport mcp` lets Claude or another MCP client list, start, stop and manage servers
+  ([setup](docs/REMOTE.md#let-an-ai-run-it-mcp)).
 - **Speaks your language:** English and Thai today, and [adding yours](CONTRIBUTING.md#translate-neledport) is one file.
 
 Planned: uptime and CPU/RAM graphs, a command palette, a light theme.
@@ -65,6 +72,14 @@ NeledPort updates itself on Windows and with the AppImage: when a new version is
 With the `.deb`, install the new `.deb` from Releases.
 
 > Builds are not code-signed yet, so Windows SmartScreen may warn on first launch: choose **More info → Run anyway**.
+
+On a Linux server without a screen (Node.js 20.10+):
+
+```bash
+npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz neledport serve
+```
+
+[Commands, systemd, remote access and MCP](docs/REMOTE.md).
 
 ## Supported games
 

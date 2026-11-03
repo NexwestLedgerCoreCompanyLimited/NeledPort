@@ -21,7 +21,7 @@ const COMMANDS = [
 
 const HELP = `NeledPort ${version}: host Steam dedicated game servers, with or without a screen.
 
-  neledport serve                      host game servers on this machine (Ctrl+C saves and stops them)
+  neledport serve [--start <server>]...  host game servers here, starting these (Ctrl+C saves and stops them)
   neledport status | list              this machine and its servers
   neledport games [search]             games NeledPort can host
   neledport create <game> <name> [--set key=value]...
@@ -48,6 +48,8 @@ export interface Parsed {
   args: string[]
   flags: { machine?: string; code?: string; role?: string; port?: string; host?: string; lines?: string; limit?: string; json?: boolean; 'allow-create'?: boolean }
   settings: Record<string, string>
+  /** serve --start: servers to start once NeledPort is up (after a reboot, from systemd). */
+  start: string[]
 }
 
 export function parseCommand(argv: string[]): Parsed {
@@ -57,6 +59,7 @@ export function parseCommand(argv: string[]): Parsed {
     strict: true,
     options: {
       set: { type: 'string', multiple: true },
+      start: { type: 'string', multiple: true },
       machine: { type: 'string' },
       code: { type: 'string' },
       role: { type: 'string' },
@@ -70,7 +73,7 @@ export function parseCommand(argv: string[]): Parsed {
       version: { type: 'boolean', short: 'v' }
     }
   })
-  const { set, help, version: v, ...flags } = values
+  const { set, start = [], help, version: v, ...flags } = values
   const settings: Record<string, string> = {}
   for (const pair of set ?? []) {
     const i = pair.indexOf('=')
@@ -78,10 +81,10 @@ export function parseCommand(argv: string[]): Parsed {
     settings[pair.slice(0, i)] = pair.slice(i + 1)
   }
   const [command = 'help', ...args] = positionals
-  if (help) return { command: 'help', args: [], flags, settings }
-  if (v) return { command: 'version', args: [], flags, settings }
+  if (help) return { command: 'help', args: [], flags, settings, start }
+  if (v) return { command: 'version', args: [], flags, settings, start }
   if (!COMMANDS.includes(command)) throw new Error(`Unknown command: ${command} (see neledport help)`)
-  return { command, args, flags, settings }
+  return { command, args, flags, settings, start }
 }
 
 /** Where the desktop app keeps its data (Electron's userData), so the CLI and the app share servers and devices. */
@@ -121,7 +124,7 @@ export async function run(argv: string[], env: Env = process.env, io: Io = { out
   if (p.command === 'version') return io.out(version), 0
   if (p.command === 'serve') {
     const { serve } = await import('./serve')
-    await serve({ dataDir, serversDir: env.NELEDPORT_SERVERS ?? join(homedir(), 'NeledPort', 'servers'), version, io })
+    await serve({ dataDir, serversDir: env.NELEDPORT_SERVERS ?? join(homedir(), 'NeledPort', 'servers'), version, io, start: p.start })
     return 0
   }
   if (p.command === 'mcp') {

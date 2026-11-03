@@ -27,7 +27,7 @@ const secrets = {
 }
 
 /** Hosts game servers without a window, until Ctrl+C or SIGTERM saves and stops them all. */
-export async function serve(o: { dataDir: string; serversDir: string; version: string; io: Io }): Promise<never> {
+export async function serve(o: { dataDir: string; serversDir: string; version: string; io: Io; start?: string[] }): Promise<never> {
   if (process.platform !== 'linux' && process.platform !== 'win32') o.io.err('Game servers run on Linux and Windows; on this system NeledPort can only be watched.')
   mkdirSync(o.dataDir, { recursive: true, mode: 0o700 })
   const dir = gamesDir()
@@ -64,6 +64,12 @@ export async function serve(o: { dataDir: string; serversDir: string; version: s
       'Ctrl+C saves and stops every server, then quits.'
     ].join('\n')
   )
+
+  for (const wanted of o.start ?? []) {
+    const s = manager.list().find((v) => v.id === wanted || v.name.toLowerCase() === wanted.toLowerCase())
+    if (!s) o.io.err(`--start: no server called "${wanted}"`)
+    else manager.start(s.id).catch((e: Error) => o.io.err(`${s.name}: ${e.message}`))
+  }
 
   let stopping = false
   const shutdown = async () => {

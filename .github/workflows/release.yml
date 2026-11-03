@@ -45,7 +45,7 @@ jobs:
             dist/*.deb
             dist/*.blockmap
             dist/latest*.yml
-            dist/neledport-*.tgz
+            dist/neledport*.tgz
 
   publish:
     needs: build

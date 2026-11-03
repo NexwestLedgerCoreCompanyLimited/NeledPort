@@ -16,6 +16,7 @@ describe('parseCommand', () => {
     expect(parseCommand(['devices', 'add', 'Laptop', '--role', 'control'])).toMatchObject({ command: 'devices', args: ['add', 'Laptop'], flags: { role: 'control' } })
     expect(parseCommand(['cmd', 'ab12cd34', 'say', 'hello', 'all'])).toMatchObject({ command: 'cmd', args: ['ab12cd34', 'say', 'hello', 'all'] })
     expect(parseCommand(['list', '--machine', '203.0.113.5', '--json'])).toMatchObject({ command: 'list', flags: { machine: '203.0.113.5', json: true } })
+    expect(parseCommand(['serve', '--start', 'Friday Valheim', '--start', 'ab12cd34'])).toMatchObject({ command: 'serve', start: ['Friday Valheim', 'ab12cd34'] })
   })
 
   it('shows help for nothing or help, and refuses unknown commands and flags', () => {

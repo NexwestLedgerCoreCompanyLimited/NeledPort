@@ -25,6 +25,9 @@
 - **ตั้งค่า:** แก้ค่าเซิร์ฟเวอร์ได้หลังสร้างแล้ว และแก้ไฟล์ตั้งค่าของเกมเองได้ในโปรแกรม โดยเก็บไฟล์เดิมไว้ให้
 - **สำรองข้อมูล:** สำรองให้อัตโนมัติก่อนอัปเดตทุกครั้ง หรือกด **สำรองข้อมูลตอนนี้** และกู้คืนได้ในคลิกเดียว โลกปัจจุบันจะถูกย้ายไปเก็บไว้ ไม่ถูกลบ
 - **อัปเดตตัวเอง:** บน Windows และ AppImage โปรแกรมโหลดเวอร์ชันใหม่ให้ แล้วกด **รีสตาร์ตเพื่ออัปเดต**
+- **เครื่องระยะไกล:** ดูและสั่งงานเซิร์ฟเวอร์บน Linux VPS หรือ Windows Server จากแอปบนคอมของคุณ อุปกรณ์ที่จับคู่แต่ละเครื่องมีกุญแจและสิทธิ์ของตัวเอง (ดูอย่างเดียว หรือดูและสั่งงาน) การเชื่อมต่อเข้ารหัสด้วยกุญแจนั้น และทุกคำสั่งถูกบันทึก ([วิธีทำงานและความปลอดภัย](docs/REMOTE.md))
+- **ไม่ต้องมีหน้าจอ:** `neledport serve` รันเซิร์ฟเวอร์บน Linux ได้ด้วยคำสั่ง `npx` คำสั่งเดียว ([วิธีตั้งค่า](docs/REMOTE.md#run-neledport-on-a-linux-server-without-a-screen))
+- **AI ผ่าน MCP:** `neledport mcp` ให้ Claude หรือ MCP client อื่นดู เปิด ปิด และจัดการเซิร์ฟเวอร์ได้ ([วิธีตั้งค่า](docs/REMOTE.md#let-an-ai-run-it-mcp))
 - **หลายภาษา:** ตอนนี้มีอังกฤษ (ภาษาหลัก) และไทย เพิ่มภาษาใหม่ได้ด้วยไฟล์เดียว ([วิธีแปล](CONTRIBUTING.md#translate-neledport))
 
 แผนต่อไป: กราฟ uptime และ CPU/RAM, command palette, ธีมสว่าง
@@ -35,6 +38,14 @@
 [Releases](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases)
 
 > ตัวติดตั้งยังไม่ได้ลงลายเซ็นดิจิทัล Windows SmartScreen อาจเตือนตอนเปิดครั้งแรก ให้กด **More info → Run anyway**
+
+บนเซิร์ฟเวอร์ Linux ที่ไม่มีหน้าจอ (Node.js 20.10 ขึ้นไป):
+
+```bash
+npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz neledport serve
+```
+
+[คำสั่งทั้งหมด, systemd, การเข้าถึงระยะไกล และ MCP](docs/REMOTE.md)
 
 ## เกมที่รองรับ
 

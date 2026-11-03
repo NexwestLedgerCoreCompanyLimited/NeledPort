@@ -8,6 +8,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- **Remote machines.** The app's new Remote page watches and controls the game servers on another computer (a Linux
+  VPS, a Windows Server): its CPU, memory and disk, every server with its players, and start, stop, restart and back up.
+  The other side turns remote access on (off by default) and pairs each device with its own code and role (view or
+  control). The code is the TLS pre-shared key of the connection, so a wrong one fails before anything is read;
+  addresses that keep trying are blocked; every action and refusal is logged; creating or deleting servers, launch
+  programs, config files, mods and Steam sign-in never work from another machine. See `docs/REMOTE.md`.
+- **`neledport` on the command line**, as `npx` from each release (`neledport.tgz`): `serve` hosts servers on a Linux
+  server without a screen (`--start` for systemd), and `list`, `create`, `install`, `start`, `stop`, `cmd`, `logs`,
+  `devices`, `remote`, `activity` and `steam-login` manage them there or, with `--machine`, on a paired machine.
+- **MCP server** (`neledport mcp`): Claude and other MCP clients can list, start, stop, update, back up servers, run
+  console commands and manage players, under the same roles and activity log.
+
 - **Every game in the catalog now has full support**: no game is left at "basic". For each one NeledPort does what the
   game's own dedicated server offers, checked against its official docs, its source code or LinuxGSM: a stop that
   saves the world, the player list, kick and bans, a console, config files in the Config tab, backups of its saves
@@ -52,6 +64,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Unturned starts the official way (`+InternetServer` with Commands.dat) and stops with Ctrl+C like Hurtworld: neither
   reads commands from NeledPort, so they have no Console tab.
 - Double Action: Boogaloo runs on Windows only: Steam's Linux files lack the game's server library.
+- `servers.json` is readable by its user only: it holds game admin passwords.
 - An install that SteamCMD ends with "state is 0x…" shows that line instead of only an exit code, and runs once more:
   Half-Life servers (Counter-Strike 1.6, Day of Defeat) often need a second run.
 
