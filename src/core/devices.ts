@@ -59,7 +59,8 @@ export function deviceStore(file: string) {
     seen(id: string, address: string): void {
       const devices = load()
       const d = devices.find((x) => x.id === id)
-      if (!d) return
+      // Every call is a connection: rewrite the file only when something worth showing changed.
+      if (!d || (d.lastAddress === address && d.lastSeen && Date.now() - Date.parse(d.lastSeen) < 60_000)) return
       d.lastSeen = new Date().toISOString()
       d.lastAddress = address
       save(devices)

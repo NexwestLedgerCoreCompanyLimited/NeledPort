@@ -58,6 +58,18 @@ describe('deviceStore', () => {
     expect(store.list()[0]).toMatchObject({ lastAddress: '198.51.100.7', lastSeen: expect.any(String) })
   })
 
+  it('rewrites the file for a sighting at most once a minute from the same address', () => {
+    const file = join(dir(), 'devices.json')
+    const store = deviceStore(file)
+    const { device } = store.add('Laptop', 'view')
+    store.seen(device.id, '198.51.100.7')
+    const first = readFileSync(file, 'utf8')
+    store.seen(device.id, '198.51.100.7')
+    expect(readFileSync(file, 'utf8')).toBe(first)
+    store.seen(device.id, '198.51.100.8')
+    expect(store.list()[0].lastAddress).toBe('198.51.100.8')
+  })
+
   it('treats a broken file as no devices rather than crashing', () => {
     const file = join(dir(), 'devices.json')
     writeFileSync(file, '{not json')

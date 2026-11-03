@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { parseCode, readJson, writePrivate } from './devices'
-import type { Target } from './remote'
+import { callApi, parseAddress, type Target } from './remote'
 import type { MachineInfo } from './types'
 
 export type { MachineInfo }
@@ -28,4 +28,15 @@ export function machineStore(file: string, secrets: { encrypt(plain: string): st
       return { host: m.host, port: m.port, identity, key }
     }
   }
+}
+
+export type MachineStore = ReturnType<typeof machineStore>
+
+/** Checks that the machine answers this code, then keeps it with the role the machine gave; the name defaults to its own. */
+export async function addMachine(store: MachineStore, o: { name: string; address: string; code: string }): Promise<MachineInfo> {
+  const { host, port } = parseAddress(o.address)
+  const { id, key } = parseCode(o.code)
+  const hello = (await callApi({ host, port, identity: id, key }, 'hello', {}, 15_000)) as { hostname: string; role: string }
+  const role = hello.role === 'control' ? 'control' : 'view'
+  return store.add({ name: o.name.trim() || hello.hostname.slice(0, 60), host, port, code: o.code, role })
 }

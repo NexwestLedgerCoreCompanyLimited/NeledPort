@@ -5,11 +5,10 @@ import { join } from 'node:path'
 import { loadCatalog } from '../core/catalog'
 import { isLanguage, pickLanguage, translate, type MessageKey } from '../core/i18n'
 import type { Caller } from '../core/api'
-import { parseCode } from '../core/devices'
 import { runningHere, startHost, steamOwnerMethods, type Host } from '../core/host'
-import { machineStore } from '../core/machines'
+import { addMachine, machineStore } from '../core/machines'
 import { ServerManager } from '../core/manager'
-import { callApi, parseAddress } from '../core/remote'
+import { callApi } from '../core/remote'
 import { isSteamUser } from '../core/steamcmd'
 import { openSteamLogin } from './steamLogin'
 import { installUpdate, startUpdates, updateState } from './updater'
@@ -111,12 +110,9 @@ function registerRemoteIpc(): void {
   ipcMain.handle('remote:addDevice', (_e, name: unknown, role: unknown) => ownerCall('devices.add', { name, role }))
   ipcMain.handle('remote:revokeDevice', (_e, id: unknown) => ownerCall('devices.revoke', { id }))
   ipcMain.handle('machines:list', () => machines.list())
-  ipcMain.handle('machines:add', async (_e, name: unknown, address: unknown, code: unknown) => {
+  ipcMain.handle('machines:add', (_e, name: unknown, address: unknown, code: unknown) => {
     if (!isText(name, 60) || !isText(address, 300) || !isText(code, 200)) throw new Error('Invalid machine')
-    const { host: h, port } = parseAddress(address)
-    const { id, key } = parseCode(code)
-    const hello = (await callApi({ host: h, port, identity: id, key }, 'hello', {}, 15_000)) as { hostname: string; role: 'view' | 'control' }
-    return machines.add({ name: name.trim() || hello.hostname, host: h, port, code, role: hello.role })
+    return addMachine(machines, { name, address, code })
   })
   ipcMain.handle('machines:remove', (_e, id: unknown) => {
     if (!isText(id, 20)) throw new Error('Invalid machine')

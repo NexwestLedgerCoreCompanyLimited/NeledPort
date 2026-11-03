@@ -72,6 +72,17 @@ describe('MCP server', () => {
     expect(result.content[0].text).toMatch(/not allowed/)
   })
 
+  it('reports an unreachable NeledPort when searching games, instead of an empty list', async () => {
+    const { request } = await client({
+      call: async () => {
+        throw new Error('NeledPort is not running on this machine')
+      }
+    })
+    const { result } = await request('tools/call', { name: 'list_games', arguments: { search: 'val' } })
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toMatch(/not running/)
+  })
+
   it('rejects arguments that do not fit before calling NeledPort', async () => {
     const { request, call } = await client()
     const reply = await request('tools/call', { name: 'start_server', arguments: { server_id: 42 } })

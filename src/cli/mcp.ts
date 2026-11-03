@@ -46,11 +46,14 @@ export function createMcpServer(o: { call: (method: string, params: unknown) => 
   server.registerTool(
     'list_games',
     { description: 'Games NeledPort can host, optionally filtered by name', inputSchema: z.object({ search: z.string().max(80).optional() }), annotations: read },
-    async (a) => {
-      if (!a.search) return run('games.list', {})
-      const all = (await o.call('games.list', {}).catch(() => [])) as { name: string }[]
-      const q = a.search.toLowerCase()
-      return { content: [{ type: 'text', text: JSON.stringify(all.filter((g) => g.name.toLowerCase().includes(q)), null, 2) }] }
+    async (a): Promise<CallToolResult> => {
+      try {
+        const q = a.search?.toLowerCase() ?? ''
+        const games = ((await o.call('games.list', {})) as { name: string }[]).filter((g) => g.name.toLowerCase().includes(q))
+        return { content: [{ type: 'text', text: JSON.stringify(games, null, 2) }] }
+      } catch (e) {
+        return { content: [{ type: 'text', text: (e as Error).message }], isError: true }
+      }
     }
   )
   server.registerTool(

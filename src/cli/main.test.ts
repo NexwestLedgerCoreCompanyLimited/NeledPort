@@ -87,6 +87,13 @@ describe('run against a running NeledPort', () => {
     expect(out.join('\n')).toMatch(/No server called "no such server"/)
   })
 
+  it('says plainly that NeledPort already runs, instead of a stack trace', async () => {
+    const { out, io, env } = await setup()
+    expect(await run(['serve'], env, io)).toBe(1)
+    expect(out.join('\n')).toMatch(/^NeledPort is already running/m)
+    expect(out.join('\n')).not.toMatch(/\n\s+at /)
+  })
+
   it('tells the user to start NeledPort when it is not running', async () => {
     const out: string[] = []
     const env = { NELEDPORT_DATA: mkdtempSync(join(tmpdir(), 'neledport-cli-')) }

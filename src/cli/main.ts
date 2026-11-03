@@ -122,15 +122,20 @@ export async function run(argv: string[], env: Env = process.env, io: Io = { out
   const dataDir = dataDirFor(process.platform, homedir(), env)
   if (p.command === 'help') return io.out(HELP), 0
   if (p.command === 'version') return io.out(version), 0
-  if (p.command === 'serve') {
-    const { serve } = await import('./serve')
-    await serve({ dataDir, serversDir: env.NELEDPORT_SERVERS ?? join(homedir(), 'NeledPort', 'servers'), version, io, start: p.start })
-    return 0
-  }
-  if (p.command === 'mcp') {
-    const { startMcp } = await import('./mcpStdio')
-    await startMcp({ call: (method, params) => callApi(target(p, env, dataDir), method, params), allowCreate: !!p.flags['allow-create'] && !p.flags.machine, version })
-    return 0
+  try {
+    if (p.command === 'serve') {
+      const { serve } = await import('./serve')
+      await serve({ dataDir, serversDir: env.NELEDPORT_SERVERS ?? join(homedir(), 'NeledPort', 'servers'), version, io, start: p.start })
+      return 0
+    }
+    if (p.command === 'mcp') {
+      const { startMcp } = await import('./mcpStdio')
+      await startMcp({ call: (method, params) => callApi(target(p, env, dataDir), method, params), allowCreate: !!p.flags['allow-create'] && !p.flags.machine, version })
+      return 0
+    }
+  } catch (e) {
+    io.err((e as Error).message)
+    return 1
   }
 
   try {
