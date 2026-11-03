@@ -14,14 +14,14 @@ export interface Device {
 type Stored = Device & { key: string }
 
 /** Written whole to a temporary file, then renamed, readable by this user only. */
-function writePrivate(file: string, text: string): void {
+export function writePrivate(file: string, text: string): void {
   const tmp = `${file}.${process.pid}.tmp`
   writeFileSync(tmp, text, { mode: 0o600 })
   chmodSync(tmp, 0o600)
   renameSync(tmp, file)
 }
 
-function readJson<T>(file: string, fallback: T): T {
+export function readJson<T>(file: string, fallback: T): T {
   try {
     return existsSync(file) ? (JSON.parse(readFileSync(file, 'utf8')) as T) : fallback
   } catch {

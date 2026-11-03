@@ -108,6 +108,7 @@ export function createApi(ctx: ApiContext): Api {
   const m = ctx.manager
   const running = (s: ServerView) => s.status === 'running' || s.status === 'starting'
   const methods: Record<string, { role: Role; run: (p: Params) => unknown }> = {
+    hello: { role: 'view', run: () => ({ name: 'NeledPort', version: ctx.version, hostname: os.hostname() }) },
     'machine.status': {
       role: 'view',
       run: async () => {
