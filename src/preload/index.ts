@@ -46,7 +46,15 @@ const api: NeledPortApi = {
   addPlugin: (id, loaderId) => ipcRenderer.invoke('servers:addPlugin', id, loaderId),
   workshop: (id, itemId) => ipcRenderer.invoke('servers:workshop', id, itemId),
   onServerChanged: (cb) => subscribe<[ServerView]>('servers:changed', cb),
-  onServerLine: (cb) => subscribe<[string, string]>('servers:line', cb)
+  onServerLine: (cb) => subscribe<[string, string]>('servers:line', cb),
+  remoteLocal: () => ipcRenderer.invoke('remote:local'),
+  setRemote: (s) => ipcRenderer.invoke('remote:set', s),
+  addDevice: (name, role) => ipcRenderer.invoke('remote:addDevice', name, role),
+  revokeDevice: (id) => ipcRenderer.invoke('remote:revokeDevice', id),
+  machines: () => ipcRenderer.invoke('machines:list'),
+  addMachine: (name, address, code) => ipcRenderer.invoke('machines:add', name, address, code),
+  removeMachine: (id) => ipcRenderer.invoke('machines:remove', id),
+  machineCall: (id, method, params) => ipcRenderer.invoke('machines:call', id, method, params)
 }
 
 contextBridge.exposeInMainWorld('neledport', api)

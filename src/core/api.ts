@@ -1,7 +1,7 @@
 import { existsSync, statfsSync } from 'node:fs'
 import os from 'node:os'
 import type { ServerManager } from './manager'
-import type { GameDefinition, PlayerInfo, ServerView } from './types'
+import type { AuditEntry, GameDefinition, PlayerInfo, ServerView } from './types'
 
 /**
  * The one door into a running NeledPort for everything that is not its own window: the CLI, the MCP server and other
@@ -18,15 +18,7 @@ export type ApiManager = Pick<
   ServerManager,
   'list' | 'get' | 'lines' | 'players' | 'bans' | 'start' | 'stop' | 'restart' | 'update' | 'backup' | 'command' | 'kick' | 'ban' | 'unban' | 'create' | 'install' | 'remove'
 >
-export interface AuditEntry {
-  time: string
-  device: string
-  address?: string
-  method: string
-  server?: string
-  ok: boolean
-  error?: string
-}
+export type { AuditEntry }
 export interface ApiContext {
   manager: ApiManager
   games: () => GameDefinition[]
@@ -107,8 +99,8 @@ async function cpuPercent(): Promise<number> {
 export function createApi(ctx: ApiContext): Api {
   const m = ctx.manager
   const running = (s: ServerView) => s.status === 'running' || s.status === 'starting'
-  const methods: Record<string, { role: Role; run: (p: Params) => unknown }> = {
-    hello: { role: 'view', run: () => ({ name: 'NeledPort', version: ctx.version, hostname: os.hostname() }) },
+  const methods: Record<string, { role: Role; run: (p: Params, caller: Caller) => unknown }> = {
+    hello: { role: 'view', run: (_p, caller) => ({ name: 'NeledPort', version: ctx.version, hostname: os.hostname(), role: caller.role }) },
     'machine.status': {
       role: 'view',
       run: async () => {
@@ -203,9 +195,9 @@ export function createApi(ctx: ApiContext): Api {
       log(false, error)
       throw new Error(error)
     }
-    if (entry.role === 'view') return entry.run(p)
+    if (entry.role === 'view') return entry.run(p, caller)
     try {
-      const result = await entry.run(p)
+      const result = await entry.run(p, caller)
       log(true)
       return result
     } catch (e) {

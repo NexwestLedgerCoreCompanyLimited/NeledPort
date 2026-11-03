@@ -1,16 +1,8 @@
 import { randomBytes } from 'node:crypto'
 import { appendFileSync, chmodSync, existsSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
-import type { AuditEntry } from './api'
+import type { AuditEntry, Device } from './types'
 
-/** A machine paired with this one. Its key is the TLS pre-shared key; owner is never pairable (this machine only). */
-export interface Device {
-  id: string
-  name: string
-  role: 'view' | 'control'
-  createdAt: string
-  lastSeen?: string
-  lastAddress?: string
-}
+export type { Device }
 type Stored = Device & { key: string }
 
 /** Written whole to a temporary file, then renamed, readable by this user only. */

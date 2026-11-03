@@ -3,6 +3,7 @@ import type { AppInfo, CatalogResult, GameDefinition, ServerView } from '../../c
 import { AddServerDialog } from './components/AddServerDialog'
 import { Catalog } from './components/Catalog'
 import { CustomServerDialog } from './components/CustomServerDialog'
+import { Remote } from './components/Remote'
 import { ServerPage } from './components/ServerPage'
 import { Sidebar } from './components/Sidebar'
 import { useT } from './i18n'
@@ -40,14 +41,16 @@ export default function App() {
 
   return (
     <div className="flex h-full">
-      <Sidebar servers={servers} selected={server ? server.id : null} onSelect={setSelected} />
+      <Sidebar servers={servers} selected={selected === 'remote' ? 'remote' : server ? server.id : null} onSelect={setSelected} />
       <main className="grid-bg flex-1 overflow-y-auto">
         {notices.map((n) => (
           <p key={n} role="alert" className="mx-10 mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200">
             {n}
           </p>
         ))}
-        {server ? (
+        {selected === 'remote' ? (
+          <Remote />
+        ) : server ? (
           <ServerPage
             key={server.id}
             server={server}

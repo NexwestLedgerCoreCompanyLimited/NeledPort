@@ -251,4 +251,55 @@ export interface NeledPortApi {
   workshop(id: string, itemId: string): Promise<void>
   onServerChanged(cb: (server: ServerView) => void): () => void
   onServerLine(cb: (id: string, line: string) => void): () => void
+  /** This computer's remote access: its settings, paired devices and activity log. */
+  remoteLocal(): Promise<{ status: RemoteStatus; devices: Device[]; activity: AuditEntry[] }>
+  setRemote(s: { enabled: boolean; port: number; host: string }): Promise<RemoteStatus>
+  /** The pairing code is returned once, here, and never again. */
+  addDevice(name: string, role: Device['role']): Promise<{ device: Device; code: string }>
+  revokeDevice(id: string): Promise<boolean>
+  /** Other machines this app watches. */
+  machines(): Promise<MachineInfo[]>
+  addMachine(name: string, address: string, code: string): Promise<MachineInfo>
+  removeMachine(id: string): Promise<void>
+  machineCall(id: string, method: string, params?: Record<string, unknown>): Promise<unknown>
+}
+
+/** One line of the activity log: an action through the API, or a refused connection. */
+export interface AuditEntry {
+  time: string
+  device: string
+  address?: string
+  method: string
+  server?: string
+  ok: boolean
+  error?: string
+}
+
+/** A machine paired with this one. Its key is the TLS pre-shared key; owner is never pairable (this machine only). */
+export interface Device {
+  id: string
+  name: string
+  role: 'view' | 'control'
+  createdAt: string
+  lastSeen?: string
+  lastAddress?: string
+}
+
+export interface RemoteSettings {
+  enabled: boolean
+  /** The address remote access listens on: 0.0.0.0 for every network, or one of this machine's addresses. */
+  host: string
+  port: number
+}
+export interface RemoteStatus extends RemoteSettings {
+  listening?: number
+  error?: string
+}
+
+/** A machine this app watches, as the renderer sees it: never its pairing code. */
+export interface MachineInfo {
+  id: string
+  name: string
+  address: string
+  role: 'view' | 'control'
 }

@@ -116,6 +116,14 @@ describe('API roles', () => {
   })
 })
 
+describe('hello', () => {
+  it('tells the caller its role, so a viewer app shows only the buttons it may use', async () => {
+    const { api } = setup()
+    expect(await api(viewer, 'hello', {})).toMatchObject({ name: 'NeledPort', version: '0.9.0', role: 'view' })
+    expect(await api(controller, 'hello', {})).toMatchObject({ role: 'control' })
+  })
+})
+
 describe('API input checks', () => {
   it('refuses unknown methods and malformed ids', async () => {
     const { api } = setup()

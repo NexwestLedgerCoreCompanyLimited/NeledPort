@@ -105,6 +105,14 @@ export function Sidebar({ servers, selected, onSelect }: Props) {
         >
           {t('sidebar.catalog')}
         </button>
+        <button
+          type="button"
+          onClick={() => onSelect('remote')}
+          aria-current={selected === 'remote' ? 'page' : undefined}
+          className={`min-h-10 rounded-[10px] px-2.5 text-left ${selected === 'remote' ? 'bg-ink-800 text-white' : 'text-slate-300 hover:bg-ink-800/60'}`}
+        >
+          {t('sidebar.remote')}
+        </button>
         <a href={REPO_URL} target="_blank" rel="noreferrer" className="rounded-[10px] px-2.5 py-2 text-slate-400 hover:text-accent">
           {t('sidebar.star')}
         </a>

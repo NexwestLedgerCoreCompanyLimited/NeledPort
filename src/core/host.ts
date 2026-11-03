@@ -5,17 +5,9 @@ import { auditLog, deviceStore, localAccess, readJson, writePrivate } from './de
 import { callApi, DEFAULT_REMOTE_PORT, parseAddress, startApiServer, type ApiServer, type Target } from './remote'
 import type { ServerManager } from './manager'
 import { isSteamUser } from './steamcmd'
+import type { RemoteSettings, RemoteStatus } from './types'
 
-export interface RemoteSettings {
-  enabled: boolean
-  /** The address remote access listens on: 0.0.0.0 for every network, or one of this machine's addresses. */
-  host: string
-  port: number
-}
-export interface RemoteStatus extends RemoteSettings {
-  listening?: number
-  error?: string
-}
+export type { RemoteSettings, RemoteStatus }
 export interface Host {
   api: Api
   remote: { status(): RemoteStatus; set(s: Partial<RemoteSettings>): Promise<RemoteStatus> }
@@ -40,6 +32,16 @@ export function connectLocal(dataDir: string): Target {
   return { host: '127.0.0.1', port, identity: LOCAL, key: localAccess(file).key() }
 }
 
+/** True when another NeledPort (the app or `neledport serve`) already hosts the servers in this data folder. */
+export async function runningHere(dataDir: string): Promise<boolean> {
+  try {
+    await callApi(connectLocal(dataDir), 'hello', {}, 3000)
+    return true
+  } catch {
+    return false
+  }
+}
+
 /**
  * Serves the API: always to this machine on 127.0.0.1 (owner, by the key in local.json), and to paired devices on
  * the remote port once the owner turns remote access on. One per data folder: it owns the game processes.
@@ -47,13 +49,7 @@ export function connectLocal(dataDir: string): Target {
 export async function startHost(o: HostOptions): Promise<Host> {
   const f = files(o.dataDir)
   const local = localAccess(f.local)
-  if (local.port()) {
-    const running = await callApi({ host: '127.0.0.1', port: local.port()!, identity: LOCAL, key: local.key() }, 'hello', {}, 3000).then(
-      () => true,
-      () => false
-    )
-    if (running) throw new Error('NeledPort is already running on this machine (the app or `neledport serve`)')
-  }
+  if (await runningHere(o.dataDir)) throw new Error('NeledPort is already running on this machine (the app or `neledport serve`)')
   const devices = deviceStore(f.devices)
   const audit = auditLog(f.audit)
   let settings: RemoteSettings = { enabled: false, host: '0.0.0.0', port: DEFAULT_REMOTE_PORT, ...readJson<Partial<RemoteSettings>>(f.remote, {}) }
