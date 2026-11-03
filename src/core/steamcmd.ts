@@ -47,7 +47,7 @@ export function parseSteamCmdLine(line: string): SteamCmdEvent | null {
   const progress = /Update state \(0x[0-9a-f]+\) [\w ]+, progress: (\d+(?:\.\d+)?)/i.exec(text)
   if (progress) return { kind: 'progress', percent: Number(progress[1]) }
   if (/^Success! App '\d+' fully installed/.test(text)) return { kind: 'success' }
-  if (/^ERROR!/.test(text) || /^Logging in user .*FAILED/.test(text)) return { kind: 'error', message: text }
+  if (/^ERROR!/.test(text) || /^Error! App '\d+' state is 0x/.test(text) || /^Logging in user .*FAILED/.test(text)) return { kind: 'error', message: text }
   return null
 }
 

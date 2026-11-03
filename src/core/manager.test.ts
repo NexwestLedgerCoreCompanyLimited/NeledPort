@@ -478,6 +478,14 @@ describe('SteamCMD hiccups', () => {
     expect(manager.get(id).status).toBe('stopped')
   })
 
+  it('retries once when an update job ends in a bad state (HLDS often needs a second run)', async () => {
+    const { manager, steamArgs } = setup('linux', { failFirst: "Error! App '896660' state is 0x202 after update job." })
+    const { id } = manager.create(valheim)
+    await manager.install(id)
+    expect(steamArgs).toHaveLength(2)
+    expect(manager.get(id).status).toBe('stopped')
+  })
+
   it('does not retry real failures', async () => {
     const { manager, steamArgs } = setup('linux', { failFirst: "ERROR! Failed to install app '896660' (No subscription)" })
     const { id } = manager.create(valheim)

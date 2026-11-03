@@ -141,7 +141,8 @@
   "control": {
     "type": "rcon",
     "port": "rcon",
-    "save": "SaveWorld"
+    "save": "SaveWorld",
+    "interrupts": 2
   },
   "players": {
     "source": "rcon",

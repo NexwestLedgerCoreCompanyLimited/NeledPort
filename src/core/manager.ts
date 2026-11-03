@@ -312,8 +312,9 @@ export class ServerManager extends EventEmitter {
         }
       }
       let result = await steam.run(exe, args, onLine, abort.signal)
-      // A SteamCMD that just updated itself can fail its first app_update this way; a second run works.
-      if (!result.ok && /\(Missing configuration\)/.test(result.error ?? '')) {
+      // A SteamCMD that just updated itself can fail its first app_update this way, and HLDS (app 90) often ends its
+      // first update job in a bad state; a second run works.
+      if (!result.ok && /\(Missing configuration\)|state is 0x/.test(result.error ?? '')) {
         this.addLine(id, '[NeledPort] SteamCMD was not ready yet, trying again…')
         result = await steam.run(exe, args, onLine, abort.signal)
       }
@@ -427,7 +428,7 @@ export class ServerManager extends EventEmitter {
     }
 
     const control = game.control
-    // Conan Exiles needs Ctrl+C twice, 5 s apart (LinuxGSM's fn_stop_graceful_ce).
+    // Conan Exiles needs Ctrl+C twice, 5 s apart (LinuxGSM's fn_stop_graceful_ce); ARK too, as arkmanager repeats it.
     const ctrlC = async () => {
       proc.interrupt()
       for (let i = 1; i < (control?.interrupts ?? 1); i++) {

@@ -159,6 +159,11 @@ describe('parseSteamCmdLine', () => {
       kind: 'error',
       message: "ERROR! Failed to install app '2394010' (Disk write failure)"
     })
+    // HLDS (app 90) and others end a failed update job with this line instead.
+    expect(parseSteamCmdLine("Error! App '90' state is 0x202 after update job.")).toEqual({
+      kind: 'error',
+      message: "Error! App '90' state is 0x202 after update job."
+    })
   })
 
   it('ignores the ANSI colour codes SteamCMD prints on Linux', () => {
