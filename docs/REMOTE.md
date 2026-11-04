@@ -19,7 +19,7 @@ sudo npm install -g neledport
 ```
 
 To try it without installing, `npx neledport serve` also works, but it leaves no `neledport` command for the other
-terminal (use `npx neledport` there too). So do `pnpm dlx neledport` and `bunx neledport`.
+terminal (use `npx neledport` there too). `pnpm dlx neledport` works the same way.
 
 `neledport serve` hosts the servers and keeps running; Ctrl+C (or SIGTERM) saves and stops every server first. In a
 second terminal:
