@@ -8,8 +8,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [1.0.0] - 2026-11-04
 
-The first release for everyone: GitHub's Latest, not a pre-release.
-
 ### Fixed
 
 - **Stopping a server on Windows lets it save.** NeledPort sent a hard kill to games without a remote console, Valheim
