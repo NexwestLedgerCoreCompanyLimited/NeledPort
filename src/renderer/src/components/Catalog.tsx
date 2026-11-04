@@ -103,11 +103,14 @@ export function Catalog({ info, catalog, servers, onPick, onCustom }: Props) {
         </label>
       </header>
 
-      <div role="group" aria-label={t('catalog.filter')} className="mb-6 flex flex-wrap gap-2">
-        {chip('all', t('catalog.all'))}
-        {chip('full', t('catalog.full'))}
-        {chip('basic', t('catalog.basic'))}
-      </div>
+      {/* The filter means nothing while every game has the same support. */}
+      {all.some((g) => g.tier !== 'full') && (
+        <div role="group" aria-label={t('catalog.filter')} className="mb-6 flex flex-wrap gap-2">
+          {chip('all', t('catalog.all'))}
+          {chip('full', t('catalog.full'))}
+          {chip('basic', t('catalog.basic'))}
+        </div>
+      )}
 
       {catalog && catalog.errors.length > 0 && (
         <div role="alert" className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">

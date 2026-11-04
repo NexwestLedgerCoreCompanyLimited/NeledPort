@@ -71,7 +71,14 @@ export function ServerPage({ server, game, info, onRemoved }: Props) {
     <div className="mx-auto flex max-w-6xl flex-col px-10 py-7">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-4">
-          {coverUrl(game?.gameAppId) && <img src={coverUrl(game?.gameAppId)!} alt="" className="h-[45px] w-24 rounded-lg border border-white/5 object-cover" />}
+          {coverUrl(game?.gameAppId) && (
+            <img
+              src={coverUrl(game?.gameAppId)!}
+              alt=""
+              onError={(e) => (e.currentTarget.style.display = 'none')}
+              className="h-[45px] w-24 rounded-lg border border-white/5 object-cover"
+            />
+          )}
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="truncate text-2xl font-semibold text-white">{server.name}</h1>

@@ -15,7 +15,7 @@ Install, run, watch, moderate and mod Valheim, Palworld, Rust, ARK, CS2 and 67 m
 
 English · [ภาษาไทย](README.th.md)
 
-<img src="docs/images/tour.gif" alt="A tour of NeledPort: game catalog, add a server, server overview, console, players, mods, config and backups" width="800" />
+<img src="docs/images/tour.gif" alt="A tour of NeledPort: game catalog, add a server, server overview, console, players, mods and remote machines" width="800" />
 
 </div>
 
@@ -70,6 +70,7 @@ Planned: uptime and CPU/RAM graphs, a command palette, a light theme.
 | ![Server overview](docs/images/screens/overview.png) | ![Live console](docs/images/screens/console.png) |
 | ![Players and bans](docs/images/screens/players.png) | ![Mods](docs/images/screens/mods.png) |
 | ![Config](docs/images/screens/config.png) | ![Backups](docs/images/screens/backups.png) |
+| ![Remote machines](docs/images/screens/remote.png) | |
 
 </details>
 

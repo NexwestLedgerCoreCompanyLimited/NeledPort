@@ -6,6 +6,35 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-04
+
+The first release for everyone: GitHub's Latest, not a pre-release.
+
+### Fixed
+
+- **Stopping a server on Windows lets it save.** NeledPort sent a hard kill to games without a remote console, Valheim
+  among them, losing what they had not saved. It now sends Ctrl+C through the server's console and waits, as on Linux; a
+  server with no console is closed as before, after a backup. RCON games such as ARK now save over RCON on Windows too.
+- A server whose game left the catalog, or whose password cannot be read, shows with the reason instead of leaving the
+  whole app empty. If one list fails to load, the others still appear.
+- Closing the window with servers running asks first, and Cancel keeps the window; it used to leave a hidden app with no
+  way back. Launching NeledPort again brings the window back.
+- Backups: a failed backup leaves no broken file in the list and no longer blocks Stop; each kind keeps its own newest
+  copies, so frequent stop copies cannot push out your manual or pre-update ones; a failed restore puts the world back.
+- Revoking a device, or changing its role, applies at once to connections it already has open.
+- On Linux, SteamCMD failing to start for lack of 32-bit libraries says which packages to install.
+- `neledport serve --start` with an unknown server fails visibly instead of hosting nothing.
+- Server pages no longer show a broken picture when the game's art cannot load.
+- The catalog importer no longer overwrites definitions that have moved past "basic".
+
+### Changed
+
+- The Overview page no longer promises that players can join: it says who can, and the README explains port forwarding,
+  firewalls and CGNAT. The catalog hides its filter while every game has the same support.
+- Installers and the `neledport` package carry LICENSE, THIRD_PARTY_NOTICES.md and every bundled library's licence.
+- New screenshots and tour. Docs for a working systemd setup, forking, the code layout, and a warning that the AI reads
+  text written by players.
+
 ## [0.9.1] - 2026-11-03
 
 ### Fixed
@@ -264,7 +293,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - CI on Linux and Windows (typecheck, tests, build) and a tag-driven release workflow.
 - Community files: MIT license, contributing guide, code of conduct, security policy.
 
-[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.9.1...v1.0.0
 [0.9.1]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/compare/v0.7.1...v0.8.0
