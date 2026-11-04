@@ -99,3 +99,11 @@ npm test
 
 NeledPort ไม่ได้เกี่ยวข้องกับ Valve หรือผู้จัดจำหน่ายเกมรายใด โปรแกรมโหลด SteamCMD และไฟล์เซิร์ฟเวอร์จาก Valve ตอนใช้งานจริง และไม่แจกจ่ายไฟล์เหล่านั้นเอง
 เผยแพร่ภายใต้ [MIT License](LICENSE)
+
+## ผู้สร้าง
+
+<a href="https://github.com/NexwestLedgerCoreCompanyLimited"><img src="https://github.com/NexwestLedgerCoreCompanyLimited.png" alt="" width="72" align="left"></a>
+
+**[Nai Natthawut](https://github.com/NexwestLedgerCoreCompanyLimited)** ผู้ก่อตั้ง [NEXWEST LEDGER CORE](https://nexwest.co.th) สร้างในประเทศไทย โดยมี Claude เป็นผู้ช่วยเขียนโค้ด
+
+<br clear="left">

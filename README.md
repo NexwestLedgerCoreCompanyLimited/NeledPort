@@ -165,3 +165,11 @@ Each game server is subject to its own licence, and starting SCP: Secret Laborat
 trademark of Valve Corporation. Game servers and mods run with your user's rights, so install only mods you trust.
 
 Licensed under the [MIT License](LICENSE).
+
+## Made by
+
+<a href="https://github.com/NexwestLedgerCoreCompanyLimited"><img src="https://github.com/NexwestLedgerCoreCompanyLimited.png" alt="" width="72" align="left"></a>
+
+**[Nai Natthawut](https://github.com/NexwestLedgerCoreCompanyLimited)**, founder of [NEXWEST LEDGER CORE](https://nexwest.co.th). Built in Thailand, with Claude as a coding assistant.
+
+<br clear="left">
