@@ -69,3 +69,25 @@ jobs:
           if [[ "$GITHUB_REF_NAME" == v0.* || "$GITHUB_REF_NAME" == *-* ]]; then pre="--prerelease"; fi
           gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" \
             --title "NeledPort $GITHUB_REF_NAME" --notes-file notes.md $pre
+
+  # npx neledport. No token: npmjs.com trusts this workflow file (Trusted Publisher), and npm attaches provenance.
+  npm:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist-ubuntu-latest
+      - name: Publish to npm
+        run: |
+          # A tag like v1.2.0-beta.1 must not become what plain "npx neledport" installs.
+          tag=latest
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then tag=next; fi
+          npm publish "neledport-${GITHUB_REF_NAME#v}.tgz" --access public --tag "$tag"

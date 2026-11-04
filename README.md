@@ -53,7 +53,7 @@ Hosting 50 servers for customers? A panel like Pterodactyl is the better tool. N
 - **Remote machines:** watch and control the servers on a Linux VPS or a Windows Server from the app on your PC.
   Each paired device has its own key and role (view or control), connections are encrypted with it, and every action is
   logged. [How it works and how it is protected](docs/REMOTE.md).
-- **No screen needed:** `neledport serve` hosts servers on a Linux server, from one `npx` command
+- **No screen needed:** `npx neledport serve` hosts servers on a Linux server
   ([setup](docs/REMOTE.md#run-neledport-on-a-linux-server-without-a-screen)).
 - **AI over MCP:** `neledport mcp` lets Claude or another MCP client list, start, stop and manage servers
   ([setup](docs/REMOTE.md#let-an-ai-run-it-mcp)).
@@ -97,7 +97,7 @@ With the `.deb`, install the new `.deb` from Releases.
 On a Linux server without a screen (Node.js 20.10+):
 
 ```bash
-sudo npm install -g https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz
+sudo npm install -g neledport
 neledport serve
 ```
 

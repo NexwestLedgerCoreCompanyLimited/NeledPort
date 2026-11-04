@@ -28,7 +28,7 @@
 - **สำรองข้อมูล:** สำรองให้อัตโนมัติก่อนอัปเดตทุกครั้ง หรือกด **สำรองข้อมูลตอนนี้** และกู้คืนได้ในคลิกเดียว โลกปัจจุบันจะถูกย้ายไปเก็บไว้ ไม่ถูกลบ
 - **อัปเดตตัวเอง:** บน Windows และ AppImage โปรแกรมโหลดเวอร์ชันใหม่ให้ แล้วกด **รีสตาร์ตเพื่ออัปเดต**
 - **เครื่องระยะไกล:** ดูและสั่งงานเซิร์ฟเวอร์บน Linux VPS หรือ Windows Server จากแอปบนคอมของคุณ อุปกรณ์ที่จับคู่แต่ละเครื่องมีกุญแจและสิทธิ์ของตัวเอง (ดูอย่างเดียว หรือดูและสั่งงาน) การเชื่อมต่อเข้ารหัสด้วยกุญแจนั้น และทุกคำสั่งถูกบันทึก ([วิธีทำงานและความปลอดภัย](docs/REMOTE.md))
-- **ไม่ต้องมีหน้าจอ:** `neledport serve` รันเซิร์ฟเวอร์บน Linux ได้ด้วยคำสั่ง `npx` คำสั่งเดียว ([วิธีตั้งค่า](docs/REMOTE.md#run-neledport-on-a-linux-server-without-a-screen))
+- **ไม่ต้องมีหน้าจอ:** `npx neledport serve` รันเซิร์ฟเวอร์บน Linux ได้ด้วยคำสั่งเดียว ([วิธีตั้งค่า](docs/REMOTE.md#run-neledport-on-a-linux-server-without-a-screen))
 - **AI ผ่าน MCP:** `neledport mcp` ให้ Claude หรือ MCP client อื่นดู เปิด ปิด และจัดการเซิร์ฟเวอร์ได้ ([วิธีตั้งค่า](docs/REMOTE.md#let-an-ai-run-it-mcp))
 - **หลายภาษา:** ตอนนี้มีอังกฤษ (ภาษาหลัก) และไทย เพิ่มภาษาใหม่ได้ด้วยไฟล์เดียว ([วิธีแปล](CONTRIBUTING.md#translate-neledport))
 
@@ -52,7 +52,7 @@ sudo dpkg --add-architecture i386 && sudo apt update && sudo apt install lib32gc
 บนเซิร์ฟเวอร์ Linux ที่ไม่มีหน้าจอ (Node.js 20.10 ขึ้นไป):
 
 ```bash
-sudo npm install -g https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz
+sudo npm install -g neledport
 neledport serve
 ```
 

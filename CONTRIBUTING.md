@@ -64,7 +64,8 @@ MIT lets you fork, rename and sell it; keep `LICENSE` and the copyright line. A 
 and logo are not part of that licence, and before its first release change what still points here: `publish` in
 `electron-builder.yml` (or your users update from this repository), `appId` there, `REPO` in `src/main/index.ts`,
 `REPO_URL` in `src/renderer/src/components/Sidebar.tsx`, and the links in the READMEs and docs. Releases need no secrets:
-enable Actions on the fork and push a tag.
+enable Actions on the fork and push a tag. The `npm` job fails until you publish under your own package name on npmjs.com
+and add your repository there as its Trusted Publisher; rename `name` in `scripts/build-cli.mjs` first.
 
 ## Releasing (maintainers)
 
@@ -79,7 +80,7 @@ pre-releases, the rest as GitHub's Latest.
 3. `git push --follow-tags`.
 
 The [Release workflow](.github/workflows/release.yml) then builds the Windows and Linux installers and
-publishes them, with the `neledport` CLI package (`neledport-X.Y.Z.tgz` and `neledport.tgz`), as a GitHub Release
+publishes them, with the `neledport` CLI package (`neledport-X.Y.Z.tgz` and `neledport.tgz`, also sent to npm), as a GitHub Release
 whose text is that CHANGELOG section (`node scripts/release-notes.mjs X.Y.Z` shows it). It refuses to run if the tag
 and `package.json` version differ, if CHANGELOG.md has no notes for the version, or if the docs' `neledport.tgz`
 links point at another version.

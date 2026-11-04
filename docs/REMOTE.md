@@ -15,11 +15,11 @@ sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install
 Install it, then use `neledport` from any terminal:
 
 ```bash
-sudo npm install -g https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz
+sudo npm install -g neledport
 ```
 
-To try it without installing, `npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz neledport serve` also works, but it leaves no `neledport` command
-for the other terminal.
+To try it without installing, `npx neledport serve` also works, but it leaves no `neledport` command for the other
+terminal (use `npx neledport` there too). So do `pnpm dlx neledport` and `bunx neledport`.
 
 `neledport serve` hosts the servers and keeps running; Ctrl+C (or SIGTERM) saves and stops every server first. In a
 second terminal:
@@ -131,10 +131,10 @@ Keep your client's confirmation on for tools that change something, and treat wh
 NeledPort must be running on that machine (the app or `neledport serve`). Claude Code:
 
 ```bash
-claude mcp add neledport -- npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz neledport mcp
+claude mcp add neledport -- npx --yes neledport mcp
 ```
 
-Claude Desktop and other clients, after `npm install -g` as above (`claude_desktop_config.json` or the client's MCP
+Claude Desktop and other clients, after `npm install -g neledport` (`claude_desktop_config.json` or the client's MCP
 settings):
 
 ```json
