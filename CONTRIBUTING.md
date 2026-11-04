@@ -8,7 +8,7 @@ Thanks for helping! The easiest and most valuable contribution is adding or fixi
 that it runs, then press **Share with the community**. NeledPort opens GitHub with the definition filled in; just create the
 pull request.
 
-**Test a basic game:** many games in [docs/GAMES.md](docs/GAMES.md) were imported from LinuxGSM and never run by a human.
+**Test a game:** games marked "—" under Real server in [docs/GAMES.md](docs/GAMES.md) have not run on a real server yet.
 If one works for you (or needs a fix), open a pull request that updates its file and say what you tested. Adding the
 Windows launcher to a Linux-only game is a great first contribution.
 
@@ -18,7 +18,7 @@ Windows launcher to a Linux-only game is a great first contribution.
 2. Copy [`games/palworld.json`](games/palworld.json) to `games/<id>.json`. The `id` is lowercase letters, digits and dashes, and must match the filename.
 3. Fill in what you know. The [schema](games/schema.json) documents every field, and editors with JSON Schema support will autocomplete it.
    - `anonymous`: `true` if `steamcmd +login anonymous +app_update <appId>` works without owning the game.
-   - `tier`: use `basic` unless the game has been tested end-to-end with players, bans and mods.
+   - `tier`: `basic` while it only installs and starts; `full` once it does what the game's server offers.
    - Paths are relative to the server's install folder. Absolute paths and `..` are rejected.
    - Arguments are a list of strings. `{port:<name>}` is replaced with the port named in `ports`.
 4. Run `npm test`. It validates every file in `games/`.
@@ -47,15 +47,33 @@ files and stay in English.
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`, `ci:`).
 
+## How the code is laid out
+
+- `src/core`: everything that does the work, with no Electron in it. `manager.ts` runs servers; `api.ts` is the one door
+  for the CLI, MCP and other machines, with roles; `remote.ts` and `host.ts` serve it; the rest is one small client per
+  game protocol.
+- `src/main` and `src/preload`: the Electron shell. `src/renderer`: the window (React). `src/cli`: `neledport` and MCP.
+- `games/*.json`: one game each, checked against `games/schema.json`. `DECISIONS.md` says why things are as they are.
+
+The window runs on macOS for development, but servers install and run only on Windows and Linux. Real-server tests live in
+`src/e2e` and run from the E2E workflow on GitHub (`only` takes game ids, or `cli`); they download gigabytes.
+
+## Forking
+
+MIT lets you fork, rename and sell it; keep `LICENSE` and the copyright line. A fork should rename itself, because the name
+and logo are not part of that licence, and before its first release change what still points here: `publish` in
+`electron-builder.yml` (or your users update from this repository), `appId` there, `REPO` in `src/main/index.ts`,
+`REPO_URL` in `src/renderer/src/components/Sidebar.tsx`, and the links in the READMEs and docs. Releases need no secrets:
+enable Actions on the fork and push a tag.
+
 ## Releasing (maintainers)
 
-Versions follow [Semantic Versioning](https://semver.org/); `0.x` releases are published as pre-releases.
+Versions follow [Semantic Versioning](https://semver.org/); tags with a suffix such as `v1.1.0-beta.1` are published as
+pre-releases, the rest as GitHub's Latest.
 
 1. Move the `Unreleased` notes in [CHANGELOG.md](CHANGELOG.md) under a new `## [X.Y.Z] - date` heading, as
    English bullet points grouped under `### Added`, `### Fixed` and so on, and commit. This section becomes the
-   text of the GitHub Release. In the same commit, point the `neledport.tgz` links in README.md, README.th.md and
-   docs/REMOTE.md at the new tag (`releases/download/vX.Y.Z/neledport.tgz`): while releases are pre-releases,
-   GitHub's `releases/latest` links find none.
+   text of the GitHub Release.
 2. `npm version patch` (bug fixes), `npm version minor` (new features) or `npm version major`.
    This bumps `package.json`, commits, and creates the tag `vX.Y.Z`.
 3. `git push --follow-tags`.

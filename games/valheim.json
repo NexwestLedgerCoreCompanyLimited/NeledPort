@@ -126,5 +126,9 @@
         }
       }
     }
+  ],
+  "linuxPackages": [
+    "libatomic1",
+    "libpulse0"
   ]
 }

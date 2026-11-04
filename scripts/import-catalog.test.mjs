@@ -1,5 +1,8 @@
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { convertLgsm, parseCfg, tokenize } from './import-catalog.mjs'
+import { convertLgsm, isHandMade, parseCfg, tokenize } from './import-catalog.mjs'
 
 const RUST_LIKE = `
 port="28015"
@@ -82,5 +85,16 @@ describe('convertLgsm', () => {
 
   it('skips configs without a Steam app id', () => {
     expect(() => convertLgsm('executable="./java"', { id: 'x', name: 'X' })).toThrow(/app id/)
+  })
+})
+
+describe('isHandMade', () => {
+  it('protects every definition that is no longer a generated basic one', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'catalog-'))
+    writeFileSync(join(dir, 'full.json'), JSON.stringify({ tier: 'full' }))
+    writeFileSync(join(dir, 'basic.json'), JSON.stringify({ tier: 'basic' }))
+    expect(isHandMade(join(dir, 'full.json'))).toBe(true)
+    expect(isHandMade(join(dir, 'basic.json'))).toBe(false)
+    expect(isHandMade(join(dir, 'new.json'))).toBe(false)
   })
 })

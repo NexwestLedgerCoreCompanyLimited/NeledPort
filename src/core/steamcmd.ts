@@ -44,6 +44,10 @@ export type SteamCmdEvent = { kind: 'progress'; percent: number } | { kind: 'suc
 
 export function parseSteamCmdLine(line: string): SteamCmdEvent | null {
   const text = stripAnsi(line).trim()
+  // The 32-bit program cannot start on a 64-bit Linux without these libraries.
+  if (/steamcmd: (error while loading shared libraries|cannot execute: required file not found|No such file or directory)|error while loading shared libraries: lib(stdc\+\+|gcc_s)/.test(text)) {
+    return { kind: 'error', message: `SteamCMD needs 32-bit libraries. On Debian or Ubuntu run: sudo dpkg --add-architecture i386 && sudo apt update && sudo apt install lib32gcc-s1 lib32stdc++6 (${text})` }
+  }
   const progress = /Update state \(0x[0-9a-f]+\) [\w ]+, progress: (\d+(?:\.\d+)?)/i.exec(text)
   if (progress) return { kind: 'progress', percent: Number(progress[1]) }
   if (/^Success! App '\d+' fully installed/.test(text)) return { kind: 'success' }

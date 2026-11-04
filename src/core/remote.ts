@@ -34,7 +34,7 @@ export function startApiServer(o: ApiServerOptions): Promise<ApiServer> {
   const windowMs = o.limits?.windowMs ?? 10 * 60_000
   const blockMs = o.limits?.blockMs ?? 15 * 60_000
   const maxBody = o.limits?.maxBody ?? 64 * 1024
-  const callers = new WeakMap<object, Omit<Caller, 'address'> & { identity: string }>()
+  const callers = new WeakMap<object, string>()
   const attempts = new Map<string, { count: number; since: number; blockedUntil: number }>()
 
   const failed = (address: string, reason: string) => {
@@ -54,8 +54,11 @@ export function startApiServer(o: ApiServerOptions): Promise<ApiServer> {
     res.writeHead(status, { 'content-type': 'application/json', connection: status === 413 ? 'close' : 'keep-alive' }).end(JSON.stringify(body))
 
   const handle = (req: IncomingMessage, res: ServerResponse) => {
-    const caller = callers.get(req.socket)
-    if (!caller) return void req.socket.destroy()
+    // Checked per request, not per connection: a revoke or role change applies to connections already open.
+    const identity = callers.get(req.socket)
+    const current = identity === undefined ? undefined : o.identify(identity)
+    if (!current) return void req.socket.destroy()
+    const caller = current.caller
     if (req.method !== 'POST' || req.url !== '/v1') return send(res, 404, { error: 'Not found' })
     if (Number(req.headers['content-length'] ?? 0) > maxBody) {
       req.resume()
@@ -92,7 +95,7 @@ export function startApiServer(o: ApiServerOptions): Promise<ApiServer> {
       pskCallback: (socket: TLSSocket, identity: string) => {
         const found = o.identify(identity)
         if (!found) return null
-        callers.set(socket, { ...found.caller, identity })
+        callers.set(socket, identity)
         return found.key
       }
     },
@@ -107,8 +110,8 @@ export function startApiServer(o: ApiServerOptions): Promise<ApiServer> {
   })
   server.on('tlsClientError', (e: Error & { code?: string }, socket: TLSSocket) => failed(plainAddress(socket.remoteAddress), e.code ?? e.message))
   server.on('secureConnection', (socket: TLSSocket) => {
-    const c = callers.get(socket)
-    if (c) o.onConnected?.(c.identity, plainAddress(socket.remoteAddress))
+    const identity = callers.get(socket)
+    if (identity) o.onConnected?.(identity, plainAddress(socket.remoteAddress))
   })
 
   return new Promise((resolve, reject) => {

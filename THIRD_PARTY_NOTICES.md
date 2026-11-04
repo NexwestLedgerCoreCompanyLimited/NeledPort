@@ -1,15 +1,12 @@
 # Third-party notices
 
-NeledPort includes data derived from the following projects. Both are licensed under the MIT License, reproduced below.
-
-## electron-updater
-
-The in-app updater is [electron-updater](https://github.com/electron-userland/electron-builder) by the electron-builder
-contributors, MIT License (text below).
+`THIRD_PARTY_LICENSES.txt`, next to this file in the installers and the `neledport` package, has the licence of every
+library they bundle. This file covers the data NeledPort derives from other projects, under the MIT License reproduced
+below, and what it downloads for you.
 
 ## LinuxGSM
 
-The "basic" game definitions in `games/` (launch programs, arguments and ports) are generated from
+The starting point of the game definitions in `games/` (launch programs, arguments and ports) was generated from
 [LinuxGSM](https://github.com/GameServerManagers/LinuxGSM) configuration files by `scripts/import-catalog.mjs`.
 
 Copyright (c) 2012-2026 Daniel Gibbs
@@ -24,11 +21,11 @@ Copyright (c) 2022-2023 Daniel Gibbs
 ## Downloaded when you ask, never bundled
 
 SteamCMD and the game servers come from Valve. The one-click mod loaders come straight from their own sites when you
-install them in the Mods tab, under their own licences: BepInEx (Thunderstore), Oxide (GitHub), Metamod:Source and
-SourceMod (AlliedModders, GPLv3), Metamod 1.21.1-am and AMX Mod X (AlliedModders, GPL). NeledPort does not ship or
-modify them.
+install them in the Mods tab, under their own licences: BepInEx (Thunderstore), Oxide (GitHub), Metamod:Source
+(AlliedModders, zLib/libpng), SourceMod (AlliedModders, GPLv3), Metamod 1.21.1-am and AMX Mod X (AlliedModders, GPL).
+NeledPort does not ship or modify them.
 
-## MIT License (applies to all three)
+## MIT License (applies to LinuxGSM and SteamCMD-AppID-List)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

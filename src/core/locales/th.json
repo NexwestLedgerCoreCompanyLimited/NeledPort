@@ -22,7 +22,7 @@
   "describe.updating": "กำลังเตรียมไฟล์เซิร์ฟเวอร์…",
   "describe.stopped": "หยุดอยู่",
   "describe.starting": "กำลังเปิดเซิร์ฟเวอร์…",
-  "describe.running": "กำลังรัน ผู้เล่นเข้าได้แล้ว",
+  "describe.running": "กำลังรัน คนในเครือข่ายเดียวกันเข้าได้เลย ส่วนเพื่อนนอกบ้านต้องเปิดพอร์ตด้านล่างก่อน",
   "describe.stopping": "กำลังเซฟโลกและปิดเซิร์ฟเวอร์…",
   "describe.crashed": "เซิร์ฟเวอร์หยุดทำงานกะทันหัน ตรวจดูคอนโซลแล้วเปิดใหม่อีกครั้ง",
 
@@ -96,7 +96,7 @@
   "overview.status": "สถานะ",
   "overview.updating": "กำลังอัปเดตไฟล์เซิร์ฟเวอร์",
   "overview.downloading": "กำลังดาวน์โหลดไฟล์เซิร์ฟเวอร์",
-  "overview.noGracefulStop": "บน Windows สั่งให้ {game} เซฟก่อนปิดไม่ได้ NeledPort จะสำรองโลกไว้ก่อน แต่เพื่อความปลอดภัยให้เซฟในเกมก่อนปิด",
+  "overview.noGracefulStop": "บน Windows NeledPort จะสั่ง {game} ให้เซฟด้วย Ctrl+C และสำรองโลกไว้ก่อน ถ้าเกมไม่ตอบจะถูกปิด จึงควรเซฟในเกมก่อนปิดถ้าทำได้",
   "overview.backups": "การสำรองล่าสุด",
   "overview.noBackups": "ยังไม่มีการสำรอง ระบบจะสำรองให้ก่อนอัปเดตทุกครั้ง",
   "overview.ports": "พอร์ต",
@@ -177,7 +177,7 @@
   "workshop.startFirst": "เปิดเซิร์ฟเวอร์ก่อนจึงจะโหลดของจาก Workshop ได้",
   "workshop.sent": "ส่งแล้ว: กำลังโหลด Workshop {id} ดูความคืบหน้าในคอนโซล",
 
-  "backups.intro": "NeledPort เก็บสำเนาโลกล่าสุดไว้ {count} ชุด และสำรองให้ทุกครั้งก่อนอัปเดต",
+  "backups.intro": "NeledPort เก็บสำเนาล่าสุดไว้ประเภทละ {count} ชุด และสำรองให้ทุกครั้งก่อนอัปเดต",
   "backups.noSaveDir": "NeledPort ยังไม่รู้ว่า {game} เก็บโลกไว้ที่ไหน จึงยังสำรองไม่ได้",
   "backups.made": "สร้างเมื่อ",
   "backups.reason": "เหตุผล",
@@ -202,7 +202,7 @@
   "update.ready": "NeledPort {version} พร้อมติดตั้งแล้ว",
   "update.restart": "รีสตาร์ตเพื่ออัปเดต",
   "update.whatsNew": "มีอะไรใหม่",
-  "update.confirmRunning": "เซิร์ฟเวอร์ที่รันอยู่จะถูกเซฟและปิดก่อน NeledPort รีสตาร์ต ดำเนินการต่อ?",
+  "update.confirmRunning": "NeledPort จะสั่งเซิร์ฟเวอร์ที่รันอยู่ให้เซฟและปิดก่อนรีสตาร์ต ดำเนินการต่อ?",
 
   "steam.title": "บัญชี Steam",
   "steam.why": "{game} ต้องใช้บัญชี Steam ที่มีเกมนี้ NeledPort ไม่เห็นรหัสผ่านของคุณ: คุณล็อกอินในหน้าต่าง SteamCMD ซึ่งเป็นเครื่องมือของ Valve เอง และมันจะจำการล็อกอินไว้",
@@ -220,7 +220,7 @@
   "dialog.addPlugin": "เพิ่มปลั๊กอิน",
   "dialog.chooseProgram": "เลือกโปรแกรมที่ใช้เปิดเซิร์ฟเวอร์",
   "quit.running": "ยังมีเซิร์ฟเวอร์รันอยู่: {count}",
-  "quit.detail": "NeledPort จะเซฟและปิดเซิร์ฟเวอร์ให้ก่อนปิดโปรแกรม",
+  "quit.detail": "NeledPort จะสั่งเซฟและปิดเซิร์ฟเวอร์ก่อนปิดโปรแกรม",
   "quit.stopAndQuit": "ปิดเซิร์ฟเวอร์และออก",
 
   "sidebar.remote": "เครื่องระยะไกล",

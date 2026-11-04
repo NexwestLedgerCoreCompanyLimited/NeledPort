@@ -34,15 +34,10 @@ describe.skipIf(!e2e)(`Valheim on ${platform}, end to end`, () => {
 
     const { forced } = await manager.stop(id)
     expect(manager.get(id).status).toBe('stopped')
-    if (platform === 'linux') {
-      // Ctrl+C makes Valheim save the world before it exits.
-      expect(forced).toBe(false)
-      const worlds = join(installDir, 'saves', 'worlds_local')
-      expect(existsSync(worlds) && readdirSync(worlds).some((f) => f.startsWith('E2E'))).toBe(true)
-    } else {
-      // Windows cannot ask Valheim to save, so NeledPort backs up the world before closing it.
-      expect(manager.backups(id).map((b) => b.reason)).toContain('stop')
-    }
+    // Ctrl+C makes Valheim save the world before it exits, on Windows too.
+    expect(forced).toBe(false)
+    const worlds = join(installDir, 'saves', 'worlds_local')
+    expect(existsSync(worlds) && readdirSync(worlds).some((f) => f.startsWith('E2E'))).toBe(true)
 
     await manager.update(id)
     expect(manager.backups(id).map((b) => b.reason)).toContain('update')

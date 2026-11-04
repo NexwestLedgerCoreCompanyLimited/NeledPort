@@ -20,7 +20,14 @@ export async function createBackup(saveDir: string, backupsDir: string, reason: 
   if (!existsSync(saveDir)) return null
   mkdirSync(backupsDir, { recursive: true })
   const file = join(backupsDir, `${stamp(new Date())}_${reason}.tar.gz`)
-  await tar(['-czf', file, '-C', dirname(saveDir), basename(saveDir)])
+  // The final name only after tar finished: a half-written archive must never be listed as a backup.
+  const partial = `${file}.partial`
+  try {
+    await tar(['-czf', partial, '-C', dirname(saveDir), basename(saveDir)])
+    renameSync(partial, file)
+  } finally {
+    rmSync(partial, { force: true })
+  }
   return listBackups(backupsDir).find((b) => b.file === file) ?? null
 }
 
@@ -37,15 +44,29 @@ export function listBackups(backupsDir: string): BackupInfo[] {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
+/** Keeps the newest `keep` of each kind, so frequent stop copies never push out a manual or pre-update one. */
 export function pruneBackups(backupsDir: string, keep: number): void {
-  for (const old of listBackups(backupsDir).slice(keep)) rmSync(old.file, { force: true })
+  const seen = new Map<BackupReason, number>()
+  for (const b of listBackups(backupsDir)) {
+    const count = (seen.get(b.reason) ?? 0) + 1
+    seen.set(b.reason, count)
+    if (count > keep) rmSync(b.file, { force: true })
+  }
 }
 
 /** Restores a backup over `saveDir`. The current world is moved aside, never deleted. */
 export async function restoreBackup(file: string, saveDir: string): Promise<void> {
-  if (existsSync(saveDir)) renameSync(saveDir, `${saveDir}.before-restore-${stamp(new Date())}`)
+  const aside = `${saveDir}.before-restore-${stamp(new Date())}`
+  const hadWorld = existsSync(saveDir)
+  if (hadWorld) renameSync(saveDir, aside)
   mkdirSync(dirname(saveDir), { recursive: true })
-  await tar(['-xzf', file, '-C', dirname(saveDir)])
+  try {
+    await tar(['-xzf', file, '-C', dirname(saveDir)])
+  } catch (e) {
+    rmSync(saveDir, { recursive: true, force: true })
+    if (hadWorld) renameSync(aside, saveDir)
+    throw e
+  }
 }
 
 function tar(args: string[]): Promise<void> {

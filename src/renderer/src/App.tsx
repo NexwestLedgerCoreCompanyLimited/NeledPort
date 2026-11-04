@@ -22,11 +22,11 @@ export default function App() {
 
   useEffect(() => {
     const api = window.neledport
-    Promise.all([api.appInfo(), api.listGames(), api.listServers()]).then(([i, c, s]) => {
-      setInfo(i)
-      setCatalog(c)
-      setServers(s)
-    }, (e: Error) => setLoadError(e.message))
+    // Separately: one that fails must not leave the catalog and the other servers empty.
+    const failed = (e: Error) => setLoadError(e.message)
+    api.appInfo().then(setInfo, failed)
+    api.listGames().then(setCatalog, failed)
+    api.listServers().then(setServers, failed)
     return api.onServerChanged((view) =>
       setServers((list) => (list.some((s) => s.id === view.id) ? list.map((s) => (s.id === view.id ? view : s)) : [...list, view]))
     )

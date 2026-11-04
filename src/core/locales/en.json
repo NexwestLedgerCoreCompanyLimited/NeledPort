@@ -22,7 +22,7 @@
   "describe.updating": "Getting the server files ready…",
   "describe.stopped": "Stopped.",
   "describe.starting": "Starting up…",
-  "describe.running": "Running. Players can join now.",
+  "describe.running": "Running. Players on your network can join; friends over the internet need the ports below open.",
   "describe.stopping": "Saving the world and shutting down…",
   "describe.crashed": "The server stopped unexpectedly. Check the console, then start it again.",
 
@@ -96,7 +96,7 @@
   "overview.status": "Status",
   "overview.updating": "Updating server files",
   "overview.downloading": "Downloading server files",
-  "overview.noGracefulStop": "On Windows, {game} cannot be asked to save before it stops. NeledPort backs up the world first, but save in-game before stopping to be safe.",
+  "overview.noGracefulStop": "On Windows, NeledPort asks {game} to save with Ctrl+C and backs up the world first. A game that does not answer is closed, so save in-game before stopping if you can.",
   "overview.backups": "Recent backups",
   "overview.noBackups": "No backups yet. One is made before every update.",
   "overview.ports": "Ports",
@@ -177,7 +177,7 @@
   "workshop.startFirst": "Start the server to load Workshop items.",
   "workshop.sent": "Sent: loading Workshop item {id}. Watch the console for progress.",
 
-  "backups.intro": "NeledPort keeps the newest {count} copies of the world. One is made before every update.",
+  "backups.intro": "NeledPort keeps the newest {count} copies of each kind. One is made before every update.",
   "backups.noSaveDir": "NeledPort does not know where {game} keeps its world yet, so it cannot back it up.",
   "backups.made": "Made",
   "backups.reason": "Reason",
@@ -202,7 +202,7 @@
   "update.ready": "NeledPort {version} is ready",
   "update.restart": "Restart to update",
   "update.whatsNew": "What's new",
-  "update.confirmRunning": "Running servers will save and stop before NeledPort restarts. Continue?",
+  "update.confirmRunning": "NeledPort asks running servers to save and stops them before it restarts. Continue?",
 
   "steam.title": "Steam account",
   "steam.why": "{game} needs a Steam account that owns it. NeledPort never sees your password: you sign in inside SteamCMD, Valve's own tool, and it remembers you.",
@@ -220,7 +220,7 @@
   "dialog.addPlugin": "Add plugin",
   "dialog.chooseProgram": "Choose the program that starts the server",
   "quit.running": "Servers still running: {count}",
-  "quit.detail": "NeledPort will save and stop them before closing.",
+  "quit.detail": "NeledPort asks them to save and stops them before closing.",
   "quit.stopAndQuit": "Stop servers and quit",
 
   "sidebar.remote": "Remote machines",

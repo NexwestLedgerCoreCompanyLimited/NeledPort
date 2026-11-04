@@ -134,6 +134,14 @@ describe('runSteamCmd', () => {
 })
 
 describe('parseSteamCmdLine', () => {
+  it.each([
+    'linux32/steamcmd: error while loading shared libraries: libstdc++.so.6: cannot open shared object file: No such file or directory',
+    './steamcmd.sh: line 37: /home/me/steamcmd/linux32/steamcmd: cannot execute: required file not found',
+    './steamcmd.sh: line 37: /home/me/steamcmd/linux32/steamcmd: No such file or directory'
+  ])('names the Linux packages when SteamCMD cannot start: %s', (line) => {
+    expect(parseSteamCmdLine(line)).toEqual({ kind: 'error', message: expect.stringContaining('lib32gcc-s1 lib32stdc++6') })
+  })
+
   it('reports a failed Steam login as an error', () => {
     const line = "Logging in user 'gamer_1' to Steam Public...FAILED (Invalid Password)"
     expect(parseSteamCmdLine(line)).toEqual({ kind: 'error', message: line })

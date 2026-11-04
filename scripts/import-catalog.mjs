@@ -1,11 +1,10 @@
 // Regenerates "basic" game definitions from LinuxGSM (MIT) and the Steam dedicated-server search index from
-// dgibbs64/SteamCMD-AppID-List (MIT). Hand-written definitions are never overwritten.
+// dgibbs64/SteamCMD-AppID-List (MIT). A definition that is no longer tier "basic" is hand-made and never overwritten.
 // Usage: node scripts/import-catalog.mjs <LinuxGSM checkout> <steamcmd_appid.csv>
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const HAND_MADE = new Set(['palworld', 'valheim', 'rust', 'cs2', 'scum'])
 const UNSUPPORTED = '\u0000unsupported\u0000'
 const PORT_NAMES = { port: 'game', queryport: 'query', rconport: 'rcon', appport: 'app', clientport: 'client', sourcetvport: 'sourcetv', steamport: 'steam', beaconport: 'beacon', httpport: 'http', telnetport: 'telnet' }
 const TCP_PORTS = new Set(['rcon', 'http', 'app', 'telnet'])
@@ -226,6 +225,10 @@ function writeGamesDoc(gamesDir, searchable) {
   writeFileSync(join(gamesDir, '..', 'docs', 'GAMES.md'), doc)
 }
 
+export function isHandMade(file) {
+  return existsSync(file) && JSON.parse(readFileSync(file, 'utf8')).tier !== 'basic'
+}
+
 function main(lgsmDir, csvFile) {
   const gamesDir = join(fileURLToPath(new URL('..', import.meta.url)), 'games')
   const appIds = readAppIds(csvFile)
@@ -234,9 +237,8 @@ function main(lgsmDir, csvFile) {
     const key = a.name.toLowerCase()
     byName.set(key, byName.has(key) ? null : a.appId)
   }
-  const handMadeAppIds = new Set(
-    [...HAND_MADE].map((id) => JSON.parse(readFileSync(join(gamesDir, `${id}.json`), 'utf8')).serverAppId)
-  )
+  const definitions = readdirSync(gamesDir).filter((f) => f.endsWith('.json') && f !== 'schema.json')
+  const handMadeAppIds = new Set(definitions.filter((f) => isHandMade(join(gamesDir, f))).map((f) => JSON.parse(readFileSync(join(gamesDir, f), 'utf8')).serverAppId))
 
   const list = readFileSync(join(lgsmDir, 'lgsm/data/serverlist.csv'), 'utf8').split(/\r?\n/).slice(1)
   const written = []
@@ -249,7 +251,7 @@ function main(lgsmDir, csvFile) {
     const cfgFile = join(lgsmDir, 'lgsm/config-default/config-lgsm', server, '_default.cfg')
     if (!existsSync(cfgFile)) continue
     const id = slug(gameName)
-    if (HAND_MADE.has(id)) continue
+    if (isHandMade(join(gamesDir, `${id}.json`))) continue
     try {
       const def = convertLgsm(readFileSync(cfgFile, 'utf8'), { id, name: gameName, gameAppId: byName.get(gameName.toLowerCase()) ?? undefined })
       if (handMadeAppIds.has(def.serverAppId)) continue

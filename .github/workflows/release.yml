@@ -24,12 +24,6 @@ jobs:
       - name: Tag must match package.json version
         shell: bash
         run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
-      - name: Docs must point npx at this version
-        shell: bash
-        run: |
-          for f in README.md README.th.md docs/REMOTE.md; do
-            grep -q "releases/download/$GITHUB_REF_NAME/neledport.tgz" "$f" || { echo "$f: point the neledport.tgz link at $GITHUB_REF_NAME"; exit 1; }
-          done
       - name: CHANGELOG.md must have notes for this version
         shell: bash
         run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > /dev/null

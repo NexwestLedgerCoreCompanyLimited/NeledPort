@@ -9,6 +9,10 @@ extraResources:
   - from: games
     to: games
     filter: ['**/*.json']
+  - LICENSE
+  - THIRD_PARTY_NOTICES.md
+  - from: out/THIRD_PARTY_LICENSES.txt
+    to: THIRD_PARTY_LICENSES.txt
 win:
   target: nsis
 nsis:

@@ -5,12 +5,13 @@
 # NeledPort
 
 **Host Steam dedicated game servers from one modern desktop app.**
-Install, run, watch, moderate and mod your server: no terminal required.
+Install, run, watch, moderate and mod Valheim, Palworld, Rust, ARK, CS2 and 67 more: free, open source, no terminal.
+
+**[⬇ Download for Windows or Linux](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest)** · [Linux server without a screen](docs/REMOTE.md) · [Every game](docs/GAMES.md)
 
 [![CI](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/actions/workflows/ci.yml/badge.svg)](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/NexwestLedgerCoreCompanyLimited/NeledPort?include_prereleases&sort=semver)](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases)
+[![Release](https://img.shields.io/github/v/release/NexwestLedgerCoreCompanyLimited/NeledPort?sort=semver)](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Status](https://img.shields.io/badge/status-early%20development-orange)
 
 English · [ภาษาไทย](README.th.md)
 
@@ -18,17 +19,27 @@ English · [ภาษาไทย](README.th.md)
 
 </div>
 
-> NeledPort is in early development. Star the repo to follow along, or [add your favourite game](CONTRIBUTING.md#add-a-game) to the catalog.
+> If NeledPort saves you an evening of SteamCMD, a ⭐ helps other server hosts find it. Missing your game? [Add it](CONTRIBUTING.md#add-a-game) or [ask for it](../../issues/new/choose).
 
 ## Why
 
 Running a dedicated server today means SteamCMD commands, hand-edited config files and a terminal you can't close.
 NeledPort wraps all of that in a desktop app for Windows and Linux.
 
+| | NeledPort | LinuxGSM | WindowsGSM | Pterodactyl |
+|---|---|---|---|---|
+| Runs on | Windows, Linux | Linux | Windows | Linux, with Docker |
+| How you use it | Desktop app, or command line | Command line | Desktop app | Web panel to install and host |
+| Watch and control other machines from one app | Yes | No | No | Yes, through its panel |
+| Let an AI run it (MCP) | Built in | No | No | Third-party add-on |
+
+Hosting 50 servers for customers? A panel like Pterodactyl is the better tool. NeledPort is for running your own.
+
 ## Features
 
 - **One-click install.** NeledPort downloads SteamCMD for you, then installs, updates and validates servers.
-- **Start, stop, restart** with graceful shutdown, so worlds are saved first.
+- **Start, stop, restart** with graceful shutdown, so worlds are saved first. Closing the app stops the servers; to keep
+  them running day and night, use [`neledport serve`](docs/REMOTE.md).
 - **Live console** with search and a command box, through whatever the game speaks: RCON, WebRCON, BattlEye RCon, a
   web admin, a server API, telnet or the server's own console.
 - **Players and bans:** kick, ban and unban through each game's own mechanism.
@@ -64,9 +75,18 @@ Planned: uptime and CPU/RAM graphs, a command palette, a light theme.
 
 ## Download
 
-Get the latest installer for Windows (`.exe`) or Linux (`.AppImage`, `.deb`) from
-[Releases](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases). What changed in each version is in the
-[changelog](CHANGELOG.md).
+Get the installer for Windows (`.exe`) or Linux (`.AppImage`, `.deb`) from the
+[latest release](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest). What changed in each version is in the
+[changelog](CHANGELOG.md). There is no macOS version: dedicated servers run on Windows and Linux.
+
+**On Linux**, SteamCMD needs 32-bit libraries first. On Debian or Ubuntu:
+
+```bash
+sudo dpkg --add-architecture i386 && sudo apt update && sudo apt install lib32gcc-s1 lib32stdc++6
+```
+
+Some games need one more package; NeledPort names it if the server stops because of it, and [docs/GAMES.md](docs/GAMES.md)
+lists them.
 
 NeledPort updates itself on Windows and with the AppImage: when a new version is ready, press **Restart to update**.
 With the `.deb`, install the new `.deb` from Releases.
@@ -76,10 +96,24 @@ With the `.deb`, install the new `.deb` from Releases.
 On a Linux server without a screen (Node.js 20.10+):
 
 ```bash
-npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.1/neledport.tgz neledport serve
+sudo npm install -g https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz
+neledport serve
 ```
 
 [Commands, systemd, remote access and MCP](docs/REMOTE.md).
+
+## Let your friends join
+
+When a server runs, players on your own network can join right away. For friends over the internet:
+
+1. **Forward the game's ports on your router** to this computer. They are on the server's Overview page, with UDP or TCP
+   next to each one. A VPS has no router: skip this step.
+2. **Allow them in the firewall.** Windows usually asks the first time a server starts: choose **Allow**. On Linux with
+   ufw, for Valheim's ports: `sudo ufw allow 2456:2457/udp`.
+3. **Give your friends your public IP** (search "what is my ip") and the game port, for example `203.0.113.5:2456`.
+
+Still no luck? Your internet provider may share one public address between customers (CGNAT), which no router setting can
+get past. Ask them for a public IP, or have everyone join a free VPN such as Tailscale and use its address.
 
 ## Supported games
 
@@ -120,12 +154,13 @@ npm run dist       # installers for the current OS
 
 ## Project docs
 
-- [Design and roadmap](docs/superpowers/specs/2026-10-29-neledport-design.md)
+- [Linux servers, remote machines and AI](docs/REMOTE.md)
 - [Contributing](CONTRIBUTING.md) · [Code of conduct](CODE_OF_CONDUCT.md) · [Security](SECURITY.md) · [Decisions](DECISIONS.md)
 
 ## Legal
 
 NeledPort is not affiliated with Valve or any game publisher. It downloads SteamCMD and server files from Valve at runtime and never redistributes them.
-Each game server is subject to its own licence.
+Each game server is subject to its own licence, and starting SCP: Secret Laboratory accepts its EULA for you. Steam is a
+trademark of Valve Corporation. Game servers and mods run with your user's rights, so install only mods you trust.
 
 Licensed under the [MIT License](LICENSE).

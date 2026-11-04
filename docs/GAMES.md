@@ -83,7 +83,7 @@ Missing a game, or tested one? See [CONTRIBUTING](../CONTRIBUTING.md#add-a-game)
 | The Isle | full | 412680 | Windows, Linux | player list, console | yes |
 | Tower Unite | full | 439660 | Linux | player list | yes |
 | Unturned | full | 1110390 | Windows, Linux | player list | yes |
-| Valheim | full | 896660 | Windows, Linux | player list, bans, BepInEx | yes |
+| Valheim | full | 896660 | Windows, Linux | player list, bans, BepInEx, Linux needs libatomic1, libpulse0 | yes |
 | Warfork | full | 1136510 | Windows, Linux | player list, bans, console | yes |
 | Wurm Unlimited | full | 402370 | Windows, Linux | player list, Linux needs xvfb | yes |
 | Zombie Panic! Source | full | 17505 | Windows, Linux | player list, bans, console, SourceMod | — |

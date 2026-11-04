@@ -5,24 +5,21 @@ control it, and an AI can run it through the Model Context Protocol (MCP).
 
 ## Run NeledPort on a Linux server without a screen
 
-You need Node.js 20.10 or newer. Then install the 32-bit libraries SteamCMD needs (Debian/Ubuntu):
+You need Node.js 20.10 or newer ([current versions for Linux](https://nodejs.org/en/download)) and the 32-bit libraries
+SteamCMD needs (Debian/Ubuntu):
 
 ```bash
 sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install -y lib32gcc-s1 lib32stdc++6
 ```
 
-Run it straight from a release (this is v0.9.1; the newest is on
-[Releases](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases)):
+Install it, then use `neledport` from any terminal:
 
 ```bash
-npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.1/neledport.tgz neledport serve
+sudo npm install -g https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz
 ```
 
-Or install it once and use `neledport` from then on:
-
-```bash
-npm install -g https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.1/neledport.tgz
-```
+To try it without installing, `npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz neledport serve` also works, but it leaves no `neledport` command
+for the other terminal.
 
 `neledport serve` hosts the servers and keeps running; Ctrl+C (or SIGTERM) saves and stops every server first. In a
 second terminal:
@@ -40,7 +37,18 @@ the password and Steam Guard code itself; NeledPort never sees them. `neledport 
 
 ### Keep it running with systemd
 
-`/etc/systemd/system/neledport.service`, for a user called `games`:
+Servers, data and the Steam sign-in belong to the user that runs NeledPort, so give it its own account, which also keeps
+game servers and mods away from your files. Then create the server as that user, once NeledPort runs:
+
+```bash
+sudo useradd --create-home --shell /bin/bash games-host
+sudo -u games-host neledport serve    # leave this running in one terminal
+sudo -u games-host neledport create valheim "Friday Valheim" --set password=change-me
+sudo -u games-host neledport install "Friday Valheim"
+```
+
+Stop that `serve` with Ctrl+C, then write `/etc/systemd/system/neledport.service`, with the path `command -v neledport`
+prints on your system:
 
 ```ini
 [Unit]
@@ -49,7 +57,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-User=games
+User=games-host
 ExecStart=/usr/bin/neledport serve --start "Friday Valheim"
 # Servers save before they stop; big worlds take a while.
 TimeoutStopSec=300
@@ -60,7 +68,7 @@ WantedBy=multi-user.target
 ```
 
 Then `sudo systemctl enable --now neledport`. `--start` names the servers to start once NeledPort is up (repeat it for
-more). Use `neledport` as that user (`sudo -u games neledport list`): each user has their own servers and data.
+more); a name it does not know stops the service with an error. Afterwards, use `sudo -u games-host neledport list` and so on.
 
 ## Watch and control it from your PC
 
@@ -84,7 +92,7 @@ NELEDPORT_CODE=np1.… neledport list --machine 203.0.113.5
 | Role | Can |
 |---|---|
 | view | machine status, servers, players, bans, the game list |
-| control | view, plus start, stop (saves first), restart, update, back up, kick, ban, unban, console commands and console output |
+| control | view, plus start, stop (asks the game to save first), restart, update, back up, kick, ban, unban, console commands and console output |
 | owner | everything, from the machine itself only (the CLI, the app, a local MCP server) |
 
 No code, whatever its role, can create or delete servers, choose the program a server starts, edit config files,
@@ -117,10 +125,13 @@ you would give that to.
 `--allow-create`, `create_server` and `install_server`. Each is one call to NeledPort, so the same roles and activity
 log apply. Tools that change something carry MCP's destructive or write hints, so clients can ask before running them.
 
+Player names, chat and console output come from strangers, and the AI reads them while it holds tools that can stop or ban.
+Keep your client's confirmation on for tools that change something, and treat what it does after reading them with care.
+
 NeledPort must be running on that machine (the app or `neledport serve`). Claude Code:
 
 ```bash
-claude mcp add neledport -- npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.1/neledport.tgz neledport mcp
+claude mcp add neledport -- npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz neledport mcp
 ```
 
 Claude Desktop and other clients, after `npm install -g` as above (`claude_desktop_config.json` or the client's MCP

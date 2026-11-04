@@ -65,16 +65,6 @@ describe('ServerProcess', () => {
   })
 
   // Windows signal-only games (Valheim) are closed at once on purpose, after a backup: no "did not stop in time".
-  it('closes at once without calling it a timeout when asked for no wait', async () => {
-    const p = make()
-    p.start(spec('stubborn'))
-    await waitFor(p, 'running')
-    expect(await p.stop({ timeoutMs: 0 })).toEqual({ forced: true })
-    // Not "last line": on Windows the program's own output can arrive after NeledPort's message.
-    expect(p.lines().join('\n')).not.toMatch(/did not stop in time/)
-    expect(p.lines().join('\n')).toMatch(/Closing the server now/)
-  })
-
   it('hides secrets in its lines and in the log file', async () => {
     const logFile = join(mkdtempSync(join(tmpdir(), 'proc-')), 'server.log')
     const p = make({ logFile, hide: ['s3cret-pass'] })
@@ -113,11 +103,11 @@ describe('ServerProcess', () => {
     expect(p.lines()).toEqual(['Game server connected'])
   })
 
-  it.skipIf(process.platform === 'win32')('interrupt sends SIGINT so the server can save', async () => {
+  it('interrupt delivers Ctrl+C so the server can save, on Windows too', { timeout: 30_000 }, async () => {
     const p = make({ readyPattern: /Game server connected/ })
     p.start(spec())
     await waitFor(p, 'running')
-    const result = await p.stop({ graceful: () => p.interrupt(), timeoutMs: 5000 })
+    const result = await p.stop({ graceful: () => p.interrupt(), timeoutMs: 20_000 })
     expect(result.forced).toBe(false)
     expect(p.lines()).toContain('saving world')
   })

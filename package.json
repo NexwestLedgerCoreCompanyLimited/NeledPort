@@ -11,13 +11,16 @@
     "url": "git+https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort.git"
   },
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.node.json --composite false && tsc --noEmit -p tsconfig.web.json --composite false",
     "test": "vitest run",
-    "dist": "electron-vite build && electron-builder",
+    "dist": "electron-vite build && node scripts/notices.mjs out/THIRD_PARTY_LICENSES.txt && electron-builder",
     "build:cli": "node scripts/build-cli.mjs"
   },
   "dependencies": {

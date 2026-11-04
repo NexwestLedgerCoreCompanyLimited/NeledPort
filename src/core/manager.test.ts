@@ -215,7 +215,7 @@ describe('ServerManager', () => {
     expect(manager.get(id).status).toBe('running')
   })
 
-  it('on Windows, backs up then stops at once for signal-only games', async () => {
+  it('on Windows, backs up signal-only games, then asks them to quit with Ctrl+C', async () => {
     const { manager, log } = setup('windows')
     const { id, installDir } = manager.create(valheim)
     await manager.install(id)
@@ -223,8 +223,77 @@ describe('ServerManager', () => {
     mkdirSync(join(installDir, 'saves'), { recursive: true })
     log.length = 0
     await manager.stop(id)
-    expect(log).toEqual(['stop(timeout=0)'])
+    expect(log).toEqual(['stop(timeout=60000)', 'interrupt'])
     expect(manager.backups(id).map((b) => b.reason)).toEqual(['stop'])
+  })
+
+  it('still stops the server when that backup fails', async () => {
+    const { manager, log, deps } = setup('windows')
+    const { id, installDir } = manager.create(valheim)
+    await manager.install(id)
+    await manager.start(id)
+    mkdirSync(join(installDir, 'saves'), { recursive: true })
+    writeFileSync(join(deps.dataDir, 'backups'), 'a file where the backups folder should be')
+    await manager.stop(id)
+    expect(log).toContain('interrupt')
+    expect(manager.lines(id).join('\n')).toMatch(/Could not back up/)
+  })
+
+  it('keeps stopping the other servers when one stop fails', async () => {
+    const { manager, processes } = setup()
+    const a = manager.create(valheim)
+    const b = manager.create({ ...valheim, name: 'other', ports: { game: 3456, query: 3457 } })
+    for (const { id } of [a, b]) {
+      await manager.install(id)
+      await manager.start(id)
+    }
+    let finished = false
+    processes[0].stop = async () => {
+      throw new Error('stuck')
+    }
+    const realStop = processes[1].stop.bind(processes[1])
+    processes[1].stop = async (o) => {
+      await new Promise((r) => setTimeout(r, 30))
+      const result = await realStop(o)
+      finished = true
+      return result
+    }
+    await manager.stopAll()
+    expect(finished).toBe(true)
+  })
+
+  it('shows a server whose game left the catalog, and does not lose the others', () => {
+    const { deps } = setup()
+    const manager = new ServerManager(deps)
+    const kept = manager.create(valheim)
+    const gone = manager.create(valheim)
+    const reloaded = new ServerManager({ ...deps, games: () => games })
+    expect(reloaded.list()).toHaveLength(2)
+    const store = join(deps.dataDir, 'servers.json')
+    const saved = JSON.parse(readFileSync(store, 'utf8'))
+    saved.servers.find((s: { id: string }) => s.id === gone.id).gameId = 'removed-game'
+    writeFileSync(store, JSON.stringify(saved))
+    const later = new ServerManager(deps)
+    const views = later.list()
+    expect(views.map((v) => v.id)).toEqual([kept.id, gone.id])
+    expect(views[1]).toMatchObject({ gameName: 'removed-game', status: 'not-installed', message: expect.stringMatching(/removed-game/) })
+    later.remove(gone.id)
+    expect(later.list()).toHaveLength(1)
+  })
+
+  it('shows a server whose saved password cannot be read', () => {
+    const { deps } = setup()
+    const { id } = new ServerManager(deps).create(valheim)
+    const later = new ServerManager({
+      ...deps,
+      secrets: {
+        ...deps.secrets,
+        decrypt: () => {
+          throw new Error('keychain locked')
+        }
+      }
+    })
+    expect(later.get(id)).toMatchObject({ id, message: expect.stringMatching(/keychain locked/) })
   })
 
   it('marks a crash and keeps the exit code', async () => {
@@ -916,10 +985,15 @@ describe('RCON games that stop on Ctrl+C', () => {
     expect(log.filter((l) => l === 'interrupt')).toHaveLength(2)
   })
 
-  it('is not a graceful stop on Windows, which has no Ctrl+C for a background server', async () => {
-    const { manager } = ctrlC('windows')
+  it('on Windows, saves over RCON too, without a separate backup first', async () => {
+    const { manager, restCalls, log } = ctrlC('windows')
     const { id } = manager.create({ gameId: 'rcon-ctrl-c', name: 'x', settings: { serverName: 'x', world: 'w', password: 'secret1' } })
-    expect(manager.get(id).gracefulStop).toBe(false)
+    await manager.install(id)
+    await manager.start(id)
+    expect(manager.get(id).gracefulStop).toBe(true)
+    await manager.stop(id)
+    expect(restCalls).toEqual(['rcon:SaveWorld'])
+    expect(log).toContain('interrupt')
   })
 })
 

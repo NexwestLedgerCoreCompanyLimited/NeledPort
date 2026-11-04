@@ -312,6 +312,7 @@ function createWindow(): void {
   })
 
   win.once('ready-to-show', () => win?.show())
+  win.on('close', confirmStop)
   win.on('closed', () => (win = null))
 
   // The app never hosts third-party pages: links open in the system browser, navigation is blocked.
@@ -330,7 +331,8 @@ function createWindow(): void {
 const busy = new Set(['starting', 'running', 'stopping', 'installing', 'updating'])
 let quitting = false
 
-app.on('before-quit', (event) => {
+/** Before the window closes or the app quits: running servers are stopped, so ask. Cancel keeps the window. */
+function confirmStop(event: { preventDefault(): void }): void {
   if (quitting || !manager) return
   const active = manager.list().filter((s) => busy.has(s.status))
   if (!active.length) return
@@ -346,9 +348,19 @@ app.on('before-quit', (event) => {
   if (choice !== 0) return
   quitting = true
   void manager.stopAll().finally(() => app.quit())
-})
+}
+
+app.on('before-quit', confirmStop)
 
 app.on('will-quit', () => void host?.close())
+
+// A second launch brings this window back instead of a second app fighting over the same servers.
+if (!app.requestSingleInstanceLock()) app.exit(0)
+app.on('second-instance', () => {
+  if (win?.isMinimized()) win.restore()
+  win?.show()
+  win?.focus()
+})
 
 void app.whenReady().then(async () => {
   language = pickLanguage([app.getLocale()])

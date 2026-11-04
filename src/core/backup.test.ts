@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -49,6 +49,42 @@ describe('backups', () => {
     const newest = listBackups(backupsDir)[0].file
     pruneBackups(backupsDir, 1)
     expect(listBackups(backupsDir).map((b) => b.file)).toEqual([newest])
+  })
+
+  it('counts each kind of backup separately, so stop copies never push out manual ones', async () => {
+    const { saveDir, backupsDir } = world()
+    const manual = await createBackup(saveDir, backupsDir, 'manual')
+    for (let i = 0; i < 3; i++) {
+      await new Promise((r) => setTimeout(r, 20))
+      await createBackup(saveDir, backupsDir, 'stop')
+    }
+    pruneBackups(backupsDir, 1)
+    expect(listBackups(backupsDir).map((b) => b.reason).sort()).toEqual(['manual', 'stop'])
+    expect(listBackups(backupsDir).map((b) => b.file)).toContain(manual!.file)
+  })
+
+  // Windows has no unreadable folders by chmod.
+  it.skipIf(process.platform === 'win32')('leaves no half-written backup behind when archiving fails', async () => {
+    const { saveDir, backupsDir } = world()
+    const broken = join(saveDir, '..', 'unreadable')
+    mkdirSync(broken)
+    chmodSync(broken, 0o000)
+    try {
+      await expect(createBackup(broken, backupsDir, 'manual')).rejects.toThrow(/tar failed/)
+    } finally {
+      chmodSync(broken, 0o755)
+    }
+    expect(readdirSync(backupsDir)).toEqual([])
+  })
+
+  it('puts the current world back when a restore fails', async () => {
+    const { saveDir, backupsDir } = world()
+    mkdirSync(backupsDir, { recursive: true })
+    const bad = join(backupsDir, 'not-an-archive.tar.gz')
+    writeFileSync(bad, 'nope')
+    const before = readdirSync(saveDir)
+    await expect(restoreBackup(bad, saveDir)).rejects.toThrow()
+    expect(readdirSync(saveDir)).toEqual(before)
   })
 
   it('lists nothing when the folder does not exist', () => {

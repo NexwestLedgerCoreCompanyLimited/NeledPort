@@ -7,18 +7,20 @@
 **เปิดเซิร์ฟเวอร์เกม Steam ได้ในโปรแกรมเดียว ดีไซน์ทันสมัย**
 ติดตั้ง รัน ดูสถานะ จัดการผู้เล่น และใส่ม็อด โดยไม่ต้องพิมพ์คำสั่งใน terminal
 
+**[⬇ ดาวน์โหลดสำหรับ Windows หรือ Linux](https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest)** · [เซิร์ฟเวอร์ Linux ไม่มีจอ](docs/REMOTE.md) · [รายชื่อเกม](docs/GAMES.md)
+
 [English](README.md) · ภาษาไทย
 
 <img src="docs/images/screens/overview-th.png" alt="หน้าภาพรวมเซิร์ฟเวอร์ของ NeledPort เป็นภาษาไทย" width="800" />
 
 </div>
 
-> NeledPort อยู่ระหว่างพัฒนาช่วงแรก กด ⭐ เพื่อติดตามความคืบหน้า หรือ[เพิ่มเกมที่คุณชอบ](CONTRIBUTING.md#add-a-game) เข้ามาในรายการได้เลย
+> ถ้า NeledPort ช่วยคุณประหยัดเวลาได้ กด ⭐ ช่วยให้คนอื่นเจอโปรแกรมนี้ ไม่เจอเกมที่อยากเล่น? [เพิ่มเกมเอง](CONTRIBUTING.md#add-a-game)
 
 ## ฟีเจอร์
 
 - **ติดตั้งในคลิกเดียว:** โปรแกรมโหลด SteamCMD ให้เอง แล้วใช้ติดตั้ง อัปเดต และตรวจไฟล์เซิร์ฟเวอร์
-- **Start / Stop / Restart:** สั่งเซฟโลกก่อนปิดเซิร์ฟเวอร์ทุกครั้ง
+- **Start / Stop / Restart:** สั่งเซฟโลกก่อนปิดเซิร์ฟเวอร์ ถ้าปิดโปรแกรมเซิร์ฟเวอร์จะหยุดด้วย ถ้าอยากเปิดทิ้งไว้ตลอดให้ใช้ [`neledport serve`](docs/REMOTE.md)
 - **คอนโซลสด:** ค้นหาข้อความ log ได้ และมีช่องส่งคำสั่งผ่านช่องทางของแต่ละเกม (RCON, WebRCON, BattlEye RCon, เว็บแอดมิน, API ของเซิร์ฟเวอร์, telnet หรือคอนโซลของเซิร์ฟเวอร์เอง)
 - **ผู้เล่นและการแบน:** เตะ แบน และปลดแบนผ่านระบบของเกมนั้นโดยตรง
 - **ม็อด:** ติดตั้ง mod loader ฝั่งเซิร์ฟเวอร์ (BepInEx สำหรับ Valheim, Oxide สำหรับ Rust และ Hurtworld, SourceMod สำหรับเกม Source 23 เกม, Metamod:Source สำหรับ CS2, AMX Mod X สำหรับเกม Half-Life 8 เกม) จัดการปลั๊กอิน และโหลดแมพจาก Steam Workshop ให้ CS2
@@ -39,13 +41,32 @@
 
 > ตัวติดตั้งยังไม่ได้ลงลายเซ็นดิจิทัล Windows SmartScreen อาจเตือนตอนเปิดครั้งแรก ให้กด **More info → Run anyway**
 
+**บน Linux** ต้องติดตั้งไลบรารี 32-bit ให้ SteamCMD ก่อน (Debian หรือ Ubuntu):
+
+```bash
+sudo dpkg --add-architecture i386 && sudo apt update && sudo apt install lib32gcc-s1 lib32stdc++6
+```
+
+ไม่มีเวอร์ชัน macOS เพราะเซิร์ฟเวอร์เกมรันบน Windows และ Linux เท่านั้น
+
 บนเซิร์ฟเวอร์ Linux ที่ไม่มีหน้าจอ (Node.js 20.10 ขึ้นไป):
 
 ```bash
-npx --yes --package https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/download/v0.9.1/neledport.tgz neledport serve
+sudo npm install -g https://github.com/NexwestLedgerCoreCompanyLimited/NeledPort/releases/latest/download/neledport.tgz
+neledport serve
 ```
 
 [คำสั่งทั้งหมด, systemd, การเข้าถึงระยะไกล และ MCP](docs/REMOTE.md)
+
+## ให้เพื่อนเข้าเล่น
+
+เมื่อเซิร์ฟเวอร์รันแล้ว คนที่อยู่ในเครือข่ายเดียวกันเข้าได้ทันที ถ้าเพื่อนอยู่นอกบ้าน:
+
+1. **เปิดพอร์ตที่เราเตอร์ (port forward)** มาที่เครื่องนี้ ดูเลขพอร์ตได้ที่หน้าภาพรวมของเซิร์ฟเวอร์ ถ้าใช้ VPS ข้ามข้อนี้ได้
+2. **อนุญาตใน firewall** Windows มักถามตอนเปิดเซิร์ฟเวอร์ครั้งแรก ให้กด **Allow** ส่วน Linux ที่ใช้ ufw เช่น Valheim: `sudo ufw allow 2456:2457/udp`
+3. **บอก IP สาธารณะกับพอร์ตเกมให้เพื่อน** (ค้นคำว่า "what is my ip") เช่น `203.0.113.5:2456`
+
+ถ้ายังเข้าไม่ได้ อินเทอร์เน็ตบ้านอาจแชร์ IP กับลูกค้าคนอื่นอยู่ (CGNAT) ซึ่งตั้งเราเตอร์อย่างไรก็ไม่ผ่าน ให้ขอ IP สาธารณะจากผู้ให้บริการ หรือใช้ VPN ฟรีอย่าง Tailscale ทั้งกลุ่ม
 
 ## เกมที่รองรับ
 

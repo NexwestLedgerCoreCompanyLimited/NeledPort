@@ -40,6 +40,11 @@ export async function serve(o: { dataDir: string; serversDir: string; version: s
     secrets,
     steamSdkDir: process.platform === 'linux' ? join(homedir(), '.steam') : undefined
   })
+  const wanted = (o.start ?? []).map((name) => {
+    const s = manager.list().find((v) => v.id === name || v.name.toLowerCase() === name.toLowerCase())
+    if (!s) throw new Error(`--start: no server called "${name}" (see neledport list, run as this user)`)
+    return s
+  })
   const host = await startHost({ dataDir: o.dataDir, serversDir: o.serversDir, manager, games, version: o.version, owner: steamOwnerMethods(manager) })
 
   const seen = new Map<string, string>()
@@ -65,11 +70,7 @@ export async function serve(o: { dataDir: string; serversDir: string; version: s
     ].join('\n')
   )
 
-  for (const wanted of o.start ?? []) {
-    const s = manager.list().find((v) => v.id === wanted || v.name.toLowerCase() === wanted.toLowerCase())
-    if (!s) o.io.err(`--start: no server called "${wanted}"`)
-    else manager.start(s.id).catch((e: Error) => o.io.err(`${s.name}: ${e.message}`))
-  }
+  for (const s of wanted) manager.start(s.id).catch((e: Error) => o.io.err(`${s.name}: ${e.message}`))
 
   let stopping = false
   const shutdown = async () => {

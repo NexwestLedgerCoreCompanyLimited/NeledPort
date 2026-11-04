@@ -422,9 +422,8 @@ export class ServerManager extends EventEmitter {
     if (!proc) return { forced: false }
 
     if (!this.view(server).gracefulStop) {
-      // Nothing can ask this server to save, so keep a copy of the world before it is closed.
-      await this.backup(id, 'stop')
-      return proc.stop({ timeoutMs: 0 })
+      // Only Ctrl+C can ask this server to save, and on Windows not every game answers it: keep a copy of the world first.
+      await this.backup(id, 'stop').catch((e: Error) => this.addLine(id, `[NeledPort] Could not back up before stopping: ${e.message}`))
     }
 
     const control = game.control
@@ -697,10 +696,40 @@ export class ServerManager extends EventEmitter {
 
   async stopAll(): Promise<void> {
     for (const rt of this.runtime.values()) rt.install?.abort()
-    await Promise.all(this.servers.filter((s) => this.rt(s.id).proc).map((s) => this.stop(s.id)))
+    const running = this.servers.filter((s) => this.rt(s.id).proc)
+    // One failure must not let the app quit while the other servers are still saving.
+    const results = await Promise.allSettled(running.map((s) => this.stop(s.id)))
+    results.forEach((r, i) => r.status === 'rejected' && this.addLine(running[i].id, `[NeledPort] Could not stop: ${(r.reason as Error).message}`))
   }
 
+  /** A server that cannot be read (its game left the catalog, its password will not decrypt) still shows, with the reason. */
   private view(server: ServerConfig): ServerView {
+    try {
+      return this.fullView(server)
+    } catch (e) {
+      const rt = this.rt(server.id)
+      return {
+        id: server.id,
+        name: server.name,
+        gameId: server.gameId,
+        gameName: this.deps.games().find((g) => g.id === server.gameId)?.name ?? server.gameId,
+        installDir: server.installDir,
+        ports: { ...server.ports },
+        settings: { ...server.settings },
+        status: rt.status ?? rt.proc?.state ?? 'not-installed',
+        message: (e as Error).message,
+        gracefulStop: false,
+        admin: { players: false, kick: false, ban: false, unban: false, command: false, banOnNextJoin: false },
+        build: { updateAvailable: false },
+        needsLaunchSetup: false,
+        custom: !!server.custom,
+        loaders: [],
+        workshop: false
+      }
+    }
+  }
+
+  private fullView(server: ServerConfig): ServerView {
     const game = this.game(server)
     const rt = this.rt(server.id)
     const status: ServerStatus =
@@ -716,9 +745,9 @@ export class ServerManager extends EventEmitter {
       status,
       progress: rt.progress,
       message: rt.message,
-      // Windows has no Ctrl+C for a background server: graceful only where the game can be told to quit.
+      // On Windows Ctrl+C reaches only servers with a console, so graceful means the game can be told to save another way.
       gracefulStop:
-        this.deps.platform !== 'windows' || ['rest', 'satisfactory', 'stdin'].includes(game.control?.type ?? '') || !!game.control?.shutdown,
+        this.deps.platform !== 'windows' || ['rest', 'satisfactory', 'stdin'].includes(game.control?.type ?? '') || !!game.control?.shutdown || !!game.control?.save,
       admin: capabilities(game, this.admin(server)),
       build: this.buildInfo(server, game, rt),
       needsLaunchSetup: this.needsLaunchSetup(server),
@@ -862,7 +891,7 @@ export class ServerManager extends EventEmitter {
   private game(server: ServerConfig): GameDefinition {
     if (server.custom) return customGame(server.custom, server.ports)
     const game = this.deps.games().find((g) => g.id === server.gameId)
-    if (!game) throw new Error(`The game definition "${server.gameId}" is missing`)
+    if (!game) throw new Error(`NeledPort no longer has the game "${server.gameId}". The server's files and backups are kept; remove it here if you do not need it.`)
     return game
   }
 

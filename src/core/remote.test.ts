@@ -56,6 +56,38 @@ describe('remote API over TLS-PSK', () => {
     expect(calls).toEqual([])
   })
 
+  it('applies a revoke to connections already open, and a role change to their next request', async () => {
+    let device: { key: Buffer; caller: { role: 'control' | 'view'; device: string } } | undefined = { key, caller: { role: 'control', device: 'Laptop' } }
+    server = await startApiServer({ host: '127.0.0.1', port: 0, api, identify: () => device })
+    const agent = new https.Agent({ keepAlive: true, maxSockets: 1 })
+    const post = () =>
+      new Promise<number | undefined>((resolve, reject) => {
+        const options: https.RequestOptions & Pick<ConnectionOptions, 'pskCallback'> = {
+          host: '127.0.0.1',
+          port: server!.port,
+          path: '/v1',
+          method: 'POST',
+          agent,
+          ciphers: 'ECDHE-PSK-CHACHA20-POLY1305',
+          minVersion: 'TLSv1.2',
+          maxVersion: 'TLSv1.2',
+          checkServerIdentity: () => undefined,
+          pskCallback: () => ({ identity: 'ab12cd34', psk: key })
+        }
+        const req = https.request(options, (res) => (res.resume(), res.on('end', () => resolve(res.statusCode))))
+        req.on('error', reject)
+        req.end(JSON.stringify({ method: 'servers.list' }))
+      })
+    expect(await post()).toBe(200)
+    device = { key, caller: { role: 'view', device: 'Laptop' } }
+    expect(await post()).toBe(200)
+    expect(calls.at(-1)?.caller.role).toBe('view')
+    device = undefined
+    await expect(post()).rejects.toThrow()
+    agent.destroy()
+    expect(calls).toHaveLength(2)
+  })
+
   it('passes the error of a failed call back', async () => {
     const { port } = await start()
     await expect(call(port, key, 'ab12cd34', 'boom')).rejects.toThrow('Install the server first')

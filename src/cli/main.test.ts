@@ -94,6 +94,13 @@ describe('run against a running NeledPort', () => {
     expect(out.join('\n')).not.toMatch(/\n\s+at /)
   })
 
+  it('refuses to host when --start names no known server, so systemd shows the failure', async () => {
+    const out: string[] = []
+    const env = { NELEDPORT_DATA: mkdtempSync(join(tmpdir(), 'neledport-cli-')) }
+    expect(await run(['serve', '--start', 'no such server'], env, { out: (t) => out.push(t), err: (t) => out.push(t) })).toBe(1)
+    expect(out.join('\n')).toMatch(/no server called "no such server"/i)
+  })
+
   it('tells the user to start NeledPort when it is not running', async () => {
     const out: string[] = []
     const env = { NELEDPORT_DATA: mkdtempSync(join(tmpdir(), 'neledport-cli-')) }

@@ -18,6 +18,20 @@ export interface LaunchSpec {
 const MAX_LOG_BYTES = 5 * 1024 * 1024
 const IS_WINDOWS = process.platform === 'win32'
 
+// Node cannot send Ctrl+C on Windows: this joins the server's hidden console and raises it there, ignoring it itself.
+const windowsCtrlC = (pid: number) => `
+Add-Type -Namespace NeledPort -Name Console -MemberDefinition '
+[DllImport("kernel32.dll")] public static extern bool FreeConsole();
+[DllImport("kernel32.dll")] public static extern bool AttachConsole(uint pid);
+[DllImport("kernel32.dll")] public static extern bool SetConsoleCtrlHandler(IntPtr handler, bool add);
+[DllImport("kernel32.dll")] public static extern bool GenerateConsoleCtrlEvent(uint ctrlEvent, uint group);'
+[void][NeledPort.Console]::FreeConsole()
+if (-not [NeledPort.Console]::AttachConsole(${pid})) { exit 1 }
+[void][NeledPort.Console]::SetConsoleCtrlHandler([IntPtr]::Zero, $true)
+if (-not [NeledPort.Console]::GenerateConsoleCtrlEvent(0, 0)) { exit 2 }
+Start-Sleep -Milliseconds 500
+`
+
 /** One game-server child process: output, state, graceful stop with a forced fallback. */
 export class ServerProcess extends EventEmitter {
   state: ProcessState = 'stopped'
@@ -25,6 +39,7 @@ export class ServerProcess extends EventEmitter {
   private child?: ChildProcess
   private buffer: string[] = []
   private exited?: Promise<void>
+  private giveUp?: () => void
 
   /** `hide`: secrets (the RCON password) that must never reach the console or the log file. HLDS echoes RCON commands. */
   constructor(private opts: { logFile?: string; maxLines?: number; readyPattern?: RegExp; hide?: string[] } = {}) {
@@ -77,10 +92,23 @@ export class ServerProcess extends EventEmitter {
     this.child?.stdin?.write(text + '\n')
   }
 
-  /** Ctrl+C equivalent. Returns false where it is not possible (Windows). */
+  /** Ctrl+C. On Windows a helper delivers it through the server's console, and a server without one is given up on. */
   interrupt(): boolean {
-    if (!this.child?.pid || IS_WINDOWS) return false
-    process.kill(-this.child.pid, 'SIGINT')
+    if (!this.child?.pid) return false
+    if (!IS_WINDOWS) {
+      process.kill(-this.child.pid, 'SIGINT')
+      return true
+    }
+    const helper = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(windowsCtrlC(this.child.pid), 'utf16le').toString('base64')], {
+      windowsHide: true,
+      stdio: 'ignore'
+    })
+    const failed = () => {
+      this.addLine('[NeledPort] This server has no console to send Ctrl+C to.')
+      this.giveUp?.()
+    }
+    helper.on('error', failed)
+    helper.on('close', (code) => code !== 0 && failed())
     return true
   }
 
@@ -95,14 +123,13 @@ export class ServerProcess extends EventEmitter {
     }
     const timedOut = await Promise.race([
       exited.then(() => false),
-      new Promise<boolean>((r) => setTimeout(() => r(true), o.timeoutMs))
+      new Promise<boolean>((r) => {
+        setTimeout(() => r(true), o.timeoutMs)
+        this.giveUp = () => r(true)
+      })
     ])
     if (!timedOut) return { forced: false }
-    this.addLine(
-      o.timeoutMs > 0
-        ? '[NeledPort] The server did not stop in time and was forced to quit.'
-        : '[NeledPort] This server cannot be asked to save on this system. Closing the server now.'
-    )
+    this.addLine('[NeledPort] The server did not stop in time and was forced to quit.')
     this.killTree()
     await exited
     return { forced: true }
